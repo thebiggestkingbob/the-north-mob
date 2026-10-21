@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
       { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
       { key: "Content-Security-Policy", value: [
         "default-src 'self'",
-        `script-src 'self' https://open.spotify.com 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+        `script-src 'self' https://open.spotify.com https://embed-cdn.spotifycdn.com 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob:",
         "font-src 'self'",

@@ -9,7 +9,7 @@ export type SpotifyController = {
   addListener(event: "ready" | "playback_started" | "playback_update", callback: (event: SpotifyPlaybackEvent) => void): void;
 };
 export type SpotifyIframeApi = {
-  createController(element: HTMLElement, options: { uri: string; width: string; height: number }, callback: (controller: SpotifyController) => void): void;
+  createController(element: HTMLElement, options: { uri: string; width: string; height: number; theme?: "dark" }, callback: (controller: SpotifyController) => void): void;
 };
 declare global {
   interface Window { onSpotifyIframeApiReady?: (api: SpotifyIframeApi) => void; }

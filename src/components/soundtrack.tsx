@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { loadSpotifyApi, spotifyEmbedUrl, type SpotifyController } from "@/lib/spotify";
 
-import { spotifyArtistUri } from "@/config/content";
+import { songs, spotifyArtistUri } from "@/config/content";
 export const ARTIST_URI = spotifyArtistUri;
 type SoundStatus = "off" | "loading" | "starting" | "ready" | "playing" | "paused" | "error";
 type Soundtrack = {
@@ -12,6 +12,7 @@ type Soundtrack = {
   host: React.RefObject<HTMLDivElement | null>;
 };
 const SoundContext = createContext<Soundtrack | null>(null);
+const START_URI = songs[0].uri;
 const PREFERENCE_KEY = "northmob:sound";
 function readAutoplayPreference() { try { return sessionStorage.getItem(PREFERENCE_KEY) !== "off"; } catch { return true; } }
 function subscribePreference(callback: () => void) {
@@ -26,11 +27,11 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
   const [enabledChoice, setEnabled] = useState<boolean | null>(null);
   const enabled = enabledChoice ?? autoplayAllowed;
   const [status, setStatus] = useState<SoundStatus>("off");
-  const [currentUri, setCurrentUri] = useState(ARTIST_URI);
+  const [currentUri, setCurrentUri] = useState<string>(START_URI);
   const [attempt, setAttempt] = useState(0);
   const host = useRef<HTMLDivElement>(null);
   const controller = useRef<SpotifyController | null>(null);
-  const selectedUri = useRef(ARTIST_URI);
+  const selectedUri = useRef<string>(START_URI);
   const wantSound = useRef(true);
   const confirmedPlaying = useRef(false);
   const startTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -73,6 +74,21 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     wantSound.current = true; remember("on"); setEnabled(true); setStatus("loading"); setAttempt(value => value + 1);
   }, []);
 
+  // Retry a blocked arrival request on the first intentional page interaction.
+  // This does not pretend to bypass browser or Spotify playback permissions.
+  useEffect(() => {
+    const activate = (event: Event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("button,input,textarea,select,.header-sound") || !wantSound.current || confirmedPlaying.current || !controller.current) return;
+      beginPlayback();
+      document.removeEventListener("pointerdown", activate);
+      document.removeEventListener("keydown", activate);
+    };
+    document.addEventListener("pointerdown", activate, { passive: true });
+    document.addEventListener("keydown", activate);
+    return () => { document.removeEventListener("pointerdown", activate); document.removeEventListener("keydown", activate); };
+  }, [beginPlayback]);
+
   useEffect(() => {
     const stopForVideo = () => { if (enabled) pause(); };
     window.addEventListener("northmob:video-open", stopForVideo);
@@ -83,13 +99,22 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     if (!enabled || !host.current) return;
     let cancelled = false;
     let instance: SpotifyController | null = null;
+    let failed = false;
+    const fail = () => {
+      if (cancelled) return;
+      failed = true;
+      try { instance?.destroy(); } catch { /* Keep the native fallback usable. */ }
+      if (controller.current === instance) controller.current = null;
+      host.current?.replaceChildren(); setStatus("error");
+    };
+    const connectionTimer = setTimeout(fail, 20000);
     const mount = document.createElement("div");
     host.current.replaceChildren(mount);
     loadSpotifyApi().then(api => {
-      if (cancelled) return;
+      if (cancelled || failed) return;
       setStatus("loading");
-      api.createController(mount, { uri: selectedUri.current, width: "100%", height: 152 }, embed => {
-        if (cancelled) { embed.destroy(); return; }
+      api.createController(mount, { uri: selectedUri.current, width: "100%", height: 80, theme: "dark" }, embed => {
+        if (cancelled || failed) { embed.destroy(); return; }
         instance = embed; controller.current = embed;
         const iframe = host.current?.querySelector("iframe");
         if (iframe) {
@@ -98,7 +123,8 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
           iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
         }
         embed.addListener("ready", () => {
-          if (cancelled) return;
+          if (cancelled || failed) return;
+          clearTimeout(connectionTimer);
           if (wantSound.current) beginPlayback(); else setStatus("paused");
         });
         embed.addListener("playback_started", () => {
@@ -116,9 +142,9 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
           else { clearStartTimer(); setStatus("paused"); }
         });
       });
-    }).catch(() => { if (!cancelled) setStatus("error"); });
+    }).catch(() => { clearTimeout(connectionTimer); fail(); });
     return () => {
-      cancelled = true; clearStartTimer();
+      cancelled = true; clearTimeout(connectionTimer); clearStartTimer();
       try { instance?.destroy(); } catch { /* The iframe may already have been removed. */ }
       if (controller.current === instance) controller.current = null;
     };
@@ -133,12 +159,6 @@ export function useSoundtrack() {
   return value;
 }
 
-export function SoundToggle() {
-  const { status, play, pause } = useSoundtrack();
-  const playing = status === "playing";
-  return <button className={`sound-toggle ${playing ? "is-playing" : ""}`} type="button" onClick={() => playing ? pause() : play()} aria-label={playing ? "Pause soundtrack" : "Play soundtrack"} aria-pressed={playing}><span className="sound-bars" aria-hidden="true"><i /><i /><i /></span><span>Sound</span></button>;
-}
-
 export function SoundEntryButton() {
   const { status, play, pause } = useSoundtrack();
   const playing = status === "playing";
@@ -150,20 +170,42 @@ export function SpotifyPlayButton({ uri = ARTIST_URI, children, className = "but
   return <button type="button" className={className} onClick={() => play(uri)}>{children}</button>;
 }
 
-export function SoundtrackDock() {
-  const { enabled, status, currentUri, pause, off, retry, host } = useSoundtrack();
-  if (!enabled) return null;
-  const message = {
-    off: "Sound is off.", loading: "Connecting to Spotify…", starting: "Starting Spotify…",
-    ready: "Tap play in the Spotify player to start the sound.",
-    playing: "Playing here. Keep exploring.", paused: "Press play in Spotify to continue listening.",
-    error: "Spotify controls are available below. If loading is blocked, try again.",
-  }[status];
-  return <aside id="site-soundtrack" className="sound-dock" aria-label="Spotify soundtrack">
-    <div className="sound-dock-heading"><p className="eyebrow">THE NORTH MOB / Spotify</p><div>{status === "playing" && <button type="button" className="sound-action" onClick={pause}>Pause</button>}<button type="button" className="sound-action" onClick={off} aria-label="Turn sound off">Off ×</button></div></div>
-    <div ref={host} className="spotify-mount" />
-    {status === "error" && <iframe title="THE NORTH MOB Spotify fallback player" src={spotifyEmbedUrl(currentUri)} width="100%" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" />}
-    <p className="sound-status" role="status" aria-live="polite">{message} {status === "error" && <button type="button" className="sound-action" onClick={retry}>Retry</button>}</p>
-    <p className="sound-disclosure">Spotify may use cookies. Full tracks depend on Spotify availability and your account.</p>
-  </aside>;
+export function SoundtrackControls() {
+  const { enabled, status, currentUri, play, pause, off, retry, host } = useSoundtrack();
+  const [expanded, setExpanded] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const disclosure = useRef<HTMLButtonElement>(null);
+  const playing = status === "playing";
+  const label = { off: "Sound off", loading: "Connecting", starting: "Starting", ready: "Tap to play", playing: "Now playing", paused: "Paused", error: "Tap to listen" }[status];
+  const song = songs.find(item => item.uri === currentUri);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setExpanded(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setExpanded(false); disclosure.current?.focus(); }
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", dismiss); document.removeEventListener("keydown", escape); };
+  }, [expanded]);
+
+  return <div ref={root} className={`header-sound ${playing ? "is-playing" : ""}`}>
+    <button className="sound-transport" type="button" aria-label={playing ? "Pause soundtrack" : "Play soundtrack"} aria-pressed={playing} onClick={() => {
+      if (playing) pause();
+      else if (status === "error") { setExpanded(true); }
+      else play();
+    }}><span className="sound-bars" aria-hidden="true"><i /><i /><i /></span><span className="sound-caption"><span>Spotify</span><span role="status">{label}</span></span><span aria-hidden="true" className="transport-icon">{playing ? "Ⅱ" : "▷"}</span></button>
+    <button ref={disclosure} type="button" className="sound-expand" aria-label="Show Spotify player" aria-expanded={expanded} aria-controls="spotify-panel" onClick={() => setExpanded(value => !value)}><span aria-hidden="true">⌄</span></button>
+    <div id="spotify-panel" className={`sound-panel ${expanded ? "is-open" : ""}`} inert={!expanded} aria-hidden={!expanded}>
+      <div className="sound-panel-heading"><span>{song?.title ?? "THE NORTH MOB"}</span><button type="button" onClick={off} aria-label="Turn sound off">Off ×</button></div>
+      {enabled && <div className={`spotify-mount ${status === "error" ? "has-error" : ""}`} ref={host} />}
+      {enabled && status === "error" && <iframe title="THE NORTH MOB Spotify fallback player" src={spotifyEmbedUrl(currentUri)} width="100%" height="80" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" />}
+      <p className="sound-hint">{!enabled ? "Sound is off. Press play to listen." : status === "error" || status === "ready" ? "Press play inside Spotify to listen here." : "Your soundtrack stays with you as you explore."}</p>
+      {status === "error" && <button type="button" className="sound-retry" onClick={retry}>Reconnect Spotify</button>}
+      <p className="sound-disclosure">Spotify may use cookies. Full tracks depend on your Spotify account and availability.</p>
+    </div>
+  </div>;
 }

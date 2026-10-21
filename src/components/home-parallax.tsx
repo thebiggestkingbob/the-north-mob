@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/animation";
 
 export function HomeParallax() {
   const rings = useRef<HTMLDivElement>(null);
-  const [paused, setPaused] = useState(false);
 
   useGSAP(() => {
     const media = gsap.matchMedia();
@@ -19,10 +18,9 @@ export function HomeParallax() {
   useGSAP(() => {
     const media = gsap.matchMedia();
     media.add("(prefers-reduced-motion: no-preference)", () => {
-      if (paused) return;
       const hero = rings.current?.closest<HTMLElement>(".home-hero");
       if (!hero) return;
-      const photo = hero.querySelector(".hero-photo img");
+      const photo = hero.querySelector(".hero-photo-surface");
       const breathe = hero.querySelector(".ring-breathe");
       const sweep = hero.querySelector(".ring-sweep");
       const ambient = [
@@ -52,13 +50,12 @@ export function HomeParallax() {
       };
     });
     return () => media.revert();
-  }, { scope: rings, dependencies: [paused], revertOnUpdate: true });
+  }, { scope: rings, dependencies: [], revertOnUpdate: true });
 
   return <>
     <div className="home-rings" ref={rings} aria-hidden="true"><div className="ring-breathe">
       <svg viewBox="0 0 1000 1000">{Array.from({ length: 12 }, (_, i) => <circle key={i} cx="500" cy="500" r={275 + i * 17} />)}</svg>
       <div className="ring-sweep"><svg viewBox="0 0 1000 1000"><path d="M 500 38 A 462 462 0 0 1 962 500" /></svg></div>
     </div></div>
-    <button type="button" className="home-motion-button" onClick={() => setPaused(value => !value)} aria-pressed={paused}>{paused ? "Resume motion" : "Pause motion"}<span aria-hidden="true">{paused ? "▷" : "Ⅱ"}</span></button>
   </>;
 }

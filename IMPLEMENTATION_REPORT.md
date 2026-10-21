@@ -67,3 +67,33 @@ The owner subsequently authorized publication and deployment through GitHub main
 - TypeScript, ESLint, 14 unit tests, production build and 20 browser checks passed
   including the final logo/layout adjustment. Browser Spotify tests mock the SDK;
   actual provider playback and universal audible autoplay are not verified.
+
+
+## Header player and Home ripple revision
+
+Story: arrival → official Spotify SDK → immediate play request → confirmed status
+in the transport beside the logo; the same player remains mounted on navigation.
+
+- Removed the floating soundtrack box and visible motion button. The header now
+  contains play/pause, confirmed status, and an accessible native-player dropdown.
+- Starts with the existing verified Camp Chair URI. No login/token or audio URLs
+  are scraped. A play request does not become a playing state until Spotify confirms.
+- Allowed Spotify's script CDN in CSP. A CDN-loading browser fixture verifies this
+  boundary. This addresses a likely cause of the reported fallback; live SDK
+  execution cannot be confirmed because this environment does not allow Spotify
+  network access. Native fallback is compact and the failed API mount is hidden.
+- Added an initialization watchdog and first-page-interaction retry; kept manual
+  pause/off and session preference. Browser/Spotify restrictions still govern
+  audible autoplay, full tracks and previews.
+- Added a local WebGL water-refraction shader only on Home, using the actual photo.
+  Arrival and pointer/touch ripples stop rendering after settling. Pixel ratio and
+  resolution are capped; hidden/offscreen pages suspend rendering. Reduced motion,
+  shader failure and context loss restore the unchanged accessible photograph.
+- Page wipe: 0.9s cover, 0.35s brand hold, 1.1s reveal. The veil is managed separately
+  from page-reveal cleanup, preventing an abrupt reset on route changes.
+- Browser integration tests use a simulated Spotify CDN and controller. They verify
+  startup requests and UI behavior, not actual third-party audio playback.
+
+Final verification: TypeScript, ESLint, 14 unit tests, production build and all
+22 Chromium browser checks passed. Inspected desktop/mobile header screenshots
+and the actual water-refraction output. No live Spotify playback claim is made.

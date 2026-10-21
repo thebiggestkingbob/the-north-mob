@@ -5,7 +5,8 @@ export async function mockSpotify(page: Page, allowPlayback = false) {
   await page.addInitScript((allowed) => {
     Object.assign(window, { __spotifyAllowed: allowed, __spotifyCreates: 0, __spotifyPlays: 0, __spotifyPauses: 0, __spotifyUri: "" });
   }, allowPlayback);
-  await page.route("https://open.spotify.com/embed/iframe-api/v1", route => route.fulfill({ contentType: "application/javascript", body: `
+  await page.route("https://open.spotify.com/embed/iframe-api/v1", route => route.fulfill({ contentType: "application/javascript", body: "const sdk=document.createElement('script');sdk.src='https://embed-cdn.spotifycdn.com/embed/iframe-api-fixture.js';document.body.appendChild(sdk);" }));
+  await page.route("https://embed-cdn.spotifycdn.com/embed/iframe-api-fixture.js", route => route.fulfill({ contentType: "application/javascript", body: `
     window.onSpotifyIframeApiReady({createController:function(element,options,callback){
       window.__spotifyCreates++;
       window.__spotifyUri=options.uri;

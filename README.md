@@ -35,7 +35,7 @@ binding may require the execution tool's elevated permissions.
 
 ## Pages and content
 
-- Home `/`: photographic hero, twelve SVG rings, pointer/scroll depth, no video.
+- Home `/`: photographic hero, twelve SVG rings, pointer/scroll depth, Home-only water refraction, no video.
 - Music `/music`: HERE 4 BUSINESS composition, two supplied song titles and a
   persistent in-page Spotify artist player and verified track controls.
 - The Mob `/the-mob`: four supplied portraits; keyboard accessible, animated
@@ -56,7 +56,8 @@ counts, fictional events or guessed contact address are published.
 
 GSAP/ScrollTrigger and `useGSAP` are registered in `src/lib/animation.ts`. Shared
 navigation uses a transition veil and entrance reveals; overlays and Home add
-contextual motion. Animations are scoped and cleaned up. Reduced-motion users
+contextual motion. The page wipe covers in 0.9 seconds, holds the brand for
+0.35 seconds, then reveals over 1.1 seconds. Animations are scoped and cleaned up. Reduced-motion users
 receive the full experience without movement. Typography is served locally.
 
 Original brand photographs are in `public/assets/`; named artist WebPs are in
@@ -94,7 +95,10 @@ handling, booking destination and final POPIA privacy wording before opening the
 form publicly. Current privacy copy describes only the intended enquiry flow.
 
 YouTube loads after interaction. Spotify attempts playback on arrival, remembers
-sound-off for the session, and provides visible play/pause/off controls. Audible
+sound-off for the session, and provides compact play/pause controls next to the logo, with native
+Spotify controls in an accessible dropdown. The initial selection is Camp Chair.
+The SDK requests play as soon as the embed is ready and retries on the first
+page interaction when needed. Audible
 autoplay may be blocked by browsers; users can enter with sound with a tap.
 Spotify account, territory and licensing rules can limit playback to previews. Instagram reels use official
 outbound fallback links. Provider playback/embedding can be restricted; external
@@ -112,3 +116,9 @@ pages, then repeat checks. Obtain explicit owner authorization before deploying.
 The owner authorized publication and deployment; pushing main triggers Vercel.
 
 See `IMPLEMENTATION_REPORT.md` for the actual verification results and limits.
+
+
+Home water refraction uses a small local WebGL shader over the original photo,
+with an arrival ripple and pointer/touch ripples. Rendering stops when waves settle
+or Home is hidden; no effect loads on other pages. Reduced-motion and unsupported
+WebGL browsers keep the original photograph. There is no motion toggle.
