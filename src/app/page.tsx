@@ -1,12 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SoundEntryButton } from "@/components/soundtrack";
-import { WaterRipple } from "@/components/water-ripple";
 import { HomeParallax } from "@/components/home-parallax";
 
 export default function Home() {
   return <main id="main" className="home-hero">
-    <div className="hero-photo"><div className="hero-photo-surface"><Image src="/assets/group_close_glasses.jpeg" alt="THE NORTH MOB photographed together in Pretoria" fill priority sizes="100vw" quality={90} /><WaterRipple /></div></div>
+    <div className="hero-photo"><div className="hero-photo-surface"><Image src="/assets/homepage-cover.jpg" alt="THE NORTH MOB standing together outside a building in Pretoria" fill priority sizes="100vw" quality={90} /></div></div>
     <HomeParallax />
     <p className="eyebrow home-location" data-reveal>Pretoria<br />South Africa<br />Trapcardi</p>
     <h1 tabIndex={-1} className="home-title" data-reveal><span className="home-title-line"><span className="home-word">THE</span></span><span className="home-title-line"><span className="home-word">NORTH</span></span><span className="home-title-line"><span className="home-word">MOB</span></span></h1>

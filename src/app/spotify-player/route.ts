@@ -11,8 +11,8 @@ const policy = [
 
 export function GET(request: NextRequest) {
   const uri = request.nextUrl.searchParams.get("uri") ?? "";
-  if (!/^spotify:(artist|track):[a-zA-Z0-9]{22}$/.test(uri)) return new Response("Invalid Spotify content", { status: 400 });
-  return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>THE NORTH MOB / Spotify</title><style>html,body{margin:0;background:#080909;color:#f5f4ef}iframe{border:0;display:block;width:100%;height:80px;border-radius:12px}</style></head><body><div id="player"></div><script>
+  if (!/^spotify:(artist|track|album):[a-zA-Z0-9]{22}$/.test(uri)) return new Response("Invalid Spotify content", { status: 400 });
+  return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>THE NORTH MOB / Spotify</title><style>html,body{margin:0;background:#080909;color:#f5f4ef}iframe{border:0;display:block;width:100%;height:var(--player-height,80px);border-radius:12px}</style></head><body><div id="player"></div><script>
 (() => {
   const channel='northmob:spotify:v1';
   let selected=${JSON.stringify(uri)};
@@ -20,10 +20,12 @@ export function GET(request: NextRequest) {
   let timer;
   const host=document.getElementById('player');
   const emit=(type,data={})=>parent.postMessage({channel,type,uri:selected,data},location.origin);
-  const valid=uri=>typeof uri==='string' && /^spotify:(artist|track):[a-zA-Z0-9]{22}$/.test(uri);
+  const valid=uri=>typeof uri==='string' && /^spotify:(artist|track|album):[a-zA-Z0-9]{22}$/.test(uri);
+  const size=()=>document.documentElement.style.setProperty("--player-height",selected.startsWith("spotify:album:")?"352px":"80px");
+  size();
   const fallback=()=>{
     if(native)return;
-    clearTimeout(timer); generation++; ready=false; native=true;
+    size(); clearTimeout(timer); generation++; ready=false; native=true;
     try{controller?.destroy();}catch{}
     controller=null;
     const frame=document.createElement('iframe');
@@ -36,14 +38,14 @@ export function GET(request: NextRequest) {
   };
   const load=()=>{
     if(!api){if(native){native=false;fallback();}return;}
-    clearTimeout(timer); const token=++generation;
+    size(); clearTimeout(timer); const token=++generation;
     ready=false; native=false;
     try{controller?.destroy();}catch{}
     controller=null; host.replaceChildren();
     const mount=document.createElement('div');host.appendChild(mount);emit('loading');
     timer=setTimeout(fallback,15000);
     try{
-      api.createController(mount,{uri:selected,width:300,height:80},embed=>{
+      api.createController(mount,{uri:selected,width:300,height:selected.startsWith("spotify:album:")?352:80},embed=>{
         if(token!==generation){embed.destroy();return;}
         controller=embed;
         embed.addListener('ready',()=>{
@@ -69,6 +71,8 @@ export function GET(request: NextRequest) {
     if(action==='play'){
       wantsPlay=true;
       if(ready){try{controller.play();}catch{emit('ready');}}
+    }else if(action==='seek'){
+      if(ready && Number.isFinite(event.data.seconds) && event.data.seconds>=0){try{controller.seek(event.data.seconds);}catch{}}
     }else if(action==='pause'){
       wantsPlay=false;
       try{controller?.pause();}catch{}

@@ -161,3 +161,64 @@ unloads playback.
 Final verification: production build, TypeScript, ESLint, 14 unit tests and all
 29 browser checks passed. Inspected the restored photographic Home screenshot.
 Real Spotify audio remains unverified due to the environment network restriction.
+
+
+## Targeted catalogue and Home refinements
+
+- Removed `water-ripple.tsx`, its canvas, shaders, listeners and active CSS. No
+  ripple dependency was installed, so no unrelated packages were removed. Kept
+  twelve rings, image depth, typography, navigation and slow page transitions.
+- Added the exact original JPEG from HomePage.zip as homepage-cover.jpg. It is
+  3072×4096; contained rendering preserves all four people on desktop and phone.
+- Added catalogue.ts (11 album tracks in official order, full credits/durations,
+  official cover, plus tatana, mathata. and the Fetlhela collaboration). Existing
+  album/single versions of the same songs are not duplicated. Reviewed official
+  artist top tracks, the album embed, earlier single pages and the distributor's
+  Ground 2 Glory link. No exhaustive discography claim is made.
+- Five static direct track IDs were independently verified: momma , phone,
+  peaky , blinder, camp , chair, maatla , thata and tatana, mathata. Eight entries
+  have explicit supported Spotify album/release fallback actions when their
+  direct IDs cannot be validated.
+- Added a bounded public metadata reader for two fixed album URLs. It accepts
+  track IDs only on matching names and THE NORTHMOB credits, never returns audio
+  or tokens, preserves known IDs, caches results and tolerates network/format
+  failures. Runtime enrichment may enable the remaining direct actions; this is
+  not claimed as live verified in the restricted execution environment.
+- One persistent queue adds monochrome previous/next controls, track/artist labels,
+  actual-end advancement and session track/position restoration. The native album
+  player handles album ordering when direct IDs are unavailable. Outbound Music
+  listening links pause site audio. Removed the dropdown arrow and panel chrome.
+- Autoplay requests remain best-effort. Unconfirmed playback displays Enable Sound;
+  native controls appear only after manual activation, not as an unsolicited popup.
+  Native fallback does not claim audible playback. Full tracks, login, encrypted
+  media and territorial availability remain subject to Spotify/browser policy.
+- Music uses the official Spotify cover; network failure shows an honest release
+  link instead of wrong artwork or a broken-image state.
+
+Verified source references:
+https://open.spotify.com/embed/album/3f1HZdfe4bPLqQOu5sfmvO
+https://open.spotify.com/embed/artist/0iZ4kkTa0bDsMz9Qgrr0zx
+https://open.spotify.com/embed/track/0uOQ2hUkWqG7Mk38yQpYt9
+https://open.spotify.com/embed/track/6DiWTgc5snndkCPs2ohJwN
+https://open.spotify.com/embed/track/6VwibeE8WERPrdtq9zPF75
+https://open.spotify.com/embed/album/10upZ9wALA9z8ByE3nZTHk
+https://africori.to/ground2glory
+
+Browser tests use a deliberately labelled artwork fixture and simulated SDK;
+inspected hero screenshots use the actual supplied photograph. The official cover
+URL is verified against Spotify metadata, not by a live browser image download
+in this environment. No new tracks or artwork were fabricated.
+
+Final checks: TypeScript, ESLint, production build and 17 unit tests passed. The
+32-case browser suite passed, followed by 14 targeted checks (including two new
+metadata/artwork cases), and eight responsive/image checks after the final mobile
+framing adjustment. Inspected actual photo screenshots at desktop and 375×812.
+Previous/next icons are monochrome SVGs. No water component, shader or canvas
+remains in the application source.
+
+Coverage: 13 verified track entries across one complete 11-track album, one single
+and one collaboration from another album; five statically verified direct track
+IDs. Remaining entries use supported Spotify album/release listening unless the
+public metadata enrichment validates their direct IDs. No exhaustive catalogue,
+real audible Spotify playback, actual Safari/iOS playback or full-song access
+claim is made. No standalone licensed audio files were supplied.

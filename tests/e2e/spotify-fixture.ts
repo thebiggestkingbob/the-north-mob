@@ -1,7 +1,10 @@
+import { allTracks, album } from "../../src/config/catalogue";
 import type { Page } from "@playwright/test";
 
 // This fixture verifies our integration contract, not Spotify's real playback rights.
 export async function mockSpotify(page: Page, allowPlayback = false, readyDelay = 0) {
+  await page.route("**/api/catalogue", route => route.fulfill({ json: { tracks: allTracks, album, completeAlbumIds: false } }));
+  await page.route("https://image-cdn-ak.spotifycdn.com/**", route => route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640"><rect width="640" height="640" fill="#111"/><text x="30" y="320" fill="white" font-size="26">Spotify artwork test fixture</text></svg>' }));
   await page.addInitScript(({ allowed, delay }) => {
     if (window !== window.top) return;
     Object.assign(window, { __spotifyReadyDelay: delay, __spotifyPrematurePlays: 0, __spotifyAllowed: allowed, __spotifyCreates: 0, __spotifyPlays: 0, __spotifyPauses: 0, __spotifyUri: "" });
@@ -23,11 +26,13 @@ export async function mockSpotify(page: Page, allowPlayback = false, readyDelay 
       const controller={
         play:function(){if(!ready)window.top.__spotifyPrematurePlays++;window.top.__spotifyPlays++;if(window.top.__spotifyAllowed)setTimeout(playing,0);},
         pause:function(){window.top.__spotifyPauses++;fire('playback_update',{isPaused:true,isBuffering:false,position:100,duration:190000});},
+        seek:function(seconds){window.top.__spotifySeek=seconds;},
         loadUri:function(uri){window.top.__spotifyUri=uri;},
         addListener:function(name,handler){handlers[name]=handler;if(name==='ready'){window.top.__spotifyReleaseReady=()=>{ready=true;fire('ready');};if(window.top.__spotifyReadyDelay>=0)setTimeout(window.top.__spotifyReleaseReady,window.top.__spotifyReadyDelay);}},
         destroy:function(){iframe.remove();}
       };
       window.top.__spotifyNativePlay=playing;
+      window.top.__spotifyUpdate=(data)=>fire("playback_update",data);
       callback(controller);
     }});
   ` }));

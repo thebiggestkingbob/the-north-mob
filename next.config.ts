@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: { qualities: [75, 90] },
   async headers() {
     return [{ source: "/((?!spotify-player(?:/|$)).*)", headers: [
       { key: "X-Content-Type-Options", value: "nosniff" },
@@ -10,7 +11,7 @@ const nextConfig: NextConfig = {
         "default-src 'self'",
         `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: blob:",
+        "img-src 'self' data: blob: https://image-cdn-ak.spotifycdn.com",
         "font-src 'self'",
         "connect-src 'self'",
         "frame-src 'self' https://www.youtube-nocookie.com https://open.spotify.com",

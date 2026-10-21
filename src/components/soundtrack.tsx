@@ -1,17 +1,31 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createSpotifyController, type SpotifyController } from "@/lib/spotify";
-import { songs, spotifyArtistUri } from "@/config/content";
+import { spotifyArtistUri } from "@/config/content";
+import { allTracks, album, openingTrack, type CatalogueTrack } from "@/config/catalogue";
 export const ARTIST_URI = spotifyArtistUri;
 type SoundStatus = "off" | "loading" | "starting" | "ready" | "playing" | "paused" | "native";
 type Soundtrack = {
-  enabled: boolean; status: SoundStatus; currentUri: string;
+  enabled: boolean; status: SoundStatus; currentUri: string; tracks: CatalogueTrack[];
+  next: () => void; previous: () => void;
   play: (uri?: string) => void; pause: () => void; off: () => void; retry: () => void;
   host: React.RefObject<HTMLDivElement | null>;
 };
+type SavedPlayback = { uri: string; position: number };
+let initialPlayback: SavedPlayback | null | undefined;
+function initialSessionPlayback() {
+  if (initialPlayback !== undefined) return initialPlayback;
+  initialPlayback = null;
+  try {
+    const value = JSON.parse(sessionStorage.getItem("northmob:playback:v1") ?? "null");
+    if (value && allTracks.some(track => track.uri === value.uri) && Number.isFinite(value.position) && value.position >= 0 && value.position < 3600000) initialPlayback = value;
+  } catch { /* Session persistence is optional. */ }
+  return initialPlayback;
+}
+const noSubscription = () => () => {};
 const SoundContext = createContext<Soundtrack | null>(null);
-const START_URI = songs[0].uri;
+const START_URI = openingTrack.uri!;
 const PREFERENCE_KEY = "northmob:sound";
 function readAutoplayPreference() { try { return sessionStorage.getItem(PREFERENCE_KEY) !== "off"; } catch { return true; } }
 function subscribePreference(callback: () => void) {
@@ -27,8 +41,17 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
   const [enabledChoice, setEnabled] = useState<boolean | null>(null);
   const enabled = enabledChoice ?? autoplayAllowed;
   const [status, setStatus] = useState<SoundStatus>("off");
-  const [currentUri, setCurrentUri] = useState<string>(START_URI);
+  const savedPlayback = useSyncExternalStore(noSubscription, initialSessionPlayback, () => null);
+  const [chosenUri, setCurrentUri] = useState<string | null>(null);
+  const currentUri = chosenUri ?? savedPlayback?.uri ?? START_URI;
   const [attempt, setAttempt] = useState(0);
+  const [resolvedIds, setResolvedIds] = useState<Record<string, string>>({});
+  const tracks = useMemo(() => allTracks.map(track => ({ ...track, ...(resolvedIds[track.id] ? { uri: resolvedIds[track.id] } : {}) })), [resolvedIds]);
+  const queue = useRef(allTracks);
+  const advance = useRef<() => void>(() => {});
+  const position = useRef(0);
+  const resumePosition = useRef(0);
+  const endHandled = useRef(false);
   const host = useRef<HTMLDivElement>(null);
   const controller = useRef<SpotifyController | null>(null);
   const ready = useRef(false);
@@ -46,13 +69,30 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     clearStartTimer(); confirmedPlaying.current = false; setStatus("starting");
     controller.current.play();
     startTimer.current = setTimeout(() => {
-      if (!confirmedPlaying.current && wantSound.current) { setStatus("ready"); showPlayer(); }
+      if (!confirmedPlaying.current && wantSound.current) { setStatus("ready"); }
     }, 5000);
   }, [clearStartTimer]);
+  useEffect(() => { queue.current = tracks; }, [tracks]);
+  useEffect(() => {
+    const abort = new AbortController();
+    fetch("/api/catalogue", { signal: abort.signal }).then(response => response.ok ? response.json() : null).then(data => {
+      if (!Array.isArray(data?.tracks)) return;
+      const ids: Record<string, string> = {};
+      for (const item of data.tracks) if (allTracks.some(track => track.id === item.id) && typeof item.uri === "string" && /^spotify:track:[A-Za-z0-9]{22}$/.test(item.uri)) ids[item.id] = item.uri;
+      setResolvedIds(ids);
+    }).catch(() => { /* Verified static IDs and native album listening remain available. */ });
+    return () => abort.abort();
+  }, []);
+  useEffect(() => {
+    if (!savedPlayback) return;
+    selectedUri.current = savedPlayback.uri; resumePosition.current = savedPlayback.position;
+    controller.current?.loadUri(savedPlayback.uri);
+  }, [savedPlayback]);
   const play = useCallback((uri?: string) => {
     wantSound.current = true; remember("on"); showPlayer();
     const nextUri = uri ?? selectedUri.current;
     if (nextUri !== selectedUri.current) {
+      position.current = 0; resumePosition.current = 0; endHandled.current = false;
       clearStartTimer(); selectedUri.current = nextUri; setCurrentUri(nextUri);
       ready.current = false; confirmedPlaying.current = false; setStatus("loading");
       controller.current?.loadUri(nextUri);
@@ -62,6 +102,15 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     // Repeated clicks while loading only update intent; they do not remount.
     setEnabled(true);
   }, [beginPlayback, clearStartTimer]);
+  const skip = useCallback((direction: number) => {
+    const playable = queue.current.filter(track => track.uri);
+    if (!playable.length) return;
+    const index = playable.findIndex(track => track.uri === selectedUri.current);
+    play(playable[(Math.max(index, 0) + direction + playable.length) % playable.length].uri);
+  }, [play]);
+  const next = useCallback(() => skip(1), [skip]);
+  const previous = useCallback(() => skip(-1), [skip]);
+  useEffect(() => { advance.current = next; }, [next]);
   const pause = useCallback(() => {
     wantSound.current = false; remember("off"); clearStartTimer();
     confirmedPlaying.current = false;
@@ -95,12 +144,13 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     instance.addListener("ready", () => {
       if (cancelled) return;
       ready.current = true; native.current = false;
+      if (resumePosition.current > 0) { instance.seek(resumePosition.current / 1000); resumePosition.current = 0; }
       if (wantSound.current) beginPlayback(); else setStatus("paused");
     });
     instance.addListener("native", () => {
       if (cancelled) return;
       ready.current = false; native.current = true; clearStartTimer();
-      confirmedPlaying.current = false; setStatus("native"); showPlayer();
+      confirmedPlaying.current = false; setStatus("native");
     });
     instance.addListener("playback_started", () => {
       if (cancelled) return;
@@ -108,6 +158,14 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     });
     instance.addListener("playback_update", event => {
       if (cancelled) return;
+      const cursor = event.data.position, duration = event.data.duration;
+      if (typeof cursor === "number" && Number.isFinite(cursor) && cursor >= 0) {
+        position.current = cursor;
+        try { sessionStorage.setItem("northmob:playback:v1", JSON.stringify({ uri: selectedUri.current, position: cursor })); } catch { /* Storage is optional. */ }
+      }
+      if (selectedUri.current.startsWith("spotify:track:") && !endHandled.current && wantSound.current && confirmedPlaying.current && typeof duration === "number" && duration > 1000 && typeof cursor === "number" && cursor >= duration - 50) {
+        endHandled.current = true; advance.current(); return;
+      }
       const playing = event.data.isPaused === false && event.data.isBuffering === false;
       const wasPlaying = confirmedPlaying.current;
       confirmedPlaying.current = playing;
@@ -126,7 +184,7 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     };
   }, [enabled, attempt, beginPlayback, clearStartTimer]);
 
-  return <SoundContext.Provider value={{ enabled, status: enabled && status === "off" ? "loading" : status, currentUri, play, pause, off, retry, host }}>{children}</SoundContext.Provider>;
+  return <SoundContext.Provider value={{ enabled, status: enabled && status === "off" ? "loading" : status, currentUri, tracks, next, previous, play, pause, off, retry, host }}>{children}</SoundContext.Provider>;
 }
 
 export function useSoundtrack() {
@@ -138,7 +196,7 @@ export function useSoundtrack() {
 export function SoundEntryButton() {
   const { status, play, pause } = useSoundtrack();
   const playing = status === "playing";
-  return <button type="button" className="button button-light" onClick={() => playing ? pause() : play()}>{playing ? "Pause soundtrack" : "Enter with sound"}<span aria-hidden="true">{playing ? "Ⅱ" : "▷"}</span></button>;
+  return <button type="button" className="button button-light" onClick={() => playing ? pause() : play()}>{playing ? "Pause soundtrack" : "Enable Sound"}<span aria-hidden="true">{playing ? "Ⅱ" : "▷"}</span></button>;
 }
 
 export function SpotifyPlayButton({ uri = ARTIST_URI, children, className = "button" }: { uri?: string; children: React.ReactNode; className?: string }) {
@@ -147,46 +205,26 @@ export function SpotifyPlayButton({ uri = ARTIST_URI, children, className = "but
 }
 
 export function SoundtrackControls() {
-  const { enabled, status, currentUri, play, pause, off, retry, host } = useSoundtrack();
-  const [expanded, setExpanded] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
-  const disclosure = useRef<HTMLButtonElement>(null);
+  const { enabled, status, currentUri, tracks, play, pause, off, retry, next, previous, host } = useSoundtrack();
+  const [needsNative, setNeedsNative] = useState(false);
   const playing = status === "playing";
-  const label = { off: "Sound off", loading: "Connecting", starting: "Starting", ready: "Tap to play", playing: "Now playing", paused: "Paused", native: "Use player" }[status];
-  const song = songs.find(item => item.uri === currentUri);
+  const song = tracks.find(item => item.uri === currentUri);
+  const title = song?.title ?? (currentUri === album.uri ? album.title : "THE NORTH MOB");
   useEffect(() => {
-    const open = () => setExpanded(true);
+    const open = () => setNeedsNative(true);
     window.addEventListener("northmob:show-player", open);
     return () => window.removeEventListener("northmob:show-player", open);
   }, []);
-
-
-  useEffect(() => {
-    if (!expanded) return;
-    const dismiss = (event: PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) setExpanded(false);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { setExpanded(false); disclosure.current?.focus(); }
-    };
-    document.addEventListener("pointerdown", dismiss);
-    document.addEventListener("keydown", escape);
-    return () => { document.removeEventListener("pointerdown", dismiss); document.removeEventListener("keydown", escape); };
-  }, [expanded]);
-
-  return <div ref={root} className={`header-sound ${playing ? "is-playing" : ""}`}>
-    <button className="sound-transport" type="button" aria-label={playing ? "Pause soundtrack" : "Play soundtrack"} aria-pressed={playing} onClick={() => {
-      if (playing) pause();
-      else if (status === "native") { setExpanded(true); }
-      else play();
-    }}><span className="sound-bars" aria-hidden="true"><i /><i /><i /></span><span className="sound-caption"><span>Spotify</span><span role="status">{label}</span></span><span aria-hidden="true" className="transport-icon">{playing ? "Ⅱ" : "▷"}</span></button>
-    <button ref={disclosure} type="button" className="sound-expand" aria-label="Show Spotify player" aria-expanded={expanded} aria-controls="spotify-panel" onClick={() => setExpanded(value => !value)}><span aria-hidden="true">⌄</span></button>
-    <div id="spotify-panel" className={`sound-panel ${expanded ? "is-open" : ""}`} inert={!expanded} aria-hidden={!expanded}>
-      <div className="sound-panel-heading"><span>{song?.title ?? "THE NORTH MOB"}</span><button type="button" onClick={off} aria-label="Turn sound off">Off ×</button></div>
+  const nativeVisible = enabled && needsNative && (!playing || currentUri === album.uri);
+  return <div className={`header-sound ${playing ? "is-playing" : ""}`}>
+    <div className="track-meta"><span title={title}>{title}</span><span>{song?.artist ?? album.artist}</span></div>
+    <button type="button" className="queue-button" onClick={previous} aria-label="Previous track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 5h2v14H5zM18 5 8 12l10 7z" /></svg></button>
+    <button className="sound-transport" type="button" aria-label={playing ? "Pause soundtrack" : status === "ready" || status === "native" ? "Enable Sound" : "Play soundtrack"} aria-pressed={playing} onClick={() => playing ? pause() : play()}><span className="sound-bars" aria-hidden="true"><i /><i /><i /></span><span className="sound-enable">{status === "ready" || status === "native" ? "Enable Sound" : playing ? "Ⅱ" : "▷"}</span></button>
+    <button type="button" className="queue-button" onClick={next} aria-label="Next track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 5h2v14h-2zM6 5l10 7-10 7z" /></svg></button>
+    <button type="button" className="sound-off" onClick={off} aria-label="Turn sound off">×</button>
+    <div className={`native-playback ${nativeVisible ? "is-needed" : ""}`} inert={!nativeVisible} aria-hidden={!nativeVisible} aria-label="Spotify playback controls">
       {enabled && <div className="spotify-mount" ref={host} />}
-      <p className="sound-hint">{!enabled ? "Sound is off. Press play to listen." : status === "native" || status === "ready" ? "Press play inside Spotify to listen here." : "Your soundtrack stays with you as you explore."}</p>
-      {status === "native" && <button type="button" className="sound-retry" onClick={retry}>Reconnect Spotify</button>}
-      <p className="sound-disclosure">Spotify may use cookies. Full tracks depend on your Spotify account and availability.</p>
+      {nativeVisible && <p className="native-hint">Press Spotify’s play button to enable sound.{status === "native" && <button type="button" onClick={retry}>Reconnect</button>}</p>}
     </div>
   </div>;
 }

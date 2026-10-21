@@ -35,9 +35,10 @@ binding may require the execution tool's elevated permissions.
 
 ## Pages and content
 
-- Home `/`: original photographic hero and oversized title, twelve SVG rings, pointer/scroll depth, Home-only water refraction, no video.
-- Music `/music`: HERE 4 BUSINESS composition, two supplied song titles and a
-  persistent in-page Spotify artist player and verified track controls.
+- Home `/`: supplied HomePage.jpg hero with all four subjects contained, oversized title,
+  twelve SVG rings and pointer/scroll depth. No video or water effect.
+- Music `/music`: HERE 4 BUSINESS composition, the verified 11-track HERE 4 BUSINESS album and two additional verified tracks and a
+  persistent in-page Spotify player and catalogue controls.
 - The Mob `/the-mob`: four supplied portraits; keyboard accessible, animated
   profiles with query-string deep links and browser back/forward support.
 - Visuals `/visuals`: poster-first in-page official YouTube film, three official
@@ -96,9 +97,10 @@ form publicly. Current privacy copy describes only the intended enquiry flow.
 
 YouTube loads after interaction. Spotify attempts playback on arrival, remembers
 sound-off for the session, and provides compact play/pause controls next to the logo, with native
-Spotify controls in an accessible dropdown. The initial selection is Camp Chair.
-The SDK requests play as soon as the embed is ready. Blocked autoplay opens the
-native controls; manual play also opens them. Repeated startup clicks do not
+Spotify controls shown only when needed after activation. There is no dropdown
+arrow. The initial selection is camp , chair.
+The SDK requests play as soon as the embed is ready. Blocked autoplay displays
+Enable Sound; manual activation opens the native controls when needed. Repeated startup clicks do not
 restart initialization. Track changes wait for a fresh controller to be ready. Audible
 autoplay may be blocked by browsers; users can enter with sound with a tap.
 Spotify account, territory and licensing rules can limit playback to previews. Instagram reels use official
@@ -119,11 +121,10 @@ The owner authorized publication and deployment; pushing main triggers Vercel.
 See `IMPLEMENTATION_REPORT.md` for the actual verification results and limits.
 
 
-Home water refraction uses a small local WebGL shader over the original photograph,
-with an arrival ripple and pointer/touch ripples. Rendering stops when waves settle
-or Home is hidden; no effect loads on other pages. Reduced-motion and unsupported
-WebGL browsers keep the original photograph. There is no motion toggle.
-
+The water shader/component and its listeners were removed. Other GSAP motion
+and page transitions remain. `public/assets/homepage-cover.jpg` is the unchanged
+3072×4096 image from the owner's HomePage.zip; responsive containment keeps all
+four subjects visible. Next.js serves optimized versions at approved quality 90.
 
 Spotify runs in `/spotify-player`, a dedicated same-origin HTML frame with its own
 vendor script policy. The main application does not allow production unsafe-eval.
@@ -132,3 +133,26 @@ fallback stays inside that single frame and does not claim confirmed playback.
 Only explicit reconnect/off actions remount the outer frame. Automated tests
 simulate SDK delays, CDN loading, autoplay refusal, native fallback and recovery;
 actual Spotify audio remains a separate browser/provider check.
+
+
+Catalogue data is in `src/config/catalogue.ts`: 11 verified album entries plus
+`tatana, mathata.` and the credited `Fetlhela` collaboration. The five statically
+verified track IDs remain usable if metadata enrichment fails. `/api/catalogue`
+reads only public embed metadata for two fixed release URLs, accepts IDs only
+when names and North Mob credits match, and returns no audio, preview URLs or
+tokens. Unknown IDs are never guessed: those rows explicitly offer Spotify album
+selection or the verified external release. This is the verified catalogue found
+for this update, not a claim of an exhaustive discography.
+
+The header has previous/play-pause/next and Off controls, plus the current title
+and artist. The dropdown arrow was removed. Navigation preserves one player.
+Known tracks and playback position are saved for the session; reload seeks when
+the controller is ready. Track-end events advance the addressable queue once;
+Spotify manages its own native album queue. Audible autoplay is attempted but
+never assumed. A blocked request shows Enable Sound; only manual activation
+reveals necessary native controls. Native controls stay visible for album listening.
+
+The album cover uses its official Spotify CDN URL; a failed request shows an
+explicit release link, without substituting artwork. Tests simulate external
+metadata, artwork and Spotify playback; they do not establish provider audio
+access, Safari/iOS playback or unrestricted full-length streaming.
