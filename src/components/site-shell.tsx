@@ -63,7 +63,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   }}>
     <a href="#main" className="skip-link">Skip to content</a>
     <header className="site-header">
-      <Link href="/" className="brand" aria-label="THE NORTH MOB — Home"><Image src="/assets/official_logo.jpeg" alt="THE NORTH MOB" width={96} height={96} priority /></Link>
+      <Link href="/" className="brand" aria-label="THE NORTH MOB — Home"><Image src="/assets/official_logo.jpeg" alt="THE NORTH MOB" width={957} height={960} unoptimized priority /></Link>
       <nav aria-label="Main navigation" className="desktop-nav">{pages.slice(1).map((page) => <Link href={page.path} key={page.path} aria-current={pathname === page.path ? "page" : undefined}>{page.name}</Link>)}</nav>
       <button ref={menuButton} type="button" className="menu-toggle" aria-label="Open navigation" aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen(true)}><span /><span /></button>
     </header>
