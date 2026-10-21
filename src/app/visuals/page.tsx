@@ -1,0 +1,7 @@
+import type { Metadata } from "next";
+import { VideoGallery } from "@/components/video-gallery";
+export const metadata: Metadata = { title: "Visuals" };
+export default function Visuals() {
+  const nativeVideoUrl = process.env.NATIVE_VIDEO_URL;
+  return <main id="main" className="page visuals-page"><div className="editorial-heading" data-reveal><div><p className="eyebrow">Music videos<br />The collective<br />Behind the scenes</p><h1 tabIndex={-1}>VISUALS</h1></div><p className="eyebrow heading-aside">More than music.<br />A visual movement.</p></div><VideoGallery nativeVideoUrl={nativeVideoUrl && /^https:\/\//.test(nativeVideoUrl) ? nativeVideoUrl : undefined} captionsUrl={process.env.NATIVE_VIDEO_CAPTIONS_URL} /></main>;
+}

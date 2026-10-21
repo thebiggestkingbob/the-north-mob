@@ -1,0 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+const enquiry = { name: "Test Visitor", email: "visitor@example.com", type: "Bookings", message: "Please share booking availability.", consent: true, website: "" };
+const request = (data: unknown = enquiry, origin = "http://localhost") => new Request("http://localhost/api/enquiry", { method: "POST", headers: { "Content-Type": "application/json", origin }, body: JSON.stringify(data) });
+beforeEach(() => { vi.resetModules(); vi.stubEnv("CONTACT_DELIVERY_URL", ""); vi.stubEnv("CONTACT_DELIVERY_TOKEN", ""); });
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
+describe("enquiry delivery boundary", () => {
+  it("does not claim success without delivery configuration", async () => { const { POST } = await import("./route"); const response = await POST(request()); expect(response.status).toBe(503); expect(await response.json()).not.toHaveProperty("delivered", true); });
+  it("rejects cross-origin submissions", async () => { const { POST } = await import("./route"); expect((await POST(request(enquiry, "https://other.example"))).status).toBe(403); });
+  it("validates before making any provider request", async () => { const fetchMock = vi.fn(); vi.stubGlobal("fetch", fetchMock); const { POST } = await import("./route"); expect((await POST(request({ ...enquiry, email: "invalid" }))).status).toBe(400); expect(fetchMock).not.toHaveBeenCalled(); });
+  it("requires explicit confirmed delivery from the adapter", async () => { vi.stubEnv("CONTACT_DELIVERY_URL", "https://delivery.example/enquiry"); vi.stubEnv("CONTACT_DELIVERY_TOKEN", "test-only-token"); vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ accepted: true }))); const { POST } = await import("./route"); expect((await POST(request())).status).toBe(502); });
+  it("returns delivered only after adapter acknowledgement", async () => { vi.stubEnv("CONTACT_DELIVERY_URL", "https://delivery.example/enquiry"); vi.stubEnv("CONTACT_DELIVERY_TOKEN", "test-only-token"); const fetchMock = vi.fn().mockResolvedValue(Response.json({ delivered: true })); vi.stubGlobal("fetch", fetchMock); const { POST } = await import("./route"); const response = await POST(request()); expect(response.status).toBe(200); expect(await response.json()).toEqual({ delivered: true }); expect(fetchMock.mock.calls[0][1].body).not.toContain("website"); });
+  it("throttles repeated submissions", async () => { const { POST } = await import("./route"); for (let i = 0; i < 10; i++) await POST(request()); const response = await POST(request()); expect(response.status).toBe(429); expect(response.headers.get("Retry-After")).toBeTruthy(); });
+  it("rejects oversized requests", async () => { const { POST } = await import("./route"); const response = await POST(request({ ...enquiry, message: "a".repeat(21000) })); expect(response.status).toBe(413); });
+});
