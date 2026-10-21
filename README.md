@@ -35,7 +35,7 @@ binding may require the execution tool's elevated permissions.
 
 ## Pages and content
 
-- Home `/`: photographic hero, twelve SVG rings, pointer/scroll depth, Home-only water refraction, no video.
+- Home `/`: full transparent official logo on black, twelve SVG rings, pointer/scroll depth, Home-only water refraction, no video.
 - Music `/music`: HERE 4 BUSINESS composition, two supplied song titles and a
   persistent in-page Spotify artist player and verified track controls.
 - The Mob `/the-mob`: four supplied portraits; keyboard accessible, animated
@@ -118,7 +118,7 @@ The owner authorized publication and deployment; pushing main triggers Vercel.
 See `IMPLEMENTATION_REPORT.md` for the actual verification results and limits.
 
 
-Home water refraction uses a small local WebGL shader over the original photo,
+Home water refraction uses a small local WebGL shader over the transparent official logo,
 with an arrival ripple and pointer/touch ripples. Rendering stops when waves settle
 or Home is hidden; no effect loads on other pages. Reduced-motion and unsupported
-WebGL browsers keep the original photograph. There is no motion toggle.
+WebGL browsers keep the undistorted transparent logo. There is no motion toggle.

@@ -97,3 +97,18 @@ in the transport beside the logo; the same player remains mounted on navigation.
 Final verification: TypeScript, ESLint, 14 unit tests, production build and all
 22 Chromium browser checks passed. Inspected desktop/mobile header screenshots
 and the actual water-refraction output. No live Spotify playback claim is made.
+
+
+## Full-logo Home revision
+
+The owner requested replacing the Home photograph with the full official mark.
+Reused the image-editor transparent PNG already made from the same supplied logo;
+no new logo was generated and the original JPEG remains unchanged. Home displays
+the complete mark on black, with an accessible heading and contained image sizing.
+The soundtrack, navigation, calls to action and slow page wipe remain available.
+The Home-only ripple now samples RGBA and composites transparency onto the site
+background, preventing transparent pixels from appearing as white artifacts.
+
+Validation: TypeScript, ESLint, production build and nine targeted Chromium checks
+passed, including all six pages at six viewport sizes, Home-only ripple and
+reduced motion. Desktop/mobile screenshots and live shader output inspected.

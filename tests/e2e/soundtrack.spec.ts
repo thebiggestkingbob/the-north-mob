@@ -60,9 +60,11 @@ test("blocked Spotify script leaves an in-site native fallback without claiming 
   await expect(page.locator(".sound-panel iframe")).toHaveCount(0);
 });
 
-test("Home ripple refracts the photo, is absent elsewhere and respects reduced motion", async ({ page }) => {
+test("Home ripple animates the full logo, is absent elsewhere and respects reduced motion", async ({ page }) => {
   await mockSpotify(page, false); await page.goto("/");
   await expect(page.getByRole("button", { name: /motion/i })).toHaveCount(0);
+  await expect(page.locator(".home-logo-heading img")).toHaveAttribute("src", "/assets/official-logo-transparent.png");
+  await expect(page.locator(".hero-photo")).toHaveCount(0);
   await expect(page.locator(".water-ripple")).toHaveCount(1);
   await expect(page.locator(".water-ripple")).toHaveAttribute("data-ready", "true");
   await page.mouse.move(1000, 500);
