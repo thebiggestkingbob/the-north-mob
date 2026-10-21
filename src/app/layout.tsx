@@ -3,6 +3,7 @@ import "@fontsource/barlow-condensed/700.css";
 import "@fontsource/barlow-condensed/800.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "./globals.css";
+import { SoundtrackProvider } from "@/components/soundtrack";
 import { SiteShell } from "@/components/site-shell";
 
 const siteUrl = process.env.SITE_URL;
@@ -14,5 +15,5 @@ export const metadata: Metadata = {
   robots: siteUrl ? { index: true, follow: true } : { index: false, follow: false },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><SiteShell>{children}</SiteShell></body></html>;
+  return <html lang="en"><body><SoundtrackProvider><SiteShell>{children}</SiteShell></SoundtrackProvider></body></html>;
 }

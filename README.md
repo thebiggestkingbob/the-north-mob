@@ -2,7 +2,10 @@
 
 Cinematic six-page Next.js website based on the owner-supplied six-panel reference.
 The supplied official logo, original photographs and four named WebP portraits are
-used directly. No stock or generated artist imagery is used. Nothing is deployed.
+used directly. No stock or generated artist imagery is used. Production is hosted at
+https://the-north-mob.vercel.app through the GitHub main branch integration.
+The transparent header logo was made with the image editor from the supplied logo;
+the original JPEG remains unchanged.
 
 ## Local development
 
@@ -33,8 +36,8 @@ binding may require the execution tool's elevated permissions.
 ## Pages and content
 
 - Home `/`: photographic hero, twelve SVG rings, pointer/scroll depth, no video.
-- Music `/music`: HERE 4 BUSINESS composition, two supplied song titles and an
-  opt-in Spotify artist player with a direct platform fallback.
+- Music `/music`: HERE 4 BUSINESS composition, two supplied song titles and a
+  persistent in-page Spotify artist player and verified track controls.
 - The Mob `/the-mob`: four supplied portraits; keyboard accessible, animated
   profiles with query-string deep links and browser back/forward support.
 - Visuals `/visuals`: poster-first in-page official YouTube film, three official
@@ -90,7 +93,10 @@ The app does not retain enquiry payloads. Confirm the delivery provider's data
 handling, booking destination and final POPIA privacy wording before opening the
 form publicly. Current privacy copy describes only the intended enquiry flow.
 
-YouTube and Spotify load only after interaction. Instagram reels use official
+YouTube loads after interaction. Spotify attempts playback on arrival, remembers
+sound-off for the session, and provides visible play/pause/off controls. Audible
+autoplay may be blocked by browsers; users can enter with sound with a tap.
+Spotify account, territory and licensing rules can limit playback to previews. Instagram reels use official
 outbound fallback links. Provider playback/embedding can be restricted; external
 platform permissions are not guaranteed. Do not download social videos. Native
 video uses standard accessible browser controls, poster support and optional
@@ -103,6 +109,6 @@ metadata, real show/ticket data, domain, privacy wording, delivery credentials,
 shared rate limiting and actual delivery with test credentials. Verify third-party
 playback in a normal browser. Rebuild after configuring values consumed by static
 pages, then repeat checks. Obtain explicit owner authorization before deploying.
-No hosting project, public deployment or automatic deploy workflow was created.
+The owner authorized publication and deployment; pushing main triggers Vercel.
 
 See `IMPLEMENTATION_REPORT.md` for the actual verification results and limits.

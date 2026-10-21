@@ -1,3 +1,4 @@
+export const spotifyArtistUri = "spotify:artist:0iZ4kkTa0bDsMz9Qgrr0zx";
 export const links = {
   spotify: "https://open.spotify.com/artist/0iZ4kkTa0bDsMz9Qgrr0zx",
   youtube: "https://youtube.com/@thenorthmob",
@@ -14,7 +15,11 @@ export const artists = [
 
 // Supplied Spotify biography is artist-authored. No invented tracklist or dates.
 export const collectiveBio = "The North Mob is not a crew — it’s culture. A relentless collective movement of free creatives functioning at the peak of their individual artistry, unified by sound, vision, and lifestyle. Rooted in street authenticity but engineered for global impact.";
-export const songs = ["Camp Chair", "Maatla Thata (feat. Lacabra)"] as const;
+// Track destinations verified on their public Spotify pages; no audio is downloaded.
+export const songs = [
+  { title: "Camp Chair", uri: "spotify:track:0qmPvb3cGQpSN5chcx6djF", source: "https://open.spotify.com/track/0qmPvb3cGQpSN5chcx6djF" },
+  { title: "Maatla Thata (feat. Lacabra)", uri: "spotify:track:3HdLERcMc38Yq5UDnCFGf3", source: "https://open.spotify.com/track/3HdLERcMc38Yq5UDnCFGf3" },
+] as const;
 export const reels = [
   { url: "https://www.instagram.com/reel/DZega7riPDk/", image: "/assets/group_wide.jpeg" },
   { url: "https://www.instagram.com/reel/Del2jMPiAWz/", image: "/assets/group_close_glasses.jpeg" },

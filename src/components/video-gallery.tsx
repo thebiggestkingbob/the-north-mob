@@ -10,6 +10,7 @@ export function VideoGallery({ nativeVideoUrl, captionsUrl }: { nativeVideoUrl?:
   const trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!open) { dialog.current?.close(); return; }
+    window.dispatchEvent(new Event("northmob:video-open"));
     dialog.current?.showModal();
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";

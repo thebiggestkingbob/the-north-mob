@@ -52,4 +52,18 @@ mock the adapter to check acknowledgements and failures. No real enquiries sent.
 - Rights-cleared original film/captions for native playback, if wanted.
 
 Use npm ci, npm run dev for local review. Build/check instructions are in README.
-No website deployment is authorized or performed.
+The owner subsequently authorized publication and deployment through GitHub main.
+
+
+## Spotify, landing motion and transparent logo update
+
+- Persistent official Spotify Embed API player; Home and Music buttons play in
+  the website, with verified Spotify track IDs for the two existing song titles.
+- Best-effort autoplay, honest blocked/loading/error states, pause/off controls,
+  session sound preference, and automatic pause when opening the film.
+- Home title entrance, breathing rings, moving highlight arc, slow photo motion,
+  pointer/scroll depth, Pause motion and reduced-motion support.
+- Image-editor transparent white PNG replaces the header logo. Original preserved.
+- TypeScript, ESLint, 14 unit tests, production build and 20 browser checks passed
+  including the final logo/layout adjustment. Browser Spotify tests mock the SDK;
+  actual provider playback and universal audible autoplay are not verified.

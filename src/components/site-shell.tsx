@@ -7,9 +7,11 @@ import { useEffect, useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/animation";
 import { pages } from "@/config/pages";
 import { links } from "@/config/content";
+import { SoundToggle, SoundtrackDock, useSoundtrack } from "@/components/soundtrack";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { enabled: soundEnabled } = useSoundtrack();
   const router = useRouter();
   const root = useRef<HTMLDivElement>(null);
   const veil = useRef<HTMLDivElement>(null);
@@ -49,7 +51,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     return () => media.revert();
   }, { scope: root, dependencies: [pathname], revertOnUpdate: true });
 
-  return <div ref={root} className={`site-shell ${pathname === "/" ? "is-home" : ""}`} onClickCapture={(event) => {
+  return <div ref={root} className={`site-shell ${pathname === "/" ? "is-home" : ""} ${soundEnabled ? "has-sound-dock" : ""}`} onClickCapture={(event) => {
     const target = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
     if (!target || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || target.target === "_blank") return;
     const url = new URL(target.href);
@@ -63,8 +65,9 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   }}>
     <a href="#main" className="skip-link">Skip to content</a>
     <header className="site-header">
-      <Link href="/" className="brand" aria-label="THE NORTH MOB — Home"><Image src="/assets/official_logo.jpeg" alt="THE NORTH MOB" width={957} height={960} unoptimized priority /></Link>
+      <Link href="/" className="brand" aria-label="THE NORTH MOB — Home"><Image src="/assets/official-logo-transparent.png" alt="THE NORTH MOB" width={1983} height={793} unoptimized priority /></Link>
       <nav aria-label="Main navigation" className="desktop-nav">{pages.slice(1).map((page) => <Link href={page.path} key={page.path} aria-current={pathname === page.path ? "page" : undefined}>{page.name}</Link>)}</nav>
+      <SoundToggle />
       <button ref={menuButton} type="button" className="menu-toggle" aria-label="Open navigation" aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen(true)}><span /><span /></button>
     </header>
     <dialog id="mobile-menu" ref={menuRef} className="menu-panel" onCancel={() => setMenuOpen(false)} onClose={() => { setMenuOpen(false); menuButton.current?.focus(); }}>
@@ -75,6 +78,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     </dialog>
     {children}
     {pathname !== "/" && <footer className="site-footer"><p className="eyebrow">Pretoria<br />South Africa<br />Trapcardi</p><div className="social-links"><a href={links.instagram} target="_blank" rel="noreferrer">Instagram ↗</a><a href={links.spotify} target="_blank" rel="noreferrer">Spotify ↗</a><a href={links.youtube} target="_blank" rel="noreferrer">YouTube ↗</a></div><Link href="/" className="footer-wordmark">The North Mob</Link></footer>}
+    <SoundtrackDock />
     <div ref={veil} className="transition-veil" style={{ transform: "translateY(-100%)" }} aria-hidden="true"><span>THE<br />NORTH<br />MOB</span></div>
   </div>;
 }

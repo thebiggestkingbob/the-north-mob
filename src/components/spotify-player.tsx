@@ -1,7 +1,12 @@
 "use client";
-import { useState } from "react";
-import { links } from "@/config/content";
+import { songs } from "@/config/content";
+import { ARTIST_URI, SpotifyPlayButton, useSoundtrack } from "@/components/soundtrack";
+
 export function SpotifyPlayer() {
-  const [enabled, setEnabled] = useState(false);
-  return <div className="spotify-block"><h2 className="eyebrow">Listen to THE NORTH MOB</h2>{enabled ? <iframe title="THE NORTH MOB on Spotify" src="https://open.spotify.com/embed/artist/0iZ4kkTa0bDsMz9Qgrr0zx?utm_source=generator&theme=0" width="100%" height="352" allow="encrypted-media; fullscreen; picture-in-picture" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /> : <div className="embed-consent"><p>Sound from the North.</p><button className="button" onClick={() => setEnabled(true)}>Load Spotify player <span>↗</span></button><small>Loading connects to Spotify, which may use cookies.</small></div>}<a className="text-link" href={links.spotify} target="_blank" rel="noreferrer">Open in Spotify ↗</a></div>;
+  const { status } = useSoundtrack();
+  return <div className="spotify-block"><h2 className="eyebrow">Listen here / Spotify</h2><div className="embed-consent"><p>Sound from the North.</p><SpotifyPlayButton uri={ARTIST_URI}>Play the collective <span aria-hidden="true">▷</span></SpotifyPlayButton><small>Music stays with you as you explore. Use the Spotify player to choose a track. {status === "playing" ? "Your soundtrack is playing." : "Your browser may need you to press play inside Spotify."}</small></div></div>;
+}
+
+export function SpotifyTrackList() {
+  return <div className="song-list">{songs.map((song, index) => <SpotifyPlayButton key={song.uri} uri={song.uri} className="song-play"><span className="eyebrow">0{index + 1}</span><span>{song.title}</span><span aria-hidden="true">▷</span></SpotifyPlayButton>)}</div>;
 }
