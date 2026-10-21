@@ -24,14 +24,14 @@ export function HomeParallax() {
       const breathe = hero.querySelector(".ring-breathe");
       const sweep = hero.querySelector(".ring-sweep");
       const ambient = [
-        gsap.fromTo(photo, { scale: 1.015, xPercent: 0 }, { scale: 1.035, xPercent: .7, duration: 16, repeat: -1, yoyo: true, ease: "sine.inOut" }),
+        gsap.fromTo(photo, { scale: 1.015, xPercent: 0 }, { scale: 1.09, xPercent: .7, duration: 16, repeat: -1, yoyo: true, ease: "sine.inOut" }),
         gsap.fromTo(breathe, { scale: .97, opacity: .45 }, { scale: 1.045, opacity: .95, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut" }),
         gsap.to(sweep, { rotation: 360, duration: 24, repeat: -1, ease: "none" }),
       ];
       gsap.to(rings.current, { y: 50, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 1 } });
       const ringX = gsap.quickTo(rings.current, "x", { duration: 1.1, ease: "power2.out" });
       const ringTilt = gsap.quickTo(rings.current, "rotationY", { duration: 1.1 });
-      const photoX = gsap.quickTo(hero.querySelector(".home-logo-heading"), "x", { duration: 1.4, ease: "power2.out" });
+      const photoX = gsap.quickTo(hero.querySelector(".hero-photo"), "x", { duration: 1.4, ease: "power2.out" });
       const move = (event: PointerEvent) => {
         if (event.pointerType === "touch") return;
         const depth = event.clientX / innerWidth - .5;

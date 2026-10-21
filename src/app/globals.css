@@ -45,8 +45,3 @@
 @media(max-width:400px){.site-header{gap:10px}.header-sound{padding-left:8px}.sound-caption{font-size:8px;letter-spacing:0}.sound-transport{gap:6px}.sound-expand{width:22px}.transport-icon{display:none}.sound-panel{left:-148px;width:280px;padding:12px}.song-play{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.ring-sweep,.water-ripple{display:none}.sound-bars i{animation:none!important}}
 @media(max-width:360px){.brand{width:104px}.sound-panel{left:-124px}}
-
-/* Home is now led by the full official mark, replacing the photograph/title. */
-.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
-.home-logo-page{align-items:center;justify-content:center;background:var(--black)}.home-logo-page:before{display:none}.home-logo-heading{position:relative;width:min(1280px,100%);height:clamp(230px,42vw,560px);flex-shrink:0;z-index:2;margin:0}.home-logo-heading img{object-fit:contain;object-position:50% 50%}.home-logo-page .home-rings{opacity:.22}.home-logo-page .home-bottom{text-align:left}
-@media(max-width:600px){.home-logo-heading{width:100%;height:240px}.home-logo-page{padding-top:100px;padding-bottom:180px}.home-logo-page .home-rings{top:44%}}

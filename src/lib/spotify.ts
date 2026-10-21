@@ -1,44 +1,48 @@
 "use client";
 
-export type SpotifyPlaybackEvent = { data: { isPaused: boolean; isBuffering: boolean; position: number; duration: number; playingURI?: string } };
+export type SpotifyPlaybackEvent = { data: { isPaused?: boolean; isBuffering?: boolean; position?: number; duration?: number; playingURI?: string } };
+export type SpotifyEvent = "ready" | "loading" | "native" | "playback_started" | "playback_update";
 export type SpotifyController = {
   play(): void;
   pause(): void;
   loadUri(uri: string): void;
   destroy(): void;
-  addListener(event: "ready" | "playback_started" | "playback_update", callback: (event: SpotifyPlaybackEvent) => void): void;
+  addListener(event: SpotifyEvent, callback: (event: SpotifyPlaybackEvent) => void): void;
 };
-export type SpotifyIframeApi = {
-  createController(element: HTMLElement, options: { uri: string; width: string; height: number; theme?: "dark" }, callback: (controller: SpotifyController) => void): void;
-};
-declare global {
-  interface Window { onSpotifyIframeApiReady?: (api: SpotifyIframeApi) => void; }
-}
-let api: SpotifyIframeApi | undefined;
-let loading: Promise<SpotifyIframeApi> | undefined;
+export const SPOTIFY_CHANNEL = "northmob:spotify:v1";
+const validUri = (uri: string) => /^spotify:(artist|track):[a-zA-Z0-9]{22}$/.test(uri);
 
-// Spotify's documented Embed API. No account tokens or scraped audio URLs.
-export function loadSpotifyApi(): Promise<SpotifyIframeApi> {
-  if (api) return Promise.resolve(api);
-  if (loading) return loading;
-  loading = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://open.spotify.com/embed/iframe-api/v1";
-    script.async = true;
-    const timeout = setTimeout(() => {
-      script.remove(); loading = undefined; reject(new Error("Spotify connection timed out"));
-    }, 12000);
-    window.onSpotifyIframeApiReady = (readyApi) => {
-      api = readyApi; clearTimeout(timeout); resolve(readyApi);
-    };
-    script.onerror = () => { clearTimeout(timeout); script.remove(); loading = undefined; reject(new Error("Spotify could not connect")); };
-    document.body.appendChild(script);
-  });
-  return loading;
-}
-
-export function spotifyEmbedUrl(uri: string) {
-  const match = /^spotify:(artist|track):([a-zA-Z0-9]{22})$/.exec(uri);
-  if (!match) throw new Error("Unsupported Spotify content");
-  return `https://open.spotify.com/embed/${match[1]}/${match[2]}?theme=0`;
+// Keep Spotify's third-party SDK inside a dedicated local frame. The main app
+// retains its CSP without unsafe-eval; the frame has no app data or credentials.
+export function createSpotifyController(element: HTMLElement, uri: string): SpotifyController {
+  if (!validUri(uri)) throw new Error("Unsupported Spotify content");
+  const iframe = document.createElement("iframe");
+  iframe.title = "THE NORTH MOB Spotify player";
+  iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+  iframe.referrerPolicy = "strict-origin-when-cross-origin";
+  iframe.src = `/spotify-player?uri=${encodeURIComponent(uri)}`;
+  iframe.width = "100%"; iframe.height = "80";
+  const listeners = new Map<SpotifyEvent, Set<(event: SpotifyPlaybackEvent) => void>>();
+  let selected = uri;
+  let booted = false;
+  let destroyed = false;
+  const send = (action: string) => {
+    if (!destroyed && booted) iframe.contentWindow?.postMessage({ channel: SPOTIFY_CHANNEL, action, uri: selected }, location.origin);
+  };
+  const receive = (event: MessageEvent) => {
+    if (destroyed || event.origin !== location.origin || event.source !== iframe.contentWindow || event.data?.channel !== SPOTIFY_CHANNEL) return;
+    const message = event.data;
+    if (message.type === "boot") { booted = true; send("load"); return; }
+    if (message.uri !== selected || !listeners.has(message.type)) return;
+    const data = message.data && typeof message.data === "object" ? message.data : {};
+    listeners.get(message.type)?.forEach(listener => listener({ data }));
+  };
+  window.addEventListener("message", receive);
+  element.replaceChildren(iframe);
+  return {
+    play: () => send("play"), pause: () => send("pause"),
+    loadUri(next) { if (!validUri(next)) throw new Error("Unsupported Spotify content"); selected = next; send("load"); },
+    addListener(event, callback) { if (!listeners.has(event)) listeners.set(event, new Set()); listeners.get(event)!.add(callback); },
+    destroy() { destroyed = true; window.removeEventListener("message", receive); listeners.clear(); iframe.remove(); },
+  };
 }

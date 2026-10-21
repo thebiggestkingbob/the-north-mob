@@ -27,10 +27,7 @@ void main(){
     float wave=sin(band*76.0)*exp(-band*band/0.012)*alive*drops[i].w;
     shift+=normalize(delta+vec2(0.0001))*wave*0.016/vec2(aspect,1.0);
   }
-  vec2 sampleUV=(uv+shift)*crop+offset;
-  vec4 color=texture2D(photo,clamp(sampleUV,0.001,0.999));
-  float inside=step(0.0,sampleUV.x)*step(sampleUV.x,1.0)*step(0.0,sampleUV.y)*step(sampleUV.y,1.0);
-  gl_FragColor=vec4(mix(vec3(0.0314,0.0353,0.0353),color.rgb,color.a*inside),1.0);
+  gl_FragColor=texture2D(photo,clamp((uv+shift)*crop+offset,0.001,0.999));
 }
 `;
 
@@ -130,13 +127,13 @@ export function WaterRipple() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
         const resize = () => {
           const width = surface.clientWidth, height = surface.clientHeight;
           const ratio = Math.min(devicePixelRatio || 1, 1.5, 1600 / width);
           canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
           gl.viewport(0, 0, canvas.width, canvas.height);
-          const fit = (getComputedStyle(image).objectFit === "contain" ? Math.min : Math.max)(width / image.naturalWidth, height / image.naturalHeight);
+          const fit = Math.max(width / image.naturalWidth, height / image.naturalHeight);
           const cropX = width / (image.naturalWidth * fit), cropY = height / (image.naturalHeight * fit);
           const position = getComputedStyle(image).objectPosition.split(" ").map(value => parseFloat(value) / 100);
           gl.uniform2f(gl.getUniformLocation(program, "crop"), cropX, cropY);

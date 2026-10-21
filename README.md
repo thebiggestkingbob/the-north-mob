@@ -35,7 +35,7 @@ binding may require the execution tool's elevated permissions.
 
 ## Pages and content
 
-- Home `/`: full transparent official logo on black, twelve SVG rings, pointer/scroll depth, Home-only water refraction, no video.
+- Home `/`: original photographic hero and oversized title, twelve SVG rings, pointer/scroll depth, Home-only water refraction, no video.
 - Music `/music`: HERE 4 BUSINESS composition, two supplied song titles and a
   persistent in-page Spotify artist player and verified track controls.
 - The Mob `/the-mob`: four supplied portraits; keyboard accessible, animated
@@ -97,8 +97,9 @@ form publicly. Current privacy copy describes only the intended enquiry flow.
 YouTube loads after interaction. Spotify attempts playback on arrival, remembers
 sound-off for the session, and provides compact play/pause controls next to the logo, with native
 Spotify controls in an accessible dropdown. The initial selection is Camp Chair.
-The SDK requests play as soon as the embed is ready and retries on the first
-page interaction when needed. Audible
+The SDK requests play as soon as the embed is ready. Blocked autoplay opens the
+native controls; manual play also opens them. Repeated startup clicks do not
+restart initialization. Track changes wait for a fresh controller to be ready. Audible
 autoplay may be blocked by browsers; users can enter with sound with a tap.
 Spotify account, territory and licensing rules can limit playback to previews. Instagram reels use official
 outbound fallback links. Provider playback/embedding can be restricted; external
@@ -118,7 +119,16 @@ The owner authorized publication and deployment; pushing main triggers Vercel.
 See `IMPLEMENTATION_REPORT.md` for the actual verification results and limits.
 
 
-Home water refraction uses a small local WebGL shader over the transparent official logo,
+Home water refraction uses a small local WebGL shader over the original photograph,
 with an arrival ripple and pointer/touch ripples. Rendering stops when waves settle
 or Home is hidden; no effect loads on other pages. Reduced-motion and unsupported
-WebGL browsers keep the undistorted transparent logo. There is no motion toggle.
+WebGL browsers keep the original photograph. There is no motion toggle.
+
+
+Spotify runs in `/spotify-player`, a dedicated same-origin HTML frame with its own
+vendor script policy. The main application does not allow production unsafe-eval.
+Messages are checked against both the frame window and exact origin. Native
+fallback stays inside that single frame and does not claim confirmed playback.
+Only explicit reconnect/off actions remount the outer frame. Automated tests
+simulate SDK delays, CDN loading, autoplay refusal, native fallback and recovery;
+actual Spotify audio remains a separate browser/provider check.

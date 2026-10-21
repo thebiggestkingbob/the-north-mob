@@ -112,3 +112,52 @@ background, preventing transparent pixels from appearing as white artifacts.
 Validation: TypeScript, ESLint, production build and nine targeted Chromium checks
 passed, including all six pages at six viewport sizes, Home-only ripple and
 reduced motion. Desktop/mobile screenshots and live shader output inspected.
+
+
+## Spotify consistency repair and photographic Home restoration
+
+Restored Home, its photo motion and water shader to the photographic version at
+48c6780. The transparent header logo and slow page transition remain.
+
+Confirmed defects in the previous implementation:
+- Every Play click before initialization could increment the attempt counter,
+  destroying/restarting a loading player.
+- A controller could receive Play before its ready event; track selection also
+  requested Play immediately after loading a new URI.
+- Blocked autoplay and API failure left the useful native controls hidden.
+- The previous simulated vendor script never exercised an eval-dependent SDK
+  bootstrap under the actual production security policy.
+
+Repaired the lifecycle so loading clicks update playback intent without remounting.
+A track change gets a fresh inner controller; only its ready event triggers Play.
+Stale callbacks from prior selections are ignored. Navigation preserves the outer
+frame, the SDK loader and playback. Explicit Off unloads all nested playback.
+
+Moved vendor script loading into a dedicated same-origin frame with a scoped
+compatibility policy (including eval). The main application retains its stricter
+production policy. Messages require both exact origin and the expected window,
+with validated Spotify artist/track URIs. The frame has no application payloads
+or credentials passed to it. This addresses a possible production CSP incompatibility;
+actual live SDK execution is not established by the simulated regression test.
+
+Blocked playback opens the native controls after five seconds. Manual music
+actions open them immediately. SDK failure produces one native fallback in the
+same frame, with explicit reconnect. Late SDK readiness cannot replace a native
+player that may already be in use. Confirmed playing state still comes only from
+Spotify events; native fallback reports that native controls are needed.
+
+Verification uses a CDN fixture that actually executes an eval-dependent script
+in the player frame, plus delayed readiness, rapid repeated Play, rapid track
+selection, blocked autoplay, native fallback, Off/On, native resume and forged
+message checks. These are integration tests, not proof of audible Spotify playback.
+This environment's network policy excludes Spotify, so real account/territory/EME
+playback must still be checked in an ordinary browser.
+
+The pause/session regression was also corrected: persisting the session's Off
+preference no longer unloads the controlled player on Pause. Native Resume remains
+available; only explicit Off (or an uncontrollable native fallback being stopped)
+unloads playback.
+
+Final verification: production build, TypeScript, ESLint, 14 unit tests and all
+29 browser checks passed. Inspected the restored photographic Home screenshot.
+Real Spotify audio remains unverified due to the environment network restriction.

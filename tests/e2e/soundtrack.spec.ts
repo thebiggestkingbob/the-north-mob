@@ -51,20 +51,19 @@ test("blocked Spotify script leaves an in-site native fallback without claiming 
   await mockSpotify(page, false);
   await page.route("https://open.spotify.com/embed/iframe-api/v1", route => route.abort());
   await page.goto("/");
-  await page.getByRole("button", { name: "Show Spotify player" }).click();
-  await expect(page.getByTitle("THE NORTH MOB Spotify fallback player")).toBeVisible();
-  await expect(page.locator(".spotify-mount")).not.toBeVisible();
+  await expect(page.frameLocator(".spotify-mount > iframe").getByTitle("THE NORTH MOB Spotify native player")).toBeVisible();
+  await expect(page.locator(".spotify-mount > iframe")).toHaveCount(1);
   await expect(page.locator(".site-header").getByRole("button", { name: "Play soundtrack", exact: true })).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByRole("button", { name: "Reconnect Spotify", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Turn sound off" }).click();
   await expect(page.locator(".sound-panel iframe")).toHaveCount(0);
 });
 
-test("Home ripple animates the full logo, is absent elsewhere and respects reduced motion", async ({ page }) => {
+test("Home ripple refracts the photograph, is absent elsewhere and respects reduced motion", async ({ page }) => {
   await mockSpotify(page, false); await page.goto("/");
   await expect(page.getByRole("button", { name: /motion/i })).toHaveCount(0);
-  await expect(page.locator(".home-logo-heading img")).toHaveAttribute("src", "/assets/official-logo-transparent.png");
-  await expect(page.locator(".hero-photo")).toHaveCount(0);
+  await expect(page.locator(".hero-photo img")).toHaveAttribute("alt", "THE NORTH MOB photographed together in Pretoria");
+  await expect(page.locator(".home-logo-heading")).toHaveCount(0);
   await expect(page.locator(".water-ripple")).toHaveCount(1);
   await expect(page.locator(".water-ripple")).toHaveAttribute("data-ready", "true");
   await page.mouse.move(1000, 500);
@@ -95,4 +94,82 @@ test("the header dropdown closes with Escape and returns focus", async ({ page }
   await button.click(); await expect(button).toHaveAttribute("aria-expanded", "true");
   await page.keyboard.press("Escape");
   await expect(button).toBeFocused(); await expect(button).toHaveAttribute("aria-expanded", "false");
+});
+
+
+test("slow startup and repeated play clicks keep one player and wait for readiness", async ({ page }) => {
+  await mockSpotify(page, true, -1); await page.goto("/");
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyCreates: number }).__spotifyCreates)).toBe(1);
+  for (let i = 0; i < 4; i++) await page.locator(".sound-transport").click();
+  await page.evaluate(() => (window as unknown as { __spotifyReleaseReady: () => void }).__spotifyReleaseReady());
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true", { timeout: 8000 });
+  const counts = await page.evaluate(() => {
+    const state = window as unknown as { __spotifyCreates: number; __spotifyPrematurePlays: number };
+    return [state.__spotifyCreates, state.__spotifyPrematurePlays];
+  });
+  expect(counts).toEqual([1, 0]);
+});
+
+test("vendor eval is isolated and the main app keeps its production CSP", async ({ page }) => {
+  await mockSpotify(page, true); const response = await page.goto("/");
+  expect(response!.headers()["content-security-policy"]).not.toContain("unsafe-eval");
+  const bridge = await page.request.get("/spotify-player?uri=spotify:track:0qmPvb3cGQpSN5chcx6djF");
+  expect(bridge.headers()["content-security-policy"]).toContain("unsafe-eval");
+  expect(bridge.headers()["content-security-policy"]).toContain("frame-ancestors 'self'");
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyEvalWorks: boolean }).__spotifyEvalWorks)).toBe(true);
+  expect((await page.request.get("/spotify-player?uri=invalid")).status()).toBe(400);
+});
+
+test("blocked autoplay exposes native controls and manual activation recovers", async ({ page }) => {
+  await mockSpotify(page, false); await page.goto("/");
+  await expect(page.locator(".sound-panel")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
+  await page.evaluate(() => { (window as unknown as { __spotifyAllowed: boolean }).__spotifyAllowed = true; });
+  await page.locator(".sound-transport").click();
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("rapid track selection plays only the final track after its controller is ready", async ({ page }) => {
+  await mockSpotify(page, true, 600); await page.goto("/music");
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: /Maatla Thata/ }).click();
+  await page.getByRole("button", { name: /Camp Chair/ }).click();
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate(() => (window as unknown as { __spotifyUri: string }).__spotifyUri)).toBe("spotify:track:0qmPvb3cGQpSN5chcx6djF");
+  expect(await page.evaluate(() => (window as unknown as { __spotifyPrematurePlays: number }).__spotifyPrematurePlays)).toBe(0);
+});
+
+
+test("off then on reconnects, and native pause and resume stay consistent", async ({ page }) => {
+  await mockSpotify(page, true); await page.goto("/");
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Show Spotify player" }).click();
+  await page.getByRole("button", { name: "Turn sound off" }).click();
+  await page.locator(".sound-transport").click();
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyCreates: number }).__spotifyCreates)).toBe(2);
+  await page.locator(".sound-transport").click();
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyPauses: number }).__spotifyPauses)).toBeGreaterThan(0);
+  await page.evaluate(() => (window as unknown as { __spotifyNativePlay: () => void }).__spotifyNativePlay());
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("messages from another window cannot forge Spotify playback", async ({ page }) => {
+  await mockSpotify(page, false); await page.goto("/");
+  await page.evaluate(() => window.postMessage({ channel: "northmob:spotify:v1", type: "playback_started", uri: "spotify:track:0qmPvb3cGQpSN5chcx6djF", data: {} }, location.origin));
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
+});
+
+
+test("pausing the initial autoplay player keeps native resume available", async ({ page }) => {
+  await mockSpotify(page, true); await page.goto("/");
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  await page.locator(".sound-transport").click();
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator(".spotify-mount > iframe")).toHaveCount(1);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyPauses: number }).__spotifyPauses)).toBeGreaterThan(0);
+  await page.evaluate(() => (window as unknown as { __spotifyNativePlay: () => void }).__spotifyNativePlay());
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate(() => (window as unknown as { __spotifyCreates: number }).__spotifyCreates)).toBe(1);
 });
