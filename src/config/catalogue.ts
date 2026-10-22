@@ -2,7 +2,7 @@ export type CatalogueTrack = { id: string; title: string; artist: string; credit
 export const album = {
   id: "here-4-business", title: "HERE 4 BUSINESS (with Carlow Picasso)",
   uri: "spotify:album:3f1HZdfe4bPLqQOu5sfmvO", source: "https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO",
-  cover: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02a23ec9200646da6377154a8e",
+  cover: "/assets/h4b-album-cover.jpg",
   artist: "THE NORTHMOB.", type: "Album", year: "2026",
 } as const;
 const group = "THE NORTHMOB., Trophy, Orieblxckmaestro, MajorIcey, Carlow Picasso";

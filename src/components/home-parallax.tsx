@@ -28,7 +28,9 @@ export function HomeParallax() {
         gsap.fromTo(breathe, { scale: .97, opacity: .45 }, { scale: 1.045, opacity: .95, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut" }),
         gsap.to(sweep, { rotation: 360, duration: 24, repeat: -1, ease: "none" }),
       ];
-      gsap.to(rings.current, { y: 50, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 1 } });
+      gsap.to(rings.current, { y: 55, rotate: 8, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 1 } });
+      // Reuse the original scrubbed GSAP depth on the full-cover photograph.
+      gsap.fromTo(hero.querySelector(".hero-photo"), { y: -24 }, { y: 24, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 1 } });
       const ringX = gsap.quickTo(rings.current, "x", { duration: 1.1, ease: "power2.out" });
       const ringTilt = gsap.quickTo(rings.current, "rotationY", { duration: 1.1 });
       const photoX = gsap.quickTo(hero.querySelector(".hero-photo"), "x", { duration: 1.4, ease: "power2.out" });

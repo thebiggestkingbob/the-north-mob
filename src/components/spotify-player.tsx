@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
 import { album } from "@/config/catalogue";
 import { SpotifyPlayButton, useSoundtrack } from "@/components/soundtrack";
 
@@ -22,6 +21,5 @@ export function SpotifyTrackList({ additional = false }: { additional?: boolean 
 
 
 export function AlbumArtwork() {
-  const [failed, setFailed] = useState(false);
-  return failed ? <div className="artwork-unavailable"><p>Official cover unavailable.</p><a href={album.source} className="text-link" target="_blank" rel="noreferrer">View release on Spotify ↗</a></div> : <Image src={album.cover} alt={`${album.title} — official cover artwork`} unoptimized fill priority sizes="(max-width: 700px) 100vw, 48vw" onError={() => setFailed(true)} />;
+  return <Image src={album.cover} alt={`${album.title} — official cover artwork`} style={{ objectFit: "contain" }} fill priority quality={90} sizes="(max-width: 600px) 100vw, 48vw" />;
 }

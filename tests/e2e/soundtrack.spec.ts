@@ -63,9 +63,16 @@ test("water effects are absent and other Home motion remains", async ({ page }) 
   await mockSpotify(page); await page.goto("/");
   await expect(page.locator(".hero-photo img")).toBeVisible();
   await expect(page.locator(".hero-photo img")).toHaveAttribute("src", /homepage-cover/);
-  await expect(page.locator(".hero-photo img")).toHaveCSS("object-fit", "contain");
+  await expect(page.locator(".hero-photo img")).toHaveCSS("object-fit", "cover");
   await expect(page.locator("canvas,.water-ripple")).toHaveCount(0);
   await expect(page.locator(".home-rings circle")).toHaveCount(12);
+  const photo = page.locator(".hero-photo");
+  const before = await photo.evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42);
+  await page.evaluate(() => window.scrollTo(0, 180));
+  await expect.poll(() => photo.evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42)).toBeGreaterThan(before + 1);
+  const bounds = await photo.boundingBox();
+  expect(bounds?.x).toBeLessThanOrEqual(0);
+  expect(bounds?.width).toBeGreaterThanOrEqual(1280);
 });
 
 test("the full brand wipe stays visible before revealing the next page", async ({ page }) => {
@@ -182,7 +189,7 @@ test("Music shows all eleven album tracks and explicit supported fallbacks", asy
   await mockSpotify(page); await page.goto("/music");
   await expect(page.locator(".music-lower > div:first-child .catalogue-row")).toHaveCount(11);
   await expect(page.locator(".spotify-block .catalogue-row")).toHaveCount(2);
-  await expect(page.locator(".release-photo img")).toHaveAttribute("src", /a23ec9200646da6377154a8e/);
+  await expect(page.locator(".release-photo img")).toHaveAttribute("src", /h4b-album-cover/);
   await page.getByRole("button", { name: /peke , fosholo/ }).click();
   await expect(page.locator(".spotify-mount > iframe")).toHaveAttribute("height", "352");
   await expect(page.locator(".spotify-mount > iframe")).toHaveCount(1);
@@ -211,11 +218,15 @@ test("verified ID enrichment enables a direct action without duplicating catalog
   await expect(page.locator(".music-lower > div:first-child .catalogue-row")).toHaveCount(11);
 });
 
-test("unavailable external artwork has an honest fixed-size fallback", async ({ page }) => {
+test("local featured artwork is sharp and has no Spotify navigation", async ({ page }) => {
   await mockSpotify(page);
-  await page.route("https://image-cdn-ak.spotifycdn.com/**", route => route.abort());
   await page.goto("/music");
-  await expect(page.getByText("Official cover unavailable.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "View release on Spotify" })).toHaveAttribute("href", "https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO");
-  await expect(page.locator(".release-photo")).toBeVisible();
+  const artwork = page.locator(".release-photo img");
+  await expect(artwork).toBeVisible();
+  await expect(artwork).toHaveAttribute("src", /h4b-album-cover/);
+  await expect.poll(() => artwork.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  await expect(page.locator(".release-photo a, .release-photo button")).toHaveCount(0);
+  await artwork.click();
+  await expect(page).toHaveURL(/\/music$/);
+  await expect(page.locator(".catalogue-row")).toHaveCount(13);
 });

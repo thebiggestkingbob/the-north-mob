@@ -54,11 +54,8 @@
 
 @media(max-width:750px){.native-playback{left:-114px;right:auto}.sound-enable{font-size:0}.sound-enable:after{content:"▷";font-size:14px}.is-playing .sound-enable:after{content:"Ⅱ"}}
 
-/* Preserve all four subjects in the supplied portrait hero photograph. */
-.hero-photo{mask-image:none}.hero-photo img{object-fit:contain;object-position:50% 50%}
-@media(min-width:601px){.hero-photo{left:35%}}
-@media(max-width:600px){.hero-photo{left:0}}
+/* Full-cover hero with vertical overscan for the recovered scroll parallax. */
+.hero-photo{inset:-36px 0;mask-image:none}.hero-photo img{object-fit:cover;object-position:50% 45%}
 
 @media(max-width:750px){.home-location{top:105px}}
-.artwork-unavailable{position:absolute;inset:0;display:grid;align-content:center;justify-items:center;gap:16px;background:#101111;padding:30px;text-align:center}.artwork-unavailable p{font-size:12px}
-@media(max-width:600px){.home-hero{min-height:900px}.hero-photo{top:380px;bottom:160px}}
+@media(max-width:600px){.hero-photo img{object-position:50% 58%}}

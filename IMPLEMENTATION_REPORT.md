@@ -222,3 +222,20 @@ IDs. Remaining entries use supported Spotify album/release listening unless the
 public metadata enrichment validates their direct IDs. No exhaustive catalogue,
 real audible Spotify playback, actual Safari/iOS playback or full-song access
 claim is made. No standalone licensed audio files were supplied.
+
+## Homepage hero restoration and supplied H4B artwork correction
+
+This correction supersedes the previous contained/stacked hero and remote-artwork implementation.
+
+- The approved `homepage-cover.jpg` now fills the entire hero behind the existing title, with `object-fit: cover`, responsive focal positioning and overscan to prevent gaps during parallax. Existing title typography, placement, navigation and player are retained.
+- Recovered the original GSAP ScrollTrigger technique from commit `617faec`: scrubbed ring translation (55px) and rotation (8 degrees), plus pointer depth. Applied the same scrub technique to the photographic layer (−24px to +24px); retained the approved ambient motion and reduced-motion/hidden-tab handling. The original initial implementation animated the rings rather than the photograph; this extends its technique to the requested background layer.
+- Extracted the exact supplied 2048×2560 JPG to `public/assets/h4b-album-cover.jpg`. Next Image supplies responsive optimized images at quality 90. The complete portrait artwork fits within the existing featured-cover region, preserving its text and layout.
+- Featured artwork has no anchor, click handler, redirect or Spotify-linked error fallback. Catalogue links, album selection and global player are preserved.
+- No water, ripple, shader or canvas effects are restored.
+- Screenshots: `work/screenshots/1440-home.png` and `work/screenshots/375-home.png`; Music previews are alongside them. Screenshots use reduced motion and a mocked Spotify provider, not live audio.
+
+Modified files: `src/app/globals.css`, `src/components/home-parallax.tsx`, `src/components/spotify-player.tsx`, `src/config/catalogue.ts`, `public/assets/h4b-album-cover.jpg`, `tests/e2e/soundtrack.spec.ts`, and this report.
+
+Validation: TypeScript, ESLint, 17 unit tests and production build pass. Browser verification covers six routes at 320/375/768/1024/1440/1920px, artwork loading/non-navigation, catalogue/player lifecycle, navigation, accessibility and screenshots. Live Spotify audio is not verified by the mocked provider checks; existing browser/account restrictions still apply.
+
+Final browser results: all 34 tests passed (1.5 minutes), followed by a passing targeted check that scrolling changes the background transform while the full-width layer and absence of water effects remain verified. No browser page errors were observed in the responsive route tests.
