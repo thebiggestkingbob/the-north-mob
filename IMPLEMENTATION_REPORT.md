@@ -239,3 +239,15 @@ Modified files: `src/app/globals.css`, `src/components/home-parallax.tsx`, `src/
 Validation: TypeScript, ESLint, 17 unit tests and production build pass. Browser verification covers six routes at 320/375/768/1024/1440/1920px, artwork loading/non-navigation, catalogue/player lifecycle, navigation, accessibility and screenshots. Live Spotify audio is not verified by the mocked provider checks; existing browser/account restrictions still apply.
 
 Final browser results: all 34 tests passed (1.5 minutes), followed by a passing targeted check that scrolling changes the background transform while the full-width layer and absence of water effects remain verified. No browser page errors were observed in the responsive route tests.
+
+## October 2026 Live content and Business form refinement
+
+- Recorded all seven announced gigs with their exact event names and locations, retaining all three 3 October performances and both 31 October performances in chronological order. No times, ticket prices, links or venue details were added.
+- The existing Live page had no separate past-events presentation. Reused its single event-list layout and existing fourth column for explicit `Past event` / `Upcoming gig` text. On 22 October 2026 this shows five past events and two upcoming gigs. The section heading is `October 2026 gigs` so it does not mislabel the whole list as upcoming. Retained `More dates to be added.` in the existing section-label text area.
+- Status uses the Johannesburg calendar date, with hourly page revalidation so dates are not frozen to the deployment day. Hero imagery, spacing, row styles, animations and responsive CSS are unchanged.
+- Removed the Business form container border and the delivery notice's decorative divider. Container background is transparent; layout, field styling, accessible focus indicators, validation and submission code are unchanged.
+- The delivery service remains unconfigured: the existing truthful notice and disabled submit button are preserved. Actual enquiry delivery requires the previously documented delivery-service connection; this styling task does not enable it. Unit tests cover successful acknowledged adapter delivery as well as validation/failure paths.
+
+Modified files: `src/config/content.ts`, `src/app/live/page.tsx`, `src/app/globals.css`, `tests/e2e/site.spec.ts`, and this report.
+
+Validation passed: TypeScript, ESLint, all 17 unit tests, production build, and all 16 site browser tests. Browser checks include all six pages at six widths, exact gig names/dates/venues/statuses, absence of invented ticket links, form keyboard focus/native validation, the unconfigured delivery boundary, navigation, and refreshed desktop/mobile screenshots. Visual review confirmed the existing Live layout and border-free form container.

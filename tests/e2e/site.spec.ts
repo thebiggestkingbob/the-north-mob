@@ -26,3 +26,46 @@ test("mobile menu is keyboard accessible", async ({ page }) => { await page.setV
 test("reduced motion retains content and navigation", async ({ page }) => { await page.emulateMedia({ reducedMotion: "reduce" }); await page.goto("/"); await page.getByRole("link", { name: /Explore the Mob/ }).click(); await expect(page).toHaveURL(/the-mob$/); await expect(page.getByRole("button", { name: "Open Trophy profile" })).toBeVisible(); });
 test("unconfigured form never claims delivery", async ({ page }) => { await page.goto("/business"); await expect(page.getByRole("button", { name: "Send message" })).toBeDisabled(); await expect(page.getByText("Enquiries are not open through this form yet.", { exact: false })).toBeVisible(); const response = await page.request.post("/api/enquiry", { data: { name: "Browser Test", email: "test@example.com", type: "Bookings", message: "A test enquiry for availability.", consent: true, website: "" } }); expect(response.status()).toBe(503); expect(await response.json()).not.toHaveProperty("delivered", true); });
 test("capture desktop and mobile previews", async ({ page }) => { await page.emulateMedia({ reducedMotion: "reduce" }); for (const width of [1440, 375]) { await page.setViewportSize({ width, height: width === 375 ? 812 : 1000 }); for (const [route] of routes) { await page.goto(route); await page.screenshot({ path: `work/screenshots/${width}-${route === "/" ? "home" : route.slice(1)}.png`, fullPage: true }); } } });
+
+test("October gigs retain every announcement and distinguish past from upcoming", async ({ page }) => {
+  await page.goto("/live");
+  const rows = page.locator(".event-list li");
+  await expect(rows).toHaveCount(7);
+  const expected = [
+    ["2026-10-02", "H4B Pop Up", "Ga-Rankuwa, Zone 4"],
+    ["2026-10-03", "Homecoming", "Pretoria Botanical Gardens"],
+    ["2026-10-03", "Mr Bully Tour", "Orange Farm"],
+    ["2026-10-03", "Splash Party", "Mimakau Community Hall"],
+    ["2026-10-10", "Back to the City Festival", "Mary Fitzgerald Square"],
+    ["2026-10-31", "Young Durag Mansion Party", "Winchester Hills"],
+    ["2026-10-31", "Tazer Bouy Bday Celebration", "Shalas Cafe"],
+  ];
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Johannesburg" });
+  for (const [index, [date, name, venue]] of expected.entries()) {
+    const row = rows.nth(index);
+    await expect(row.locator("time")).toHaveAttribute("datetime", date);
+    await expect(row).toContainText(name);
+    await expect(row).toContainText(venue);
+    await expect(row).toContainText(date < today ? "Past event" : "Upcoming gig");
+  }
+  await expect(rows.locator("a")).toHaveCount(0);
+  await expect(page.getByText("More dates to be added.")).toBeVisible();
+});
+
+test("Business form blends into the page and retains accessible controls", async ({ page }) => {
+  await page.goto("/business");
+  const form = page.locator(".contact-form");
+  await expect(form).toHaveCSS("border-top-width", "0px");
+  await expect(form).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  const name = page.getByRole("textbox", { name: "Name", exact: true });
+  await name.focus();
+  await page.keyboard.press("Tab");
+  const email = page.getByRole("textbox", { name: "Email", exact: true });
+  await expect(email).toBeFocused();
+  await expect(email).toHaveCSS("outline-style", "solid");
+  await email.fill("invalid-email");
+  expect(await email.evaluate((input: HTMLInputElement) => input.validity.typeMismatch)).toBeTruthy();
+  await expect(page.getByRole("combobox", { name: "Enquiry type" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Message", exact: true })).toBeVisible();
+  await expect(page.getByRole("checkbox")).toBeVisible();
+});

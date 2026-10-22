@@ -21,5 +21,13 @@ export const reels = [
   { url: "https://www.instagram.com/reel/DcSskUDiPHs/", image: "/assets/group_close_both_hands.jpeg" },
 ] as const;
 
-export type LiveEvent = { date: string; city: string; venue: string; ticketUrl?: string };
-export const events: LiveEvent[] = [];
+export type LiveEvent = { date: string; name: string; venue: string; ticketUrl?: string };
+export const events: LiveEvent[] = [
+  { date: "2026-10-02", name: "H4B Pop Up", venue: "Ga-Rankuwa, Zone 4" },
+  { date: "2026-10-03", name: "Homecoming", venue: "Pretoria Botanical Gardens" },
+  { date: "2026-10-03", name: "Mr Bully Tour", venue: "Orange Farm" },
+  { date: "2026-10-03", name: "Splash Party", venue: "Mimakau Community Hall" },
+  { date: "2026-10-10", name: "Back to the City Festival", venue: "Mary Fitzgerald Square" },
+  { date: "2026-10-31", name: "Young Durag Mansion Party", venue: "Winchester Hills" },
+  { date: "2026-10-31", name: "Tazer Bouy Bday Celebration", venue: "Shalas Cafe" },
+];
