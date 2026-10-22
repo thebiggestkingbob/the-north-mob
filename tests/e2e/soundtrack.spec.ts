@@ -230,3 +230,34 @@ test("local featured artwork is sharp and has no Spotify navigation", async ({ p
   await expect(page).toHaveURL(/\/music$/);
   await expect(page.locator(".catalogue-row")).toHaveCount(13);
 });
+
+test("mobile transport has readable status and full touch targets", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 812 });
+  await mockSpotify(page, false); await page.goto("/");
+  await expect(page.locator(".track-meta [role=status]")).toHaveText("Tap to enable sound", { timeout: 8000 });
+  for (const control of ["Previous track", "Enable Sound", "Next track", "Turn sound off"]) {
+    const bounds = await page.getByRole("button", { name: control, exact: true }).first().boundingBox();
+    expect(bounds?.width).toBeGreaterThanOrEqual(44);
+    expect(bounds?.height).toBeGreaterThanOrEqual(44);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("off and on restores the current position without reloading the page", async ({ page }) => {
+  await mockSpotify(page, true); await page.goto("/");
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  await page.evaluate(() => (window as unknown as { __spotifyUpdate: (data: unknown) => void }).__spotifyUpdate({ position: 45000, duration: 190000, isPaused: false, isBuffering: false }));
+  await page.getByRole("button", { name: "Turn sound off" }).click();
+  await page.locator(".sound-transport").click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifySeek: number }).__spotifySeek)).toBe(45);
+});
+
+test("stalled playback offers manual recovery instead of staying in starting state", async ({ page }) => {
+  await mockSpotify(page, true); await page.goto("/");
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  await page.evaluate(() => (window as unknown as { __spotifyUpdate: (data: unknown) => void }).__spotifyUpdate({ position: 1000, duration: 190000, isPaused: false, isBuffering: true }));
+  await expect(page.locator(".track-meta [role=status]")).toHaveText("Starting…");
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-label", "Enable Sound", { timeout: 10000 });
+  await page.locator(".sound-transport").click();
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+});

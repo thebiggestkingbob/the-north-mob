@@ -41,14 +41,17 @@ export function HomeParallax() {
         ringTilt((event.clientY / innerHeight - .5) * 7);
       };
       const reset = () => { ringX(0); photoX(0); ringTilt(0); };
-      const visibility = () => { ambient.forEach(tween => { if (document.hidden) tween.pause(); else tween.resume(); }); };
+      let onScreen = true;
+      const visibility = () => { ambient.forEach(tween => { if (document.hidden || !onScreen) tween.pause(); else tween.resume(); }); };
+      const observer = new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; visibility(); });
+      observer.observe(hero);
       hero.addEventListener("pointermove", move);
       hero.addEventListener("pointerleave", reset);
       document.addEventListener("visibilitychange", visibility);
       visibility();
       return () => {
         hero.removeEventListener("pointermove", move); hero.removeEventListener("pointerleave", reset);
-        document.removeEventListener("visibilitychange", visibility);
+        document.removeEventListener("visibilitychange", visibility); observer.disconnect();
       };
     });
     return () => media.revert();

@@ -69,6 +69,7 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     clearStartTimer(); confirmedPlaying.current = false; setStatus("starting");
     controller.current.play();
     startTimer.current = setTimeout(() => {
+      startTimer.current = null;
       if (!confirmedPlaying.current && wantSound.current) { setStatus("ready"); }
     }, 5000);
   }, [clearStartTimer]);
@@ -113,6 +114,7 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => { advance.current = next; }, [next]);
   const pause = useCallback(() => {
     wantSound.current = false; remember("off"); clearStartTimer();
+    resumePosition.current = position.current;
     confirmedPlaying.current = false;
     controller.current?.pause();
     // Native embeds have no confirmed controller. Unload them to guarantee stop.
@@ -172,7 +174,13 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
       if (playing) {
         // A direct click in Spotify may resume a previously paused session.
         wantSound.current = true; clearStartTimer(); remember("on"); setStatus("playing");
-      } else if (event.data.isBuffering) setStatus("starting");
+      } else if (event.data.isBuffering && wantSound.current) {
+        setStatus("starting");
+        if (!startTimer.current) startTimer.current = setTimeout(() => {
+          startTimer.current = null;
+          if (!confirmedPlaying.current && wantSound.current) setStatus("ready");
+        }, 8000);
+      }
       else if (wasPlaying || !wantSound.current) {
         clearStartTimer(); wantSound.current = false; remember("off"); setEnabled(true); setStatus("paused");
       }
@@ -215,16 +223,17 @@ export function SoundtrackControls() {
     window.addEventListener("northmob:show-player", open);
     return () => window.removeEventListener("northmob:show-player", open);
   }, []);
+  const playbackLabel = status === "loading" ? "Connecting…" : status === "starting" ? "Starting…" : status === "ready" ? "Tap to enable sound" : status === "native" ? "Use Spotify’s play button" : status === "paused" ? "Paused" : status === "off" ? "Sound off" : song?.artist ?? album.artist;
   const nativeVisible = enabled && needsNative && (!playing || currentUri === album.uri);
   return <div className={`header-sound ${playing ? "is-playing" : ""}`}>
-    <div className="track-meta"><span title={title}>{title}</span><span>{song?.artist ?? album.artist}</span></div>
+    <div className="track-meta"><span title={title}>{title}</span><span role="status" aria-live="polite">{playbackLabel}</span></div>
     <button type="button" className="queue-button" onClick={previous} aria-label="Previous track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 5h2v14H5zM18 5 8 12l10 7z" /></svg></button>
     <button className="sound-transport" type="button" aria-label={playing ? "Pause soundtrack" : status === "ready" || status === "native" ? "Enable Sound" : "Play soundtrack"} aria-pressed={playing} onClick={() => playing ? pause() : play()}><span className="sound-bars" aria-hidden="true"><i /><i /><i /></span><span className="sound-enable">{status === "ready" || status === "native" ? "Enable Sound" : playing ? "Ⅱ" : "▷"}</span></button>
     <button type="button" className="queue-button" onClick={next} aria-label="Next track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 5h2v14h-2zM6 5l10 7-10 7z" /></svg></button>
     <button type="button" className="sound-off" onClick={off} aria-label="Turn sound off">×</button>
     <div className={`native-playback ${nativeVisible ? "is-needed" : ""}`} inert={!nativeVisible} aria-hidden={!nativeVisible} aria-label="Spotify playback controls">
       {enabled && <div className="spotify-mount" ref={host} />}
-      {nativeVisible && <p className="native-hint">Press Spotify’s play button to enable sound.{status === "native" && <button type="button" onClick={retry}>Reconnect</button>}</p>}
+      {nativeVisible && <p className="native-hint">Press Spotify’s play button to enable sound.{(status === "native" || status === "ready") && <button type="button" onClick={retry}>Reconnect</button>}</p>}
     </div>
   </div>;
 }

@@ -24,7 +24,7 @@ test("artist profile supports Escape, back and forward", async ({ page }) => { a
 test("video opens in-page and unmounts on Escape", async ({ page }) => { await page.route("https://www.youtube-nocookie.com/**", route => route.fulfill({ body: "Provider placeholder for interaction test" })); await page.goto("/visuals"); const trigger = page.getByRole("button", { name: "Play official THE NORTH MOB film" }); await trigger.click(); await expect(page.getByRole("dialog")).toBeVisible(); await expect(page.locator(".video-dialog iframe")).toHaveAttribute("src", /youtube-nocookie.com\/embed\/on_eg9HLysA/); await page.keyboard.press("Tab"); await page.keyboard.press("Escape"); await expect(page.locator(".video-dialog iframe")).toHaveCount(0); await expect(trigger).toBeFocused(); });
 test("mobile menu is keyboard accessible", async ({ page }) => { await page.setViewportSize({ width: 375, height: 812 }); await page.goto("/"); const trigger = page.getByRole("button", { name: "Open navigation" }); await trigger.click(); await expect(page.getByRole("dialog")).toBeVisible(); await page.keyboard.press("Escape"); await expect(trigger).toBeFocused(); await trigger.click(); await page.getByRole("navigation", { name: "Expanded navigation" }).getByRole("link", { name: /Music/ }).click(); await expect(page).toHaveURL(/music$/); await expect(page.getByRole("dialog")).not.toBeVisible(); });
 test("reduced motion retains content and navigation", async ({ page }) => { await page.emulateMedia({ reducedMotion: "reduce" }); await page.goto("/"); await page.getByRole("link", { name: /Explore the Mob/ }).click(); await expect(page).toHaveURL(/the-mob$/); await expect(page.getByRole("button", { name: "Open Trophy profile" })).toBeVisible(); });
-test("unconfigured form never claims delivery", async ({ page }) => { await page.goto("/business"); await expect(page.getByRole("button", { name: "Send message" })).toBeDisabled(); await expect(page.getByText("Enquiries are not open through this form yet.", { exact: false })).toBeVisible(); const response = await page.request.post("/api/enquiry", { data: { name: "Browser Test", email: "test@example.com", type: "Bookings", message: "A test enquiry for availability.", consent: true, website: "" } }); expect(response.status()).toBe(503); expect(await response.json()).not.toHaveProperty("delivered", true); });
+test("email fallback never claims server delivery", async ({ page }) => { await page.goto("/business"); await expect(page.getByRole("button", { name: "Prepare email" })).toBeEnabled(); await expect(page.getByRole("link", { name: "thebiggest.kingbob@gmail.com" })).toHaveAttribute("href", "mailto:thebiggest.kingbob@gmail.com"); const response = await page.request.post("/api/enquiry", { data: { name: "Browser Test", email: "test@example.com", type: "Bookings", message: "A test enquiry for availability.", consent: true, website: "" } }); expect(response.status()).toBe(503); expect(await response.json()).not.toHaveProperty("delivered", true); });
 test("capture desktop and mobile previews", async ({ page }) => { await page.emulateMedia({ reducedMotion: "reduce" }); for (const width of [1440, 375]) { await page.setViewportSize({ width, height: width === 375 ? 812 : 1000 }); for (const [route] of routes) { await page.goto(route); await page.screenshot({ path: `work/screenshots/${width}-${route === "/" ? "home" : route.slice(1)}.png`, fullPage: true }); } } });
 
 test("October gigs retain every announcement and distinguish past from upcoming", async ({ page }) => {
@@ -41,13 +41,18 @@ test("October gigs retain every announcement and distinguish past from upcoming"
     ["2026-10-31", "Tazer Bouy Bday Celebration", "Shalas Cafe"],
   ];
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Johannesburg" });
-  for (const [index, [date, name, venue]] of expected.entries()) {
-    const row = rows.nth(index);
+  for (const [date, name, venue] of expected) {
+    const row = rows.filter({ hasText: name });
     await expect(row.locator("time")).toHaveAttribute("datetime", date);
     await expect(row).toContainText(name);
     await expect(row).toContainText(venue);
     await expect(row).toContainText(date < today ? "Past event" : "Upcoming gig");
   }
+  const upcoming = expected.filter(([date]) => date >= today);
+  const past = expected.filter(([date]) => date < today);
+  await expect(page.locator("[data-event-status=upcoming]")).toHaveCount(upcoming.length);
+  await expect(page.locator("[data-event-status=past]")).toHaveCount(past.length);
+  if (upcoming.length && past.length) await expect(rows.first()).toContainText(upcoming[0][1]);
   await expect(rows.locator("a")).toHaveCount(0);
   await expect(page.getByText("More dates to be added.")).toBeVisible();
 });
@@ -68,4 +73,24 @@ test("Business form blends into the page and retains accessible controls", async
   await expect(page.getByRole("combobox", { name: "Enquiry type" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Message", exact: true })).toBeVisible();
   await expect(page.getByRole("checkbox")).toBeVisible();
+});
+
+test("booking fallback prepares the approved recipient and preserves the enquiry", async ({ page }) => {
+  await page.goto("/business");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill("Booking Visitor");
+  await page.getByRole("textbox", { name: "Email", exact: true }).fill("visitor@example.com");
+  await page.getByRole("combobox", { name: "Enquiry type" }).selectOption("Bookings");
+  await page.getByRole("textbox", { name: "Message", exact: true }).fill("Please share North Mob availability for our event.");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Prepare email" }).click();
+  const draft = page.getByRole("link", { name: "Open enquiry in your email app" });
+  const url = new URL((await draft.getAttribute("href"))!);
+  expect(url.protocol).toBe("mailto:");
+  expect(url.pathname).toBe("thebiggest.kingbob@gmail.com");
+  expect(url.searchParams.get("subject")).toContain("Bookings");
+  expect(url.searchParams.get("body")).toContain("visitor@example.com");
+  expect(url.searchParams.get("body")).toContain("Please share North Mob availability");
+  await expect(page.locator(".form-status")).toContainText("Send it in your email app");
+  await expect(page.getByRole("textbox", { name: "Message", exact: true })).not.toBeEmpty();
+  await expect(page.locator(".form-status")).not.toContainText("delivered");
 });

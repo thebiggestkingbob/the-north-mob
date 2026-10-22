@@ -1,3 +1,4 @@
+export const bookingEmail = "thebiggest.kingbob@gmail.com";
 export const spotifyArtistUri = "spotify:artist:0iZ4kkTa0bDsMz9Qgrr0zx";
 export const links = {
   spotify: "https://open.spotify.com/artist/0iZ4kkTa0bDsMz9Qgrr0zx",

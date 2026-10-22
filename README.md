@@ -80,7 +80,10 @@ credentials or prefix private credentials with `NEXT_PUBLIC_`.
 - `NATIVE_VIDEO_URL`: optional rights-cleared original on an HTTPS media CDN.
 - `NATIVE_VIDEO_CAPTIONS_URL`: optional WebVTT captions for the native player.
 
-The form is disabled until both delivery variables exist. The endpoint validates
+Without the delivery variables, the form validates an enquiry and prepares a
+mailto draft to the owner-confirmed booking address in `src/config/content.ts`.
+Visitors must send it from their email app; the website does not claim delivery.
+With both delivery variables configured, server delivery is used instead. The endpoint validates
 JSON with Zod, limits request size, rejects a populated honeypot, checks origin,
 and throttles submissions. It sends `{name,email,type,message,consent}` as JSON
 with the bearer token. The delivery adapter must send to a verified booking
