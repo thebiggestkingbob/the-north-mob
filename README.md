@@ -75,12 +75,17 @@ credentials or prefix private credentials with `NEXT_PUBLIC_`.
 
 - `SITE_URL`: verified canonical HTTPS origin. Without it, indexing is disabled,
   the sitemap is empty, and social metadata uses localhost for local review.
-- `CONTACT_DELIVERY_URL`: owner-controlled HTTPS delivery adapter endpoint.
+- `BREVO_API_KEY`: server-only Brevo API key for Production signup and enquiry email.
+- `BREVO_LIST_ID`: optional North Mob list override. When blank, the API finds or creates `THE NORTH MOB — Website` inside the account’s verified folder 1 on the first signup.
+- `CONTACT_DELIVERY_URL`: optional owner-controlled HTTPS delivery adapter endpoint.
 - `CONTACT_DELIVERY_TOKEN`: server-only bearer token for that adapter.
 - `NATIVE_VIDEO_URL`: optional rights-cleared original on an HTTPS media CDN.
 - `NATIVE_VIDEO_CAPTIONS_URL`: optional WebVTT captions for the native player.
 
-Without the delivery variables, the form validates an enquiry and prepares a
+When `BREVO_API_KEY` is present, enquiries use Brevo and report submission only
+after Brevo returns a message ID. This acknowledges acceptance, not inbox delivery.
+An explicitly configured delivery adapter takes priority over Brevo.
+Without either delivery option, the form validates an enquiry and prepares a
 mailto draft to the owner-confirmed booking address in `src/config/content.ts`.
 Visitors must send it from their email app; the website does not claim delivery.
 With both delivery variables configured, server delivery is used instead. The endpoint validates
@@ -89,7 +94,7 @@ and throttles submissions. It sends `{name,email,type,message,consent}` as JSON
 with the bearer token. The delivery adapter must send to a verified booking
 address and return HTTP 2xx with `{"delivered":true}` only after actual delivery.
 An HTTP success without that acknowledgement produces an error in the UI. No
-provider integration or real email delivery is claimed as verified.
+live email delivery is claimed from mocked checks alone.
 
 Throttling currently uses a global bucket of 10 requests/minute per Node process;
 it does not trust spoofable client IP headers. Before a multi-instance deployment,
@@ -159,3 +164,22 @@ The album cover uses its official Spotify CDN URL; a failed request shows an
 explicit release link, without substituting artwork. Tests simulate external
 metadata, artwork and Spotify playback; they do not establish provider audio
 access, Safari/iOS playback or unrestricted full-length streaming.
+
+
+### Brevo signup and connection check
+
+The inner-page footer contains a minimal email signup with explicit consent.
+`POST /api/newsletter` validates consent, email, body size, origin and honeypot;
+server-side code creates or reuses the dedicated North Mob list and never clears
+Brevo suppression flags. Requests are limited per Node process; production scale
+requires a shared/provider-level limiter. No API key reaches client components.
+
+`GET /api/health/brevo` performs a read-only authenticated Brevo account check,
+returning only `{configured,connected}`. It sends no email, writes no contacts,
+and reveals no key or account details. It is rate limited and not cached.
+A successful check verifies the key, not delivery to an inbox or contact-write
+permissions. Signup creates the dedicated list only when a visitor submits.
+
+Production must be redeployed after saving `BREVO_API_KEY`. Local builds without
+a key retain the email-draft enquiry fallback; signup reports unavailable instead
+of claiming success. Tests use provider fixtures and send no external messages.

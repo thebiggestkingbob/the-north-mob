@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const enquiry = { name: "Test Visitor", email: "visitor@example.com", type: "Bookings", message: "Please share booking availability.", consent: true, website: "" };
 const request = (data: unknown = enquiry, origin = "http://localhost") => new Request("http://localhost/api/enquiry", { method: "POST", headers: { "Content-Type": "application/json", origin }, body: JSON.stringify(data) });
-beforeEach(() => { vi.resetModules(); vi.stubEnv("CONTACT_DELIVERY_URL", ""); vi.stubEnv("CONTACT_DELIVERY_TOKEN", ""); });
+beforeEach(() => { vi.resetModules(); vi.stubEnv("BREVO_API_KEY", ""); vi.stubEnv("CONTACT_DELIVERY_URL", ""); vi.stubEnv("CONTACT_DELIVERY_TOKEN", ""); });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 describe("enquiry delivery boundary", () => {
   it("does not claim success without delivery configuration", async () => { const { POST } = await import("./route"); const response = await POST(request()); expect(response.status).toBe(503); expect(await response.json()).not.toHaveProperty("delivered", true); });
@@ -11,4 +11,28 @@ describe("enquiry delivery boundary", () => {
   it("returns delivered only after adapter acknowledgement", async () => { vi.stubEnv("CONTACT_DELIVERY_URL", "https://delivery.example/enquiry"); vi.stubEnv("CONTACT_DELIVERY_TOKEN", "test-only-token"); const fetchMock = vi.fn().mockResolvedValue(Response.json({ delivered: true })); vi.stubGlobal("fetch", fetchMock); const { POST } = await import("./route"); const response = await POST(request()); expect(response.status).toBe(200); expect(await response.json()).toEqual({ delivered: true }); expect(fetchMock.mock.calls[0][1].body).not.toContain("website"); });
   it("throttles repeated submissions", async () => { const { POST } = await import("./route"); for (let i = 0; i < 10; i++) await POST(request()); const response = await POST(request()); expect(response.status).toBe(429); expect(response.headers.get("Retry-After")).toBeTruthy(); });
   it("rejects oversized requests", async () => { const { POST } = await import("./route"); const response = await POST(request({ ...enquiry, message: "a".repeat(21000) })); expect(response.status).toBe(413); });
+});
+
+
+describe("Brevo enquiry acknowledgement", () => {
+  it("returns accepted after Brevo issues a message ID, without claiming delivery", async () => {
+    vi.stubEnv("BREVO_API_KEY", "fixture-only-key");
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({ messageId: "fixture-message" }, { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { POST } = await import("./route");
+    const response = await POST(request());
+    expect(await response.json()).toEqual({ accepted: true });
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(payload.to[0].email).toBe("thebiggest.kingbob@gmail.com");
+    expect(payload.replyTo.email).toBe(enquiry.email);
+    expect(payload.textContent).toContain(enquiry.message);
+  });
+  it("does not report success when Brevo fails or omits its acknowledgement", async () => {
+    vi.stubEnv("BREVO_API_KEY", "fixture-only-key");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ message: "unauthorized" }, { status: 401 })));
+    const { POST } = await import("./route");
+    const response = await POST(request());
+    expect(response.status).toBe(502);
+    expect(await response.text()).not.toContain("fixture-only-key");
+  });
 });

@@ -30,13 +30,13 @@ export function ContactForm({ configured, fallbackEmail }: { configured: boolean
     try {
       const response = await fetch("/api/enquiry", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...Object.fromEntries(data), consent: data.get("consent") === "on" }) });
       const result = await response.json();
-      if (!response.ok || result.delivered !== true) {
+      if (!response.ok || (result.delivered !== true && result.accepted !== true)) {
         setErrors(result.errors ?? {}); setNotice(result.message ?? "We couldn’t send your enquiry. Please try again."); setStatus("error");
         const firstField = Object.keys(result.errors ?? {})[0];
         if (firstField) form.querySelector<HTMLElement>(`[name="${firstField}"]`)?.focus();
         return;
       }
-      setStatus("sent"); setNotice("Your enquiry has been delivered. Thank you for getting in touch."); form.reset();
+      setStatus("sent"); setNotice(result.delivered === true ? "Your enquiry has been delivered. Thank you for getting in touch." : "Your enquiry has been submitted to the team’s email service. Thank you for getting in touch."); form.reset();
     } catch { setStatus("error"); setNotice("Connection interrupted. Please try again when you’re back online."); }
   }}>
     <h2 className="eyebrow">Get in touch</h2>

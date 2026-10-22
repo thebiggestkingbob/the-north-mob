@@ -65,23 +65,23 @@ test("Business form blends into the page and retains accessible controls", async
   const name = page.getByRole("textbox", { name: "Name", exact: true });
   await name.focus();
   await page.keyboard.press("Tab");
-  const email = page.getByRole("textbox", { name: "Email", exact: true });
+  const email = page.locator(".contact-form").getByRole("textbox", { name: "Email", exact: true });
   await expect(email).toBeFocused();
   await expect(email).toHaveCSS("outline-style", "solid");
   await email.fill("invalid-email");
   expect(await email.evaluate((input: HTMLInputElement) => input.validity.typeMismatch)).toBeTruthy();
   await expect(page.getByRole("combobox", { name: "Enquiry type" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Message", exact: true })).toBeVisible();
-  await expect(page.getByRole("checkbox")).toBeVisible();
+  await expect(page.locator(".contact-form").getByRole("checkbox")).toBeVisible();
 });
 
 test("booking fallback prepares the approved recipient and preserves the enquiry", async ({ page }) => {
   await page.goto("/business");
   await page.getByRole("textbox", { name: "Name", exact: true }).fill("Booking Visitor");
-  await page.getByRole("textbox", { name: "Email", exact: true }).fill("visitor@example.com");
+  await page.locator(".contact-form").getByRole("textbox", { name: "Email", exact: true }).fill("visitor@example.com");
   await page.getByRole("combobox", { name: "Enquiry type" }).selectOption("Bookings");
   await page.getByRole("textbox", { name: "Message", exact: true }).fill("Please share North Mob availability for our event.");
-  await page.getByRole("checkbox").check();
+  await page.locator(".contact-form").getByRole("checkbox").check();
   await page.getByRole("button", { name: "Prepare email" }).click();
   const draft = page.getByRole("link", { name: "Open enquiry in your email app" });
   const url = new URL((await draft.getAttribute("href"))!);

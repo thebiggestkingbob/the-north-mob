@@ -1,3 +1,4 @@
+import { brevoConfigured, sendBrevoEnquiry } from "@/lib/brevo";
 import { enquirySchema } from "@/lib/contact";
 
 export const runtime = "nodejs";
@@ -38,7 +39,15 @@ export async function POST(request: Request) {
   if (!parsed.success) return json({ message: "Please check your enquiry.", errors: parsed.error.flatten().fieldErrors }, 400);
   const deliveryUrl = process.env.CONTACT_DELIVERY_URL;
   const deliveryToken = process.env.CONTACT_DELIVERY_TOKEN;
-  if (!deliveryUrl || !deliveryToken || !deliveryUrl.startsWith("https://")) return json({ message: "Enquiries are not open through this form yet." }, 503);
+  if (!deliveryUrl || !deliveryToken || !deliveryUrl.startsWith("https://")) {
+    if (!brevoConfigured()) return json({ message: "Enquiries are not open through this form yet." }, 503);
+    try {
+      const { website: _honeypot, ...enquiry } = parsed.data;
+      void _honeypot;
+      await sendBrevoEnquiry(enquiry);
+      return json({ accepted: true }, 200);
+    } catch { return json({ message: "We couldn’t submit your enquiry. Please try again later." }, 502); }
+  }
   try {
     const { website: _honeypot, ...enquiry } = parsed.data;
     void _honeypot;
