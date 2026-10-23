@@ -21,3 +21,5 @@ The portrait film is silent, mobile-only, paused offscreen/in hidden tabs, and d
 - Desktop/mobile screenshots captured under `work/screenshots/`; Home mobile and Business desktop visually inspected.
 - `git diff --check` passed. Original main remains clean at `5746532`.
 - Browser provider fixtures do not substitute for live Spotify/Brevo or physical-device verification.
+
+Subsequent homepage correction: see `HOME-ART-DIRECTION-REVIEW.md`. The user requested a closer visual interpretation of the supplied reference. Home now has three cinematic scenes and intact portrait footage on desktop as well as mobile, with muted playback, pause controls and still fallbacks. Earlier Home layout/mobile-only film notes above are historical.

@@ -11,7 +11,7 @@ test("tries autoplay but waits for confirmed playback before showing sound on", 
   expect(player!.width).toBeLessThanOrEqual(360);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyPlays: number }).__spotifyPlays)).toBeGreaterThan(0);
   await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
-  await expect(page.locator(".home-bottom").getByRole("button", { name: "Enable Sound", exact: true })).toBeVisible();
+  await expect(page.locator(".header-sound .sound-transport")).toHaveAttribute("aria-pressed", "false");
 });
 
 test("one confirmed Spotify player persists through navigation and plays selected tracks in-page", async ({ page }) => {
@@ -35,7 +35,7 @@ test("sound off unloads the player and respects that choice on reload", async ({
   await expect(page.locator(".spotify-mount iframe")).toHaveCount(0);
   await page.reload();
   await expect(page.locator(".spotify-mount iframe")).toHaveCount(0);
-  await expect(page.locator(".home-bottom").getByRole("button", { name: "Enable Sound", exact: true })).toBeVisible();
+  await expect(page.locator(".header-sound .sound-transport")).toHaveAttribute("aria-pressed", "false");
 });
 
 test("opening a film pauses the background soundtrack", async ({ page }) => {

@@ -1,0 +1,38 @@
+import { expect, test } from "@playwright/test";
+import { mockSpotify } from "./spotify-fixture";
+test.beforeEach(async ({ page }) => { await mockSpotify(page); });
+test("cinematic Home keeps the logo centred and the portrait film intact on desktop", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const logo = await page.locator(".brand").boundingBox();
+  expect(Math.abs(logo!.x + logo!.width / 2 - 720)).toBeLessThan(2);
+  const aperture = await page.locator(".home-film-aperture").boundingBox();
+  expect(aperture!.width / aperture!.height).toBeCloseTo(.75, 1);
+  await expect.poll(() => page.locator(".cinema-film").evaluate((video: HTMLVideoElement) => !video.paused && video.currentTime > 0)).toBe(true);
+  await expect(page.locator(".cinema-film")).toHaveJSProperty("muted", true);
+  await page.getByRole("button", { name: "Pause background film", exact: true }).click();
+  await expect(page.locator(".cinema-film")).toHaveJSProperty("paused", true);
+  await page.getByRole("button", { name: "Play background film", exact: true }).click();
+  await expect(page.locator(".cinema-film")).toHaveJSProperty("paused", false);
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  await expect(page.locator(".cinema-film")).toHaveJSProperty("paused", true);
+});
+test("reduced motion provides all three scenes with no film download or sticky animation", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator(".cinema-film")).not.toHaveAttribute("src");
+  await expect(page.locator(".home-scene-stage").first()).toHaveCSS("position", "relative");
+  await expect(page.locator(".home-film-poster")).toBeVisible();
+  await expect(page.locator(".home-film-control")).toHaveCount(0);
+  await page.getByRole("link", { name: "Scroll to explore" }).click();
+  await expect(page).toHaveURL(/#movement$/);
+  await expect(page.getByRole("heading", { name: "REAL SOUNDS." })).toBeInViewport();
+  await expect(page.getByRole("link", { name: "Explore the Mob" })).toBeVisible();
+});
+test("save-data mode retains the poster without fetching the video", async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, "connection", { configurable: true, value: { saveData: true } }));
+  await page.goto("/");
+  await expect(page.locator(".home-film-poster")).toBeVisible();
+  await expect(page.locator(".cinema-film")).not.toHaveAttribute("src");
+  await expect(page.locator(".home-film-control")).toHaveCount(0);
+});
