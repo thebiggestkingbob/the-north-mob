@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createSpotifyController, type SpotifyController } from "@/lib/spotify";
@@ -41,7 +42,8 @@ function showPlayer() { window.dispatchEvent(new Event("northmob:show-player"));
 export function SoundtrackProvider({ children }: { children: React.ReactNode }) {
   const autoplayAllowed = useSyncExternalStore(subscribePreference, readAutoplayPreference, () => false);
   const [enabledChoice, setEnabled] = useState<boolean | null>(null);
-  const enabled = enabledChoice ?? autoplayAllowed;
+  const pathname = usePathname();
+  const enabled = !pathname.startsWith("/studio") && (enabledChoice ?? autoplayAllowed);
   const [status, setStatus] = useState<SoundStatus>("off");
   const savedPlayback = useSyncExternalStore(noSubscription, initialSessionPlayback, () => null);
   const [chosenUri, setCurrentUri] = useState<string | null>(null);

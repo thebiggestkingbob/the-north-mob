@@ -71,6 +71,8 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     return () => media.revert();
   }, { scope: root, dependencies: [pathname], revertOnUpdate: true });
 
+  if (pathname.startsWith("/studio")) return <div ref={root}><a href="#main" className="skip-link">Skip to content</a>{children}</div>;
+
   return <div ref={root} className={`site-shell ${pathname === "/" ? "is-home" : ""}`} onClickCapture={(event) => {
     const target = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
     if (!target || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || target.target === "_blank") return;
