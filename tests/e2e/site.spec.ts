@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { mockSpotify } from "./spotify-fixture";
 test.beforeEach(async ({ page }) => { await mockSpotify(page); });
-const routes = [["/", "THE NORTH MOB"], ["/music", "HERE 4 BUSINESS"], ["/the-mob", "THE MOB"], ["/visuals", "VISUALS"], ["/live", "LIVE"], ["/business", "BUSINESS IS PERSONAL"]];
+const routes = [["/", "THE NORTH MOB"], ["/music", "HERE 4 BUSINESS"], ["/the-mob", "THE MOB"], ["/visuals", "VISUALZ"], ["/live", "LIVE"], ["/business", "BUSINESS AS USUAL"], ["/shop", "SHOP"]];
 for (const width of [320, 375, 768, 1024, 1440, 1920]) {
-  test(`six pages fit at ${width}px`, async ({ page }) => {
+  test(`seven pages fit at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
@@ -18,7 +18,7 @@ for (const width of [320, 375, 768, 1024, 1440, 1920]) {
     expect(errors).toEqual([]);
   });
 }
-test("Home has twelve rings and no featured video", async ({ page }) => { await page.goto("/"); await expect(page.locator(".home-rings circle")).toHaveCount(12); await expect(page.locator("iframe[src*=youtube],video")).toHaveCount(0); });
+test("Home uses first-party imagery without a giant title or ring overlay", async ({ page }) => { await page.goto("/"); await expect(page.locator(".home-rings")).toHaveCount(0); await expect(page.locator("h1")).toHaveClass("sr-only"); await expect(page.locator("video.cinema-film")).toHaveCount(1); await expect(page.locator(".hero-photo img")).toBeVisible(); });
 test("navigation transitions preserve browser back and focus", async ({ page }) => { await page.goto("/"); await page.getByRole("link", { name: /Explore the Mob/ }).click(); await expect(page).toHaveURL(/the-mob$/); await expect(page.getByRole("heading", { level: 1 })).toBeFocused(); await page.goBack(); await expect(page).toHaveURL("/"); await expect(page.getByRole("heading", { level: 1 })).toBeVisible(); });
 test("artist profile supports Escape, back and forward", async ({ page }) => { await page.goto("/the-mob"); const trigger = page.getByRole("button", { name: "Open Trophy profile" }); await trigger.click(); await expect(page.getByRole("dialog")).toBeVisible(); await expect(page).toHaveURL(/artist=trophy/); await page.keyboard.press("Escape"); await expect(page.getByRole("dialog")).not.toBeVisible(); await expect(trigger).toBeFocused(); await page.goForward(); await expect(page.getByRole("dialog")).toBeVisible(); await page.goBack(); await expect(page.getByRole("dialog")).not.toBeVisible(); });
 test("video opens in-page and unmounts on Escape", async ({ page }) => { await page.route("https://www.youtube-nocookie.com/**", route => route.fulfill({ body: "Provider placeholder for interaction test" })); await page.goto("/visuals"); const trigger = page.getByRole("button", { name: "Play official THE NORTH MOB film" }); await trigger.click(); await expect(page.getByRole("dialog")).toBeVisible(); await expect(page.locator(".video-dialog iframe")).toHaveAttribute("src", /youtube-nocookie.com\/embed\/on_eg9HLysA/); await page.keyboard.press("Tab"); await page.keyboard.press("Escape"); await expect(page.locator(".video-dialog iframe")).toHaveCount(0); await expect(trigger).toBeFocused(); });
@@ -93,4 +93,37 @@ test("booking fallback prepares the approved recipient and preserves the enquiry
   await expect(page.locator(".form-status")).toContainText("Send it in your email app");
   await expect(page.getByRole("textbox", { name: "Message", exact: true })).not.toBeEmpty();
   await expect(page.locator(".form-status")).not.toContainText("delivered");
+});
+
+test("photo archive searches and supports keyboard navigation with focus return", async ({ page }) => {
+  await page.goto("/visuals");
+  const search = page.getByRole("searchbox", { name: "Search photographs" });
+  await search.fill("Photograph 09");
+  await expect(page.locator(".archive-photo")).toHaveCount(1);
+  const trigger = page.getByRole("button", { name: "View Mob Ties / Photograph 09" });
+  await trigger.click();
+  await expect(page.locator(".photo-dialog")).toBeVisible();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator(".photo-navigation")).toContainText("Photograph 11");
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+});
+
+test("adaptive enquiry details are included in the email fallback", async ({ page }) => {
+  await page.goto("/business");
+  const form = page.locator(".contact-form");
+  await form.getByLabel("Name", { exact: true }).fill("Booking Visitor");
+  await form.getByLabel("Email", { exact: true }).fill("visitor@example.com");
+  await form.getByLabel("Enquiry type").selectOption("Bookings");
+  await form.getByLabel("Event date (optional)").fill("2026-10-31");
+  await form.getByLabel("Location (optional)").fill("Pretoria");
+  await form.getByLabel("Message", { exact: true }).fill("Please share your booking availability.");
+  await form.getByRole("checkbox").check();
+  await form.getByRole("button", { name: "Prepare email" }).click();
+  const draft = new URL((await form.getByRole("link", { name: "Open enquiry in your email app" }).getAttribute("href"))!);
+  expect(draft.searchParams.get("body")).toContain("Date: 2026-10-31");
+  expect(draft.searchParams.get("body")).toContain("Location: Pretoria");
+  await form.getByLabel("Enquiry type").selectOption("Press");
+  await expect(form.getByLabel("Event date (optional)")).toHaveCount(0);
+  await expect(form.getByLabel("Organisation / publication (optional)")).toBeVisible();
 });

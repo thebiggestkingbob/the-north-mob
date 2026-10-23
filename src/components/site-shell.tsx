@@ -88,7 +88,6 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     <a href="#main" className="skip-link">Skip to content</a>
     <header className="site-header">
       <Link href="/" className="brand" aria-label="THE NORTH MOB — Home"><Image src="/assets/official-logo-transparent.png" alt="THE NORTH MOB" width={1983} height={793} unoptimized priority /></Link>
-      <SoundtrackControls />
       <nav aria-label="Main navigation" className="desktop-nav">{pages.slice(1).map((page) => <Link href={page.path} key={page.path} aria-current={pathname === page.path ? "page" : undefined}>{page.name}</Link>)}</nav>
       <button ref={menuButton} type="button" className="menu-toggle" aria-label="Open navigation" aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen(true)}><span /><span /></button>
     </header>
@@ -99,6 +98,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <p className="eyebrow">Pretoria / South Africa</p>
     </dialog>
     {children}
+    <SoundtrackControls />
     {pathname !== "/" && <footer className="site-footer"><NewsletterSignup /><p className="eyebrow">Pretoria<br />South Africa<br />Trapcardi</p><div className="social-links"><a href={links.instagram} target="_blank" rel="noreferrer">Instagram ↗</a><a href={links.spotify} target="_blank" rel="noreferrer">Spotify ↗</a><a href={links.youtube} target="_blank" rel="noreferrer">YouTube ↗</a></div><Link href="/" className="footer-wordmark">The North Mob</Link></footer>}
     <div ref={veil} className="transition-veil" style={{ transform: "translateY(-100%)" }} aria-hidden="true"><span>THE<br />NORTH<br />MOB</span></div>
   </div>;

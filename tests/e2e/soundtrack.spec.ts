@@ -7,8 +7,8 @@ test("tries autoplay but waits for confirmed playback before showing sound on", 
   await expect(page.locator(".native-playback")).not.toBeVisible();
   const logo = await page.locator(".brand").boundingBox();
   const player = await page.locator(".header-sound").boundingBox();
-  expect(player!.x).toBeGreaterThan(logo!.x + logo!.width);
-  expect(player!.x - logo!.x - logo!.width).toBeLessThan(40);
+  expect(player!.y).toBeGreaterThan(logo!.y + logo!.height);
+  expect(player!.width).toBeLessThanOrEqual(360);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyPlays: number }).__spotifyPlays)).toBeGreaterThan(0);
   await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
   await expect(page.locator(".home-bottom").getByRole("button", { name: "Enable Sound", exact: true })).toBeVisible();
@@ -16,7 +16,7 @@ test("tries autoplay but waits for confirmed playback before showing sound on", 
 
 test("one confirmed Spotify player persists through navigation and plays selected tracks in-page", async ({ page }) => {
   await mockSpotify(page, true); await page.goto("/");
-  await expect(page.locator(".site-header").getByRole("button", { name: "Pause soundtrack", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".header-sound").getByRole("button", { name: "Pause soundtrack", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.locator(".desktop-nav").getByRole("link", { name: "Music", exact: true }).click();
   await expect(page).toHaveURL(/music$/);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyCreates: number }).__spotifyCreates)).toBe(1);
@@ -30,7 +30,7 @@ test("one confirmed Spotify player persists through navigation and plays selecte
 
 test("sound off unloads the player and respects that choice on reload", async ({ page }) => {
   await mockSpotify(page, true); await page.goto("/");
-  await expect(page.locator(".site-header").getByRole("button", { name: "Pause soundtrack", exact: true })).toBeVisible();
+  await expect(page.locator(".header-sound").getByRole("button", { name: "Pause soundtrack", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Turn sound off" }).click();
   await expect(page.locator(".spotify-mount iframe")).toHaveCount(0);
   await page.reload();
@@ -40,7 +40,7 @@ test("sound off unloads the player and respects that choice on reload", async ({
 
 test("opening a film pauses the background soundtrack", async ({ page }) => {
   await mockSpotify(page, true); await page.route("https://www.youtube-nocookie.com/**", route => route.fulfill({ body: "Video test fixture" }));
-  await page.goto("/visuals"); await expect(page.locator(".site-header").getByRole("button", { name: "Pause soundtrack", exact: true })).toBeVisible();
+  await page.goto("/visuals"); await expect(page.locator(".header-sound").getByRole("button", { name: "Pause soundtrack", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Play official THE NORTH MOB film" }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyPauses: number }).__spotifyPauses)).toBeGreaterThan(0);
   await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
@@ -65,14 +65,9 @@ test("water effects are absent and other Home motion remains", async ({ page }) 
   await expect(page.locator(".hero-photo img")).toHaveAttribute("src", /homepage-cover/);
   await expect(page.locator(".hero-photo img")).toHaveCSS("object-fit", "cover");
   await expect(page.locator("canvas,.water-ripple")).toHaveCount(0);
-  await expect(page.locator(".home-rings circle")).toHaveCount(12);
-  const photo = page.locator(".hero-photo");
-  const before = await photo.evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42);
-  await page.evaluate(() => window.scrollTo(0, 180));
-  await expect.poll(() => photo.evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42)).toBeGreaterThan(before + 1);
-  const bounds = await photo.boundingBox();
-  expect(bounds?.x).toBeLessThanOrEqual(0);
-  expect(bounds?.width).toBeGreaterThanOrEqual(1280);
+  await expect(page.locator(".home-rings")).toHaveCount(0);
+  await expect(page.locator(".cinema-film")).toHaveJSProperty("muted", true);
+  await expect(page.locator(".hero-photo")).toHaveCSS("position", "absolute");
 });
 
 test("the full brand wipe stays visible before revealing the next page", async ({ page }) => {
@@ -190,8 +185,8 @@ test("Music shows all eleven album tracks and explicit supported fallbacks", asy
   await expect(page.locator(".music-lower > div:first-child .catalogue-row")).toHaveCount(11);
   await expect(page.locator(".spotify-block .catalogue-row")).toHaveCount(2);
   await expect(page.locator(".release-photo img")).toHaveAttribute("src", /h4b-album-cover/);
-  await page.getByRole("button", { name: /peke , fosholo/ }).click();
-  await expect(page.locator(".spotify-mount > iframe")).toHaveAttribute("height", "352");
+  await expect(page.getByRole("link", { name: /peke , fosholo/ })).toHaveAttribute("href", /open.spotify.com/);
+  await expect(page.locator(".spotify-mount > iframe")).toHaveAttribute("height", "80");
   await expect(page.locator(".spotify-mount > iframe")).toHaveCount(1);
 });
 
@@ -260,4 +255,14 @@ test("stalled playback offers manual recovery instead of staying in starting sta
   await expect(page.locator(".sound-transport")).toHaveAttribute("aria-label", "Enable Sound", { timeout: 10000 });
   await page.locator(".sound-transport").click();
   await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("mini-player progress reflects Spotify events and seeks through the controller", async ({ page }) => {
+  await mockSpotify(page, true); await page.goto("/");
+  await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "true");
+  await page.evaluate(() => (window as unknown as { __spotifyUpdate: (data: unknown) => void }).__spotifyUpdate({ position: 45000, duration: 190000, isPaused: false, isBuffering: false }));
+  await expect(page.getByRole("slider", { name: "Track position" })).toHaveValue("45");
+  await expect(page.locator(".sound-progress")).toContainText("0:45");
+  await page.getByRole("slider", { name: "Track position" }).fill("60");
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifySeek: number }).__spotifySeek)).toBe(60);
 });

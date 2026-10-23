@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createSpotifyController, type SpotifyController } from "@/lib/spotify";
 import { spotifyArtistUri } from "@/config/content";
@@ -8,6 +9,7 @@ export const ARTIST_URI = spotifyArtistUri;
 type SoundStatus = "off" | "loading" | "starting" | "ready" | "playing" | "paused" | "native";
 type Soundtrack = {
   enabled: boolean; status: SoundStatus; currentUri: string; tracks: CatalogueTrack[];
+  positionMs: number; durationMs: number; seek: (seconds: number) => void;
   next: () => void; previous: () => void;
   play: (uri?: string) => void; pause: () => void; off: () => void; retry: () => void;
   host: React.RefObject<HTMLDivElement | null>;
@@ -50,6 +52,7 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
   const queue = useRef(allTracks);
   const advance = useRef<() => void>(() => {});
   const position = useRef(0);
+  const [progress, setProgress] = useState({ positionMs: 0, durationMs: 0 });
   const resumePosition = useRef(0);
   const endHandled = useRef(false);
   const host = useRef<HTMLDivElement>(null);
@@ -93,6 +96,7 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     wantSound.current = true; remember("on"); showPlayer();
     const nextUri = uri ?? selectedUri.current;
     if (nextUri !== selectedUri.current) {
+      setProgress({ positionMs: 0, durationMs: 0 });
       position.current = 0; resumePosition.current = 0; endHandled.current = false;
       clearStartTimer(); selectedUri.current = nextUri; setCurrentUri(nextUri);
       ready.current = false; confirmedPlaying.current = false; setStatus("loading");
@@ -163,6 +167,7 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
       const cursor = event.data.position, duration = event.data.duration;
       if (typeof cursor === "number" && Number.isFinite(cursor) && cursor >= 0) {
         position.current = cursor;
+        if (typeof duration === "number" && Number.isFinite(duration) && duration > 0) setProgress({ positionMs: Math.min(cursor, duration), durationMs: duration });
         try { sessionStorage.setItem("northmob:playback:v1", JSON.stringify({ uri: selectedUri.current, position: cursor })); } catch { /* Storage is optional. */ }
       }
       if (selectedUri.current.startsWith("spotify:track:") && !endHandled.current && wantSound.current && confirmedPlaying.current && typeof duration === "number" && duration > 1000 && typeof cursor === "number" && cursor >= duration - 50) {
@@ -192,7 +197,8 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     };
   }, [enabled, attempt, beginPlayback, clearStartTimer]);
 
-  return <SoundContext.Provider value={{ enabled, status: enabled && status === "off" ? "loading" : status, currentUri, tracks, next, previous, play, pause, off, retry, host }}>{children}</SoundContext.Provider>;
+  const seek = useCallback((seconds: number) => { if (ready.current && !native.current && Number.isFinite(seconds) && seconds >= 0) controller.current?.seek(seconds); }, []);
+  return <SoundContext.Provider value={{ ...progress, seek, enabled, status: enabled && status === "off" ? "loading" : status, currentUri, tracks, next, previous, play, pause, off, retry, host }}>{children}</SoundContext.Provider>;
 }
 
 export function useSoundtrack() {
@@ -213,7 +219,7 @@ export function SpotifyPlayButton({ uri = ARTIST_URI, children, className = "but
 }
 
 export function SoundtrackControls() {
-  const { enabled, status, currentUri, tracks, play, pause, off, retry, next, previous, host } = useSoundtrack();
+  const { enabled, status, currentUri, tracks, play, pause, off, retry, next, previous, host, positionMs, durationMs, seek } = useSoundtrack();
   const [needsNative, setNeedsNative] = useState(false);
   const playing = status === "playing";
   const song = tracks.find(item => item.uri === currentUri);
@@ -226,11 +232,13 @@ export function SoundtrackControls() {
   const playbackLabel = status === "loading" ? "Connecting…" : status === "starting" ? "Starting…" : status === "ready" ? "Tap to enable sound" : status === "native" ? "Use Spotify’s play button" : status === "paused" ? "Paused" : status === "off" ? "Sound off" : song?.artist ?? album.artist;
   const nativeVisible = enabled && needsNative && (!playing || currentUri === album.uri);
   return <div className={`header-sound ${playing ? "is-playing" : ""}`}>
+    <Image className="mini-artwork" src={song?.releaseId === album.id ? album.cover : "/assets/official-logo-transparent.png"} alt="" width={32} height={40} />
     <div className="track-meta"><span title={title}>{title}</span><span role="status" aria-live="polite">{playbackLabel}</span></div>
     <button type="button" className="queue-button" onClick={previous} aria-label="Previous track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 5h2v14H5zM18 5 8 12l10 7z" /></svg></button>
     <button className="sound-transport" type="button" aria-label={playing ? "Pause soundtrack" : status === "ready" || status === "native" ? "Enable Sound" : "Play soundtrack"} aria-pressed={playing} onClick={() => playing ? pause() : play()}><span className="sound-bars" aria-hidden="true"><i /><i /><i /></span><span className="sound-enable">{status === "ready" || status === "native" ? "Enable Sound" : playing ? "Ⅱ" : "▷"}</span></button>
     <button type="button" className="queue-button" onClick={next} aria-label="Next track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 5h2v14h-2zM6 5l10 7-10 7z" /></svg></button>
     <button type="button" className="sound-off" onClick={off} aria-label="Turn sound off">×</button>
+    {durationMs > 0 && status !== "native" && status !== "off" && <label className="sound-progress"><span className="sr-only">Track position</span><span>{Math.floor(positionMs / 60000)}:{String(Math.floor(positionMs / 1000) % 60).padStart(2, "0")}</span><input type="range" min={0} max={durationMs / 1000} value={positionMs / 1000} step={1} aria-label="Track position" onChange={event => seek(Number(event.target.value))} /><span>{Math.floor(durationMs / 60000)}:{String(Math.floor(durationMs / 1000) % 60).padStart(2, "0")}</span></label>}
     <div className={`native-playback ${nativeVisible ? "is-needed" : ""}`} inert={!nativeVisible} aria-hidden={!nativeVisible} aria-label="Spotify playback controls">
       {enabled && <div className="spotify-mount" ref={host} />}
       {nativeVisible && <p className="native-hint">Press Spotify’s play button to enable sound.{(status === "native" || status === "ready") && <button type="button" onClick={retry}>Reconnect</button>}</p>}

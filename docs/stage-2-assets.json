@@ -1,0 +1,68 @@
+[
+  {
+    "file": "public/assets/mob-ties/mob-ties-05.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-05.webp",
+    "sha256": "6600ed94589651be5e80695c9fa6a8d1902df8a5e77c7946d39d74eeb2b7c345",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-09.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-09.webp",
+    "sha256": "ab02249ca35c77bb1129ae75e19a553581ae1f18003ed78551ac5d453bfed18c",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-11.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-11.webp",
+    "sha256": "bf0d196b9d190b0a97642b78d2cb0499cd94ffbcbf114cc49c7e473fee9742de",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-13.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-13.webp",
+    "sha256": "4994cc614eeb0057d895518345c79813133e77cd2f1e2549fcdb6eed2c658550",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-21.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-21.webp",
+    "sha256": "b4f6b4567d75b89abc7f5dd53266ea747fe9c6c233d6d3d7763447207afe1b51",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-22.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-22.webp",
+    "sha256": "ae582b2d00d73e1236f2b85d1ce781ec1005b70df49cb3d6f5506fcee78a3604",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-26.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-26.webp",
+    "sha256": "7df5ab3fe75114a8e3936ce23097338f48567e442b861593c1675e1a3f125c9e",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-30.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-30.webp",
+    "sha256": "dac44c9e546f6157f7aaf722aa45c29329ac6e5a53aacccef831c014ba41cdca",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-31.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-31.webp",
+    "sha256": "4ad1a709fd2bc68e3d0ac01c7814e1f3f6327c886fc3f812afefc3187e80a63c",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-32.webp",
+    "source": "03-MOB-TIES-ASSETS/optimized-webp/mob-ties-32.webp",
+    "sha256": "a10f2570f6ec12d3b4e7f76ec205a9f8d7b59bc53f887268d7dabae8f40ddba7",
+    "source_match": true
+  },
+  {
+    "file": "public/assets/mob-ties/mob-ties-video-01.mp4",
+    "source": "03-MOB-TIES-ASSETS/video/mob-ties-video-01.mp4",
+    "sha256": "c85c819572e52d1bfae2a11d62523d629788d99f64700cf58f5512a3ea23084e",
+    "source_match": true
+  }
+]

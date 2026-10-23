@@ -60,7 +60,7 @@ export async function sendBrevoEnquiry(enquiry: Omit<Enquiry, "website">) {
     sender: { name: "THE NORTH MOB", email: bookingEmail },
     to: [{ email: bookingEmail }], replyTo: { email: enquiry.email, name: enquiry.name },
     subject: `THE NORTH MOB — ${enquiry.type}`,
-    textContent: `Name: ${enquiry.name}\nEmail: ${enquiry.email}\nEnquiry: ${enquiry.type}\n\n${enquiry.message}`,
+    textContent: `Name: ${enquiry.name}\nEmail: ${enquiry.email}\nEnquiry: ${enquiry.type}\n${[enquiry.eventDate && `Date: ${enquiry.eventDate}`, enquiry.location && `Location: ${enquiry.location}`, enquiry.budget && `Budget: ${enquiry.budget}`, enquiry.organisation && `Organisation: ${enquiry.organisation}`].filter(Boolean).join("\n")}\n\n${enquiry.message}`,
   });
   if (!response.ok) throw new Error("Enquiry not accepted");
   const receipt = await response.json();
