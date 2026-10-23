@@ -14,8 +14,15 @@ test("unconfigured Studio fails closed without exposing owner data or starting a
   expect(response.headers()["x-robots-tag"]).toContain("noindex");
 });
 test("Studio rejects cross-origin session and event writes", async ({ request }) => {
-  for (const endpoint of ["session", "events"]) {
+  for (const endpoint of ["session", "events", "artists"]) {
     const response = await request.post(`/api/studio/${endpoint}`, { headers: { origin: "https://other.example" }, data: {} });
     expect(response.status()).toBe(403);
   }
+});
+
+test("artist management requires an owner session", async ({page,request})=>{
+ await page.goto("/studio/artists");
+ await expect(page).toHaveURL(/studio\/login$/);
+ const response=await request.post("/api/studio/artists",{headers:{origin:"http://127.0.0.1:3000"},data:{name:"Unauthorized"}});
+ expect(response.status()).toBe(401);
 });

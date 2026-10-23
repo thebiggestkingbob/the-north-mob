@@ -1,11 +1,12 @@
-# North Mob Studio — first backend slice
+# North Mob Studio — staged backend implementation
 
-This implements owner authentication boundaries and event management, not the entire Studio brief. Work stays on `feature/north-mob-cinematic-platform`; no production migration or launch is authorized by this setup document.
+This implements owner authentication boundaries, event management and artist publishing, not the entire Studio brief. Work stays on `feature/north-mob-cinematic-platform`; no production migration or launch is authorized by this setup document.
 
 ## Implemented
 
 - `/studio/login`: server-side password sign-in for an already-provisioned, email-verified owner. No public registration or staff invitations.
 - `/studio`: real event counts when connected; no invented analytics or placeholder records.
+- `/studio/artists`: verified profiles, approved local portraits, biography, display order, draft/publish/archive and immutable history. Published records feed The Mob without changing its design.
 - `/studio/events`: create/edit events, save drafts, publish and archive, with version-conflict protection and per-event change history.
 - Every protected page and write independently calls verified `getUser()` and queries active owner membership. User-editable metadata cannot confer access. Database row policies independently restrict all writes and private reads.
 - HTTP-only session cookies, Studio-only refresh proxy, same-origin write checks, bounded request bodies, server validation, private/no-store responses and noindex.
@@ -19,7 +20,7 @@ The connected Supabase account currently exposes only unrelated Tapped In and Co
 
 Use a separate North Mob staging project. Confirm its organization, region and plan with the owner before creating a billable resource. Only that project may receive this schema. Local `supabase/config.toml` does not change hosted Auth settings automatically.
 
-1. Review `supabase/migrations/20261023063729_studio_owner_events.sql` and apply it to the dedicated project through the approved Supabase migration workflow. Apply `supabase/seed.sql` once; it preserves all seven supplied gigs, including same-day performances. Re-running it does not overwrite owner changes.
+1. Review all SQL files under `supabase/migrations/` and apply them in filename order to the dedicated project through the approved Supabase migration workflow. Apply `supabase/seed.sql` once; it preserves all four approved artists and seven supplied gigs, including same-day performances. Re-running it does not overwrite owner changes.
 2. In hosted Auth settings, disable public signups and anonymous sign-ins. Configure approved site/redirect URLs and provider abuse controls. Create the one owner account through the trusted dashboard, set its password securely, and verify its email. Never share a password or key in chat or git.
 3. Bootstrap membership through the trusted SQL console using the verified owner UUID, not an email guessed from booking contact details. For example, replace `VERIFIED_OWNER_UUID` below before running:
 
@@ -43,7 +44,7 @@ Use a separate North Mob staging project. Confirm its organization, region and p
 
 ## Remaining before a production Studio launch
 
-Media storage/uploads and rights checks, artist/release/video/gallery editing, enquiries with private storage/workflows, fans/consent/campaigns, custom commerce, owner MFA/challenge and tested account recovery, shared rate limiting, hosted integration tests, operational monitoring, backup/restore and final launch approval remain outstanding. The current limiter is per-process and is not adequate for a multi-instance public launch.
+Media storage/uploads and rights checks, release/video/gallery editing, enquiries with private storage/workflows, fans/consent/campaigns, custom commerce, owner MFA/challenge and tested account recovery, shared rate limiting, hosted integration tests, operational monitoring, backup/restore and final launch approval remain outstanding. The current limiter is per-process and is not adequate for a multi-instance public launch.
 
 Before production, agree retention/backup procedures and demonstrate restore against an isolated project. To revoke access immediately, deactivate the owner membership through trusted administration and revoke its provider sessions; do not rely on deleting a user to invalidate tokens. Preserve audit history. Any rollback must account for database content changes; do not blindly replace managed events with old static listings.
 
