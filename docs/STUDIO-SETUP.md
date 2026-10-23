@@ -16,7 +16,7 @@ This implements owner authentication boundaries, event management and artist pub
 
 ## Hosted project connected — 23 October 2026
 
-The user connected **NORTH MOB Website** (`cbybcyeltayiuazbhskm`) through **THE BIGGEST HQ**. The five tracked migrations, approved artist/event seeds, Visualz seed and music seed have been applied. Storage buckets are private, all application tables use RLS, and the hosted security advisor currently reports no findings. The following checklist describes remaining setup and repeatable environment provisioning; do not rerun migrations already recorded in the ledger.
+The user connected **NORTH MOB Website** (`cbybcyeltayiuazbhskm`) through **THE BIGGEST HQ**. The six tracked migrations, approved artist/event seeds, Visualz seed and music seed have been applied. Storage buckets are private, all application tables use RLS, and the hosted security advisor currently reports no findings. The following checklist describes remaining setup and repeatable environment provisioning; do not rerun migrations already recorded in the ledger.
 
 The owner email is **thebiggest.kingbob@gmail.com**. No user or membership has been provisioned. The available connector does not expose Auth user creation. Use the supported Supabase Authentication user-creation flow; do not insert credentials directly into internal Auth tables. No password should be sent through chat or committed to git.
 
