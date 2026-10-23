@@ -1,0 +1,18 @@
+/* Additive Music-only editorial details; retain the established album and player. */
+.music-page .h4b-story{max-width:43ch;margin:28px 0 30px}
+.music-page .h4b-story h2{font-family:var(--display);font-size:clamp(24px,2.4vw,34px);line-height:1.05;font-weight:700;margin:0 0 14px}
+.music-page .h4b-story p{font-size:12px;line-height:1.85;color:var(--muted)}
+.music-page .h4b-milestones{display:flex;gap:clamp(24px,6vw,90px);margin:48px 0 64px}
+.music-page .h4b-milestones>div{display:flex;flex-direction:column-reverse;gap:8px;min-width:0}
+.music-page .h4b-milestones dt{font-size:10px;line-height:1.6;color:var(--muted);max-width:20ch}
+.music-page .h4b-milestones dd{font-family:var(--display);font-size:clamp(30px,3vw,42px);line-height:1;margin:0}
+.music-page .h4b-features{margin:0 0 64px;min-width:0}
+.music-page .h4b-features>h2{margin-bottom:24px}
+.music-page .h4b-feature-rail{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:var(--muted) transparent}
+.music-page .h4b-feature-rail:focus-visible{outline:1px solid currentColor;outline-offset:5px}
+.music-page .h4b-feature-rail ul{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:20px;list-style:none;margin:0;padding:0 0 14px}
+.music-page .h4b-feature-rail li{min-width:0;scroll-snap-align:start}
+.music-page .h4b-feature-rail img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:contain}
+.music-page .h4b-feature-rail figcaption{font-size:10px;line-height:1.6;margin-top:14px}
+@media(max-width:1000px){.music-page .h4b-feature-rail ul{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:29%;gap:20px}}
+@media(max-width:600px){.music-page .h4b-story{margin-top:24px}.music-page .h4b-milestones{gap:24px;justify-content:space-between;margin:36px 0 48px}.music-page .h4b-milestones dt{font-size:9px;max-width:15ch}.music-page .h4b-feature-rail ul{grid-auto-columns:70%;gap:16px}.music-page .h4b-features{margin-bottom:40px}}

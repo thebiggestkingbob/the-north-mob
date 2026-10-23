@@ -217,6 +217,7 @@ test("local featured artwork is sharp and has no Spotify navigation", async ({ p
   await mockSpotify(page);
   await page.goto("/music");
   const artwork = page.locator(".release-photo img");
+  await expect(artwork).toHaveCount(1);
   await expect(artwork).toBeVisible();
   await expect(artwork).toHaveAttribute("src", /h4b-album-cover/);
   await expect.poll(() => artwork.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
