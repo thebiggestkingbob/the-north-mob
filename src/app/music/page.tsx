@@ -4,7 +4,7 @@ import { h4bFeatures } from "@/config/h4b-features";
 import "./music.css";
 import { album, catalogue } from "@/config/catalogue";
 import { SoundEntryButton } from "@/components/soundtrack";
-import { AlbumArtwork, SpotifyPlayer, SpotifyTrackList } from "@/components/spotify-player";
+import { AlbumArtwork, SpotifyTrackList } from "@/components/spotify-player";
 export const metadata: Metadata = { title: "Music" };
 export default function Music() {
   return <main id="main" className="page music-page">
@@ -23,6 +23,6 @@ export default function Music() {
         <ul>{h4bFeatures.map(artist => <li key={artist.name}><figure><Image src={artist.image} alt={`${artist.name} — supplied H4B featured artist card`} width={artist.width} height={artist.height} sizes="(max-width: 600px) 66vw, (max-width: 1000px) 29vw, 16vw" /><figcaption>{artist.name}</figcaption></figure></li>)}</ul>
       </div>
     </section>
-    <section className="music-lower" data-scroll-reveal><div><div className="section-label"><h2 className="eyebrow">HERE 4 BUSINESS / 11 tracks</h2><span className="eyebrow">Spotify / Play here</span></div><SpotifyTrackList /><p className="source-note">Play a track here. Playback continues while you explore the site.</p></div><SpotifyPlayer /></section>
+    <section className="music-lower" data-scroll-reveal><div><div className="section-label"><h2 className="eyebrow">HERE 4 BUSINESS / 11 tracks</h2><span className="eyebrow">Spotify / Play here</span></div><SpotifyTrackList /><p className="source-note">Play a track here. Playback continues while you explore the site.</p></div></section>
   </main>;
 }

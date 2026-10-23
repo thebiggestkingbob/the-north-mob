@@ -32,7 +32,7 @@ export function StudioEventEditor({ event }: { event?: StudioEvent }) {
     <label htmlFor="event-status">Publication status<select id="event-status" name="status" defaultValue={event?.status ?? "draft"}><option value="draft">Draft — private</option><option value="published">Published — visible on Live</option><option value="archived">Archived — hidden from Live</option></select></label>
     <p className="privacy-note">Saving as Published updates the Live page in this environment. Drafts and archived listings remain private. Dates automatically determine upcoming or past status.</p>
     {errors.version && <p className="field-error">{errors.version[0]}</p>}
-    <button className="button button-light" disabled={saving} aria-busy={saving}>{saving ? "Saving…" : "Save event"}<span>→</span></button>
+    <button className="button button-light" disabled={saving} aria-busy={saving}>{saving ? "Saving…" : "Save event"}</button>
     <p role="status" aria-live="polite" className="form-status">{status}</p>
   </form>;
 }

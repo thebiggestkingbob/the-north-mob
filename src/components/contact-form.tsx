@@ -52,7 +52,7 @@ export function ContactForm({ configured, fallbackEmail }: { configured: boolean
     <div className="honeypot" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
     <label className="consent"><input type="checkbox" name="consent" required /><span>I agree to my details being used to respond to this enquiry.</span></label>
     <p className="privacy-note">{configured ? "Your details are shared only with the team and its delivery provider to handle your enquiry." : "Your email app sends your enquiry directly to the team."} Please don’t include sensitive personal information.</p>
-    <button className="button button-light" type="submit" disabled={(!configured && !fallbackEmail) || status === "sending"} aria-busy={status === "sending"}>{status === "sending" ? "Sending…" : configured ? "Send message" : "Prepare email"}<span>→</span></button>
+    <button className="button button-light" type="submit" disabled={(!configured && !fallbackEmail) || status === "sending"} aria-busy={status === "sending"}>{status === "sending" ? "Sending…" : configured ? "Send message" : "Prepare email"}</button>
     {draftUrl && <a className="text-link" href={draftUrl}>Open enquiry in your email app</a>}
     <p className={`form-status ${status}`} role="status" aria-live="polite">{notice}</p>
   </form>;

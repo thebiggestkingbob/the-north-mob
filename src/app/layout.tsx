@@ -4,6 +4,7 @@ import "@fontsource/barlow-condensed/800.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "./globals.css";
 import "./cinematic.css";
+import "./refinements.css";
 import { SoundtrackProvider } from "@/components/soundtrack";
 import { SiteShell } from "@/components/site-shell";
 

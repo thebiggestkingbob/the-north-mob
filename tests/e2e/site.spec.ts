@@ -96,11 +96,10 @@ test("booking fallback prepares the approved recipient and preserves the enquiry
   await expect(page.locator(".form-status")).not.toContainText("delivered");
 });
 
-test("photo archive searches and supports keyboard navigation with focus return", async ({ page }) => {
+test("photo archive keeps the collection and keyboard navigation with focus return", async ({ page }) => {
   await page.goto("/visuals");
-  const search = page.getByRole("searchbox", { name: "Search photographs" });
-  await search.fill("Photograph 09");
-  await expect(page.locator(".archive-photo")).toHaveCount(1);
+  await expect(page.getByRole("searchbox")).toHaveCount(0);
+  await expect(page.locator(".archive-photo")).toHaveCount(9);
   const trigger = page.getByRole("button", { name: "View Mob Ties / Photograph 09" });
   await trigger.click();
   await expect(page.locator(".photo-dialog")).toBeVisible();

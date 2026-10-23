@@ -8,7 +8,7 @@ test("tries autoplay but waits for confirmed playback before showing sound on", 
   await expect(page.locator(".native-playback")).not.toBeVisible();
   const logo = await page.locator(".brand").boundingBox();
   const player = await page.locator(".header-sound").boundingBox();
-  expect(player!.y).toBeGreaterThan(logo!.y + logo!.height);
+  expect(player!.x + player!.width).toBeLessThanOrEqual(logo!.x);
   expect(player!.width).toBeLessThanOrEqual(360);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyPlays: number }).__spotifyPlays)).toBeGreaterThan(0);
   await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
@@ -18,7 +18,8 @@ test("tries autoplay but waits for confirmed playback before showing sound on", 
 test("one confirmed Spotify player persists through navigation and plays selected tracks in-page", async ({ page }) => {
   await mockSpotify(page, true); await page.goto("/");
   await expect(page.locator(".header-sound").getByRole("button", { name: "Pause soundtrack", exact: true })).toHaveAttribute("aria-pressed", "true");
-  await page.locator(".desktop-nav").getByRole("link", { name: "Music", exact: true }).click();
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page.getByRole("navigation", { name: "Expanded navigation" }).getByRole("link", { name: /Music/ }).click();
   await expect(page).toHaveURL(/music$/);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyCreates: number }).__spotifyCreates)).toBe(1);
   await page.getByRole("button", { name: /maatla , thata/ }).click();
@@ -185,7 +186,7 @@ test("confirmed track completion advances once and ordinary pause does not", asy
 test("Music shows all eleven album tracks and explicit supported fallbacks", async ({ page }) => {
   await mockSpotify(page); await page.goto("/music");
   await expect(page.locator(".music-lower > div:first-child .catalogue-row")).toHaveCount(11);
-  await expect(page.locator(".spotify-block .catalogue-row")).toHaveCount(2);
+  await expect(page.locator(".spotify-block .catalogue-row")).toHaveCount(0);
   await expect(page.locator(".release-photo img")).toHaveAttribute("src", /h4b-album-cover/);
   await expect(page.getByRole("link", { name: /peke , fosholo/ })).toHaveAttribute("href", /open.spotify.com/);
   await expect(page.locator(".spotify-mount > iframe")).toHaveAttribute("height", "80");
@@ -226,7 +227,7 @@ test("local featured artwork is sharp and has no Spotify navigation", async ({ p
   await expect(page.locator(".release-photo a, .release-photo button")).toHaveCount(0);
   await artwork.click();
   await expect(page).toHaveURL(/\/music$/);
-  await expect(page.locator(".catalogue-row")).toHaveCount(13);
+  await expect(page.locator(".catalogue-row")).toHaveCount(11);
 });
 
 test("mobile transport has readable status and full touch targets", async ({ page }) => {

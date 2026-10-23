@@ -8,6 +8,7 @@ test("signup requires consent and submits only to the same-origin API", async ({
     return route.fulfill({ json: { accepted: true, message: "Your request has been received." } });
   });
   await page.goto("/music");
+  await page.locator(".footer-disclosure > summary").click();
   const form = page.getByRole("form", { name: "Get North Mob updates" });
   await form.getByRole("textbox", { name: "Email" }).fill("visitor@example.com");
   await form.getByRole("button", { name: "Join the mailing list" }).click();
@@ -21,6 +22,7 @@ test("signup requires consent and submits only to the same-origin API", async ({
 test("a provider failure preserves signup details and never reports success", async ({ page }) => {
   await page.route("**/api/newsletter", route => route.fulfill({ status: 502, json: { message: "We couldn’t complete your signup. Please try again later." } }));
   await page.goto("/live");
+  await page.locator(".footer-disclosure > summary").click();
   const form = page.getByRole("form", { name: "Get North Mob updates" });
   await form.getByRole("textbox", { name: "Email" }).fill("visitor@example.com");
   await form.getByRole("checkbox").check();

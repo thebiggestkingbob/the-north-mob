@@ -19,5 +19,5 @@ export function YouTubeVideo({id,title}:{id:string;title:string}){
   }).catch(()=>{if(!disposed){clearTimeout(timeout);setState("error");}});
   return()=>{disposed=true;clearTimeout(timeout);destroy();holder.remove();};
  },[id,title]);
- return <><div className="youtube-stage" hidden={state==="error"} ref={mount}/>{state==="loading"&&<p className="youtube-status" role="status">Loading video…</p>}{state==="manual"&&<p className="source-note" role="status">Press play in the video to start.</p>}{state==="error"&&<div className="youtube-error" role="alert"><p>This video could not play here. It may be unavailable or restricted, or the connection may be blocked.</p><a className="text-link" href={`https://www.youtube.com/watch?v=${id}`} target="_blank" rel="noreferrer">Watch on YouTube ↗</a></div>}</>;
+ return <><div className="youtube-stage" hidden={state==="error"} ref={mount}/>{state==="loading"&&<p className="youtube-status" role="status">Loading video…</p>}{state==="manual"&&<p className="source-note" role="status">Press play in the video to start.</p>}{state==="error"&&<div className="youtube-error" role="alert"><p>This video could not play here. It may be unavailable or restricted, or the connection may be blocked.</p><a className="text-link" href={`https://www.youtube.com/watch?v=${id}`} target="_blank" rel="noreferrer">Watch on YouTube</a></div>}</>;
 }

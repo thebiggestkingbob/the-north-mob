@@ -16,11 +16,7 @@ export const artists = [
 
 // Supplied Spotify biography is artist-authored. No invented tracklist or dates.
 export const collectiveBio = "The North Mob is not a crew — it’s culture. A relentless collective movement of free creatives functioning at the peak of their individual artistry, unified by sound, vision, and lifestyle. Rooted in street authenticity but engineered for global impact.";
-export const reels = [
-  { url: "https://www.instagram.com/reel/DZega7riPDk/", image: "/assets/group_wide.jpeg" },
-  { url: "https://www.instagram.com/reel/Del2jMPiAWz/", image: "/assets/group_close_glasses.jpeg" },
-  { url: "https://www.instagram.com/reel/DcSskUDiPHs/", image: "/assets/group_close_both_hands.jpeg" },
-] as const;
+
 
 export type LiveEvent = { date: string; name: string; venue: string; ticketUrl?: string };
 export const events: LiveEvent[] = [
