@@ -1,3 +1,4 @@
+import { mockYouTube } from "./youtube-fixture";
 import { expect, test } from "@playwright/test";
 import { mockSpotify } from "./spotify-fixture";
 
@@ -39,9 +40,10 @@ test("sound off unloads the player and respects that choice on reload", async ({
 });
 
 test("opening a film pauses the background soundtrack", async ({ page }) => {
+  await mockYouTube(page);
   await mockSpotify(page, true); await page.route("https://www.youtube-nocookie.com/**", route => route.fulfill({ body: "Video test fixture" }));
   await page.goto("/visuals"); await expect(page.locator(".header-sound").getByRole("button", { name: "Pause soundtrack", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Play official THE NORTH MOB film" }).click();
+  await page.locator(".youtube-thumbnail").first().click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __spotifyPauses: number }).__spotifyPauses)).toBeGreaterThan(0);
   await expect(page.locator(".sound-transport")).toHaveAttribute("aria-pressed", "false");
 });
