@@ -61,13 +61,13 @@ test("blocked Spotify script leaves an in-site native fallback without claiming 
 
 test("water effects are absent and other Home motion remains", async ({ page }) => {
   await mockSpotify(page); await page.goto("/");
-  await expect(page.locator(".hero-photo img")).toBeVisible();
-  await expect(page.locator(".hero-photo img")).toHaveAttribute("src", /homepage-cover/);
-  await expect(page.locator(".hero-photo img")).toHaveCSS("object-fit", "cover");
+  await expect(page.locator(".home-film-poster")).toBeVisible();
+  await expect(page.locator(".home-film-poster")).toHaveAttribute("src", /hero-film-poster/);
+  await expect(page.locator(".home-film-poster")).toHaveCSS("object-fit", "cover");
   await expect(page.locator("canvas,.water-ripple")).toHaveCount(0);
   await expect(page.locator(".home-rings")).toHaveCount(0);
   await expect(page.locator(".cinema-film")).toHaveJSProperty("muted", true);
-  await expect(page.locator(".hero-photo")).toHaveCSS("position", "absolute");
+  await expect(page.locator(".home-film-background")).toHaveCSS("position", "absolute");
 });
 
 test("the full brand wipe stays visible before revealing the next page", async ({ page }) => {

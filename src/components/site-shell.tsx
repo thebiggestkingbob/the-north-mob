@@ -13,6 +13,7 @@ import { SoundtrackControls } from "@/components/soundtrack";
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const cinematic = ["/", "/visuals", "/shop"].includes(pathname);
   const root = useRef<HTMLDivElement>(null);
   const veil = useRef<HTMLDivElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -73,7 +74,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
   if (pathname.startsWith("/studio")) return <div ref={root}><a href="#main" className="skip-link">Skip to content</a>{children}</div>;
 
-  return <div ref={root} className={`site-shell ${pathname === "/" ? "is-home" : ""}`} onClickCapture={(event) => {
+  return <div ref={root} className={`site-shell ${pathname === "/" ? "is-home" : ""} ${cinematic ? "is-cinematic" : ""}`} onClickCapture={(event) => {
     const target = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
     if (!target || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || target.target === "_blank") return;
     const url = new URL(target.href);
@@ -89,7 +90,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   }}>
     <a href="#main" className="skip-link">Skip to content</a>
     <header className="site-header">
-      {pathname === "/" && <div className="home-header-links"><a href={links.spotify} target="_blank" rel="noreferrer">Spotify ↗</a><a href={links.youtube} target="_blank" rel="noreferrer">YouTube ↗</a></div>}
+      {cinematic && <div className="home-header-links"><a href={links.spotify} target="_blank" rel="noreferrer">Spotify ↗</a><a href={links.youtube} target="_blank" rel="noreferrer">YouTube ↗</a></div>}
       <Link href="/" className="brand" aria-label="THE NORTH MOB — Home"><Image src="/assets/official-logo-transparent.png" alt="THE NORTH MOB" width={1983} height={793} unoptimized priority /></Link>
       <nav aria-label="Main navigation" className="desktop-nav">{pages.slice(1).map((page) => <Link href={page.path} key={page.path} aria-current={pathname === page.path ? "page" : undefined}>{page.name}</Link>)}</nav>
       <button ref={menuButton} type="button" className="menu-toggle" aria-label="Open navigation" aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen(true)}><span /><span /></button>

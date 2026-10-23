@@ -1,0 +1,51 @@
+import { expect, test } from "@playwright/test";
+import { mockSpotify } from "./spotify-fixture";
+test.beforeEach(async ({ page }) => { await mockSpotify(page); });
+test("Home introduces Visualz and Shop as dedicated chapters with working routes", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator(".home-experience > section")).toHaveCount(5);
+  await expect(page.locator(".home-visuals-scene").getByRole("heading", { name: "VISUALZ" })).toBeVisible();
+  await page.locator(".home-visuals-scene").getByRole("link", { name: "Explore Visualz" }).click();
+  await expect(page).toHaveURL(/visuals$/);
+  await page.goto("/");
+  await page.locator(".home-shop-scene").getByRole("link", { name: "Visit the shop" }).click();
+  await expect(page).toHaveURL(/shop$/);
+  await expect(page.getByText("No products announced.", { exact: true })).toBeVisible();
+});
+test("Visualz film/reel filters and search reflect real library entries", async ({ page }) => {
+  await page.goto("/visuals");
+  await page.getByRole("button", { name: "Reels", exact: true }).click();
+  await expect(page.locator(".reel")).toHaveCount(3);
+  await expect(page.getByRole("button", { name: "Play official THE NORTH MOB film" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Films", exact: true }).click();
+  await expect(page.locator(".reel")).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Search films and reels" }).fill("Mob Ties");
+  await expect(page.getByRole("button", { name: "Play Mob Ties film" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Play official THE NORTH MOB film" })).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Search films and reels" }).fill("no matching title");
+  await expect(page.getByText("No films or reels match your search.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Photo archive" })).toBeVisible();
+});
+test("Mob Ties plays locally in the Visualz dialog and unloads on close", async ({ page }) => {
+  await page.goto("/visuals");
+  const trigger = page.getByRole("button", { name: "Play Mob Ties film" });
+  await trigger.click();
+  const video = page.locator(".video-dialog video");
+  await expect(video).toBeVisible();
+  await expect(video.locator("source")).toHaveAttribute("src", "/assets/mob-ties/mob-ties-video-01.mp4");
+  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => !element.paused && element.currentTime > 0)).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect(video).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});
+test("Shop keeps the shared cinematic identity, real signup and an honest catalogue state", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/shop");
+  const logo = await page.locator(".brand").boundingBox();
+  expect(Math.abs(logo!.x + logo!.width / 2 - 720)).toBeLessThan(2);
+  await expect(page.getByRole("heading", { level: 1, name: "SHOP", exact: true })).toBeVisible();
+  await expect(page.locator(".newsletter-signup")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: /Add to cart|Buy now|Checkout/i })).toHaveCount(0);
+  await expect(page.locator(".shop-page")).toContainText("No products announced.");
+});

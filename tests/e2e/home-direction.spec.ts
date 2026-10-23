@@ -1,13 +1,18 @@
 import { expect, test } from "@playwright/test";
 import { mockSpotify } from "./spotify-fixture";
 test.beforeEach(async ({ page }) => { await mockSpotify(page); });
-test("cinematic Home keeps the logo centred and the portrait film intact on desktop", async ({ page }) => {
+test("cinematic Home keeps the logo centred and fills the opening viewport with the background film", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   const logo = await page.locator(".brand").boundingBox();
   expect(Math.abs(logo!.x + logo!.width / 2 - 720)).toBeLessThan(2);
   const aperture = await page.locator(".home-film-aperture").boundingBox();
-  expect(aperture!.width / aperture!.height).toBeCloseTo(.75, 1);
+  expect(aperture!.x).toBe(0);
+  expect(aperture!.y).toBe(0);
+  expect(aperture!.width).toBe(1440);
+  expect(aperture!.height).toBe(1000);
+  await expect(page.locator(".cinema-film")).toHaveCSS("object-fit", "cover");
+  await expect(page.locator(".hero-photo")).toHaveCount(0);
   await expect.poll(() => page.locator(".cinema-film").evaluate((video: HTMLVideoElement) => !video.paused && video.currentTime > 0)).toBe(true);
   await expect(page.locator(".cinema-film")).toHaveJSProperty("muted", true);
   await page.getByRole("button", { name: "Pause background film", exact: true }).click();
@@ -17,7 +22,7 @@ test("cinematic Home keeps the logo centred and the portrait film intact on desk
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
   await expect(page.locator(".cinema-film")).toHaveJSProperty("paused", true);
 });
-test("reduced motion provides all three scenes with no film download or sticky animation", async ({ page }) => {
+test("reduced motion provides all five scenes with no film download or sticky animation", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.locator(".cinema-film")).not.toHaveAttribute("src");
