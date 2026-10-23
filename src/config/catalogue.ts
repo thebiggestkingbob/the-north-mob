@@ -1,4 +1,4 @@
-export type CatalogueTrack = { id: string; title: string; artist: string; credits: string; duration: string; uri?: string; releaseId: string; source: string };
+export type CatalogueTrack = { id: string; title: string; artist: string; credits: string; duration: string; uri?: string; releaseId: string; source: string; cover?: string };
 export const album = {
   id: "here-4-business", title: "HERE 4 BUSINESS (with Carlow Picasso)",
   uri: "spotify:album:3f1HZdfe4bPLqQOu5sfmvO", source: "https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO",

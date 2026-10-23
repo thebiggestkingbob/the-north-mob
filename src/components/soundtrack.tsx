@@ -22,13 +22,12 @@ function initialSessionPlayback() {
   initialPlayback = null;
   try {
     const value = JSON.parse(sessionStorage.getItem("northmob:playback:v1") ?? "null");
-    if (value && allTracks.some(track => track.uri === value.uri) && Number.isFinite(value.position) && value.position >= 0 && value.position < 3600000) initialPlayback = value;
+    if (value && typeof value.uri === "string" && /^spotify:track:[A-Za-z0-9]{22}$/.test(value.uri) && Number.isFinite(value.position) && value.position >= 0 && value.position < 3600000) initialPlayback = value;
   } catch { /* Session persistence is optional. */ }
   return initialPlayback;
 }
 const noSubscription = () => () => {};
 const SoundContext = createContext<Soundtrack | null>(null);
-const START_URI = openingTrack.uri!;
 const PREFERENCE_KEY = "northmob:sound";
 function readAutoplayPreference() { try { return sessionStorage.getItem(PREFERENCE_KEY) !== "off"; } catch { return true; } }
 function subscribePreference(callback: () => void) {
@@ -39,19 +38,21 @@ function subscribePreference(callback: () => void) {
 function remember(value: "on" | "off") { try { sessionStorage.setItem(PREFERENCE_KEY, value); } catch { /* Storage is optional. */ } }
 function showPlayer() { window.dispatchEvent(new Event("northmob:show-player")); }
 
-export function SoundtrackProvider({ children }: { children: React.ReactNode }) {
+export function SoundtrackProvider({ children, initialTracks=allTracks }: { children: React.ReactNode; initialTracks?:CatalogueTrack[] }) {
+  const startUri=initialTracks.find(track=>track.id===openingTrack.id)?.uri??initialTracks.find(track=>track.uri)?.uri??ARTIST_URI;
   const autoplayAllowed = useSyncExternalStore(subscribePreference, readAutoplayPreference, () => false);
   const [enabledChoice, setEnabled] = useState<boolean | null>(null);
   const pathname = usePathname();
-  const enabled = !pathname.startsWith("/studio") && (enabledChoice ?? autoplayAllowed);
+  const enabled = initialTracks.length>0 && !pathname.startsWith("/studio") && (enabledChoice ?? autoplayAllowed);
   const [status, setStatus] = useState<SoundStatus>("off");
-  const savedPlayback = useSyncExternalStore(noSubscription, initialSessionPlayback, () => null);
+  const storedPlayback = useSyncExternalStore(noSubscription, initialSessionPlayback, () => null);
+  const savedPlayback=storedPlayback&&initialTracks.some(track=>track.uri===storedPlayback.uri)?storedPlayback:null;
   const [chosenUri, setCurrentUri] = useState<string | null>(null);
-  const currentUri = chosenUri ?? savedPlayback?.uri ?? START_URI;
+  const currentUri = chosenUri ?? savedPlayback?.uri ?? startUri;
   const [attempt, setAttempt] = useState(0);
   const [resolvedIds, setResolvedIds] = useState<Record<string, string>>({});
-  const tracks = useMemo(() => allTracks.map(track => ({ ...track, ...(resolvedIds[track.id] ? { uri: resolvedIds[track.id] } : {}) })), [resolvedIds]);
-  const queue = useRef(allTracks);
+  const tracks = useMemo(() => initialTracks.map(track => ({ ...track, ...(resolvedIds[track.id] ? { uri: resolvedIds[track.id] } : {}) })), [initialTracks,resolvedIds]);
+  const queue = useRef(initialTracks);
   const advance = useRef<() => void>(() => {});
   const position = useRef(0);
   const [progress, setProgress] = useState({ positionMs: 0, durationMs: 0 });
@@ -61,7 +62,7 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
   const controller = useRef<SpotifyController | null>(null);
   const ready = useRef(false);
   const native = useRef(false);
-  const selectedUri = useRef<string>(START_URI);
+  const selectedUri = useRef<string>(startUri);
   const wantSound = useRef(true);
   const confirmedPlaying = useRef(false);
   const startTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -84,17 +85,18 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     fetch("/api/catalogue", { signal: abort.signal }).then(response => response.ok ? response.json() : null).then(data => {
       if (!Array.isArray(data?.tracks)) return;
       const ids: Record<string, string> = {};
-      for (const item of data.tracks) if (allTracks.some(track => track.id === item.id) && typeof item.uri === "string" && /^spotify:track:[A-Za-z0-9]{22}$/.test(item.uri)) ids[item.id] = item.uri;
+      for (const item of data.tracks) if (initialTracks.some(track => track.id === item.id) && typeof item.uri === "string" && /^spotify:track:[A-Za-z0-9]{22}$/.test(item.uri)) ids[item.id] = item.uri;
       setResolvedIds(ids);
     }).catch(() => { /* Verified static IDs and native album listening remain available. */ });
     return () => abort.abort();
-  }, []);
+  }, [initialTracks]);
   useEffect(() => {
     if (!savedPlayback) return;
     selectedUri.current = savedPlayback.uri; resumePosition.current = savedPlayback.position;
     controller.current?.loadUri(savedPlayback.uri);
   }, [savedPlayback]);
   const play = useCallback((uri?: string) => {
+    if(!initialTracks.length)return;
     wantSound.current = true; remember("on"); showPlayer();
     const nextUri = uri ?? selectedUri.current;
     if (nextUri !== selectedUri.current) {
@@ -108,7 +110,7 @@ export function SoundtrackProvider({ children }: { children: React.ReactNode }) 
     else setStatus("loading");
     // Repeated clicks while loading only update intent; they do not remount.
     setEnabled(true);
-  }, [beginPlayback, clearStartTimer]);
+  }, [beginPlayback, clearStartTimer,initialTracks.length]);
   const skip = useCallback((direction: number) => {
     const playable = queue.current.filter(track => track.uri);
     if (!playable.length) return;
@@ -210,14 +212,14 @@ export function useSoundtrack() {
 }
 
 export function SoundEntryButton() {
-  const { status, play, pause } = useSoundtrack();
+  const { status, play, pause,tracks } = useSoundtrack();
   const playing = status === "playing";
-  return <button type="button" className="button button-light" onClick={() => playing ? pause() : play()}>{playing ? "Pause soundtrack" : "Enable Sound"}<span aria-hidden="true">{playing ? "Ⅱ" : "▷"}</span></button>;
+  return <button type="button" className="button button-light" disabled={!tracks.length} onClick={() => playing ? pause() : play()}>{playing ? "Pause soundtrack" : "Enable Sound"}<span aria-hidden="true">{playing ? "Ⅱ" : "▷"}</span></button>;
 }
 
 export function SpotifyPlayButton({ uri = ARTIST_URI, children, className = "button" }: { uri?: string; children: React.ReactNode; className?: string }) {
-  const { play } = useSoundtrack();
-  return <button type="button" className={className} onClick={() => play(uri)}>{children}</button>;
+  const { play,tracks } = useSoundtrack();
+  return <button type="button" className={className} disabled={!tracks.length} onClick={() => play(uri)}>{children}</button>;
 }
 
 export function SoundtrackControls() {
@@ -231,14 +233,14 @@ export function SoundtrackControls() {
     window.addEventListener("northmob:show-player", open);
     return () => window.removeEventListener("northmob:show-player", open);
   }, []);
-  const playbackLabel = status === "loading" ? "Connecting…" : status === "starting" ? "Starting…" : status === "ready" ? "Tap to enable sound" : status === "native" ? "Use Spotify’s play button" : status === "paused" ? "Paused" : status === "off" ? "Sound off" : song?.artist ?? album.artist;
+  const playbackLabel = !tracks.length?"Music temporarily unavailable":status === "loading" ? "Connecting…" : status === "starting" ? "Starting…" : status === "ready" ? "Tap to enable sound" : status === "native" ? "Use Spotify’s play button" : status === "paused" ? "Paused" : status === "off" ? "Sound off" : song?.artist ?? album.artist;
   const nativeVisible = enabled && needsNative && (!playing || currentUri === album.uri);
   return <div className={`header-sound ${playing ? "is-playing" : ""}`}>
-    <Image className="mini-artwork" src={song?.releaseId === album.id ? album.cover : "/assets/official-logo-transparent.png"} alt="" width={32} height={40} />
+    <Image className="mini-artwork" unoptimized={song?.cover?.startsWith("/api/media/")} src={song?.cover??(song?.releaseId === album.id ? album.cover : "/assets/official-logo-transparent.png")} alt="" width={32} height={40} />
     <div className="track-meta"><span title={title}>{title}</span><span role="status" aria-live="polite">{playbackLabel}</span></div>
-    <button type="button" className="queue-button" onClick={previous} aria-label="Previous track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 5h2v14H5zM18 5 8 12l10 7z" /></svg></button>
-    <button className="sound-transport" type="button" aria-label={playing ? "Pause soundtrack" : status === "ready" || status === "native" ? "Enable Sound" : "Play soundtrack"} aria-pressed={playing} onClick={() => playing ? pause() : play()}><span className="sound-bars" aria-hidden="true"><i /><i /><i /></span><span className="sound-enable">{status === "ready" || status === "native" ? "Enable Sound" : playing ? "Ⅱ" : "▷"}</span></button>
-    <button type="button" className="queue-button" onClick={next} aria-label="Next track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 5h2v14h-2zM6 5l10 7-10 7z" /></svg></button>
+    <button type="button" className="queue-button" disabled={!tracks.length} onClick={previous} aria-label="Previous track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 5h2v14H5zM18 5 8 12l10 7z" /></svg></button>
+    <button className="sound-transport" type="button" disabled={!tracks.length} aria-label={playing ? "Pause soundtrack" : status === "ready" || status === "native" ? "Enable Sound" : "Play soundtrack"} aria-pressed={playing} onClick={() => playing ? pause() : play()}><span className="sound-bars" aria-hidden="true"><i /><i /><i /></span><span className="sound-enable">{status === "ready" || status === "native" ? "Enable Sound" : playing ? "Ⅱ" : "▷"}</span></button>
+    <button type="button" className="queue-button" disabled={!tracks.length} onClick={next} aria-label="Next track"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 5h2v14h-2zM6 5l10 7-10 7z" /></svg></button>
     <button type="button" className="sound-off" onClick={off} aria-label="Turn sound off">×</button>
     {durationMs > 0 && status !== "native" && status !== "off" && <label className="sound-progress"><span className="sr-only">Track position</span><span>{Math.floor(positionMs / 60000)}:{String(Math.floor(positionMs / 1000) % 60).padStart(2, "0")}</span><input type="range" min={0} max={durationMs / 1000} value={positionMs / 1000} step={1} aria-label="Track position" onChange={event => seek(Number(event.target.value))} /><span>{Math.floor(durationMs / 60000)}:{String(Math.floor(durationMs / 1000) % 60).padStart(2, "0")}</span></label>}
     <div className={`native-playback ${nativeVisible ? "is-needed" : ""}`} inert={!nativeVisible} aria-hidden={!nativeVisible} aria-label="Spotify playback controls">

@@ -6,12 +6,12 @@ Updated 23 October 2026. The approved cinematic design is locked by DESIGN-LOCK.
 | --- | --- | --- |
 | Cinematic public chapters | Home, Music, The Mob, Visualz, Live, Business and Shop routes implemented; approved film hero and chapter navigation | Real-device Safari/Android performance and accessibility review |
 | Persistent music | Root Spotify engine, compact controls, queue recovery and provider status implemented | Actual Spotify/device testing; unrestricted playback is not supported by the chosen provider |
-| Studio owner access | Server authentication, owner membership checks, protected routes and no public signup implemented | Dedicated hosted project, confirmed owner provisioning, MFA/recovery and hosted-session tests |
+| Studio owner access | Server authentication, owner membership checks, protected routes and no public signup implemented | Hosted project connected and schema installed; owner account, MFA/recovery and hosted-session tests still pending |
 | Events | Draft/edit/publish/archive, revision conflicts, append-only audit; published records feed Live | Hosted owner-to-public end-to-end verification, verified flyers/archived media, city filters and opt-in event alerts |
 | Artists | Draft/edit/publish/archive, version conflicts, atomic audit; published profiles feed The Mob | Hosted verification; approved additional biographies/links when supplied |
-| Media Library | Approved assets are bundled and documented | Private originals, safe uploads/processing, rights records, controlled derivatives and owner UI |
-| Music publishing | Verified bundled catalogue and artwork | Studio release/track management and published catalogue integration |
-| Visualz management | Working public video/photo browsing, filters and lightbox | Studio albums, tags, featured selection and publishing |
+| Media Library | Owner upload/edit UI, signature and size checks, image decoding/re-encoding, private originals, optimized derivatives, rights/alt text, draft/publish/archive and audit implemented; hosted buckets/policies installed | Hosted owner upload/download test, recovery after network/storage failures and operational cleanup; no owner exists yet |
+| Music publishing | Studio release/track editor, revisions/history, publication controls; public H4B and persistent queue consume published data; 11 H4B + 2 supplementary tracks preserved | Hosted owner-to-public test, real Spotify/device verification; supplementary metadata remains explicitly incomplete |
+| Visualz management | Studio video/photo editing, album labels, category, featured ordering and draft/publish/archive with history; public layout uses published records; six videos/nine photos preserved | Hosted owner end-to-end test; richer album/tag/artist/event relationships and discovery remain |
 | Enquiries | Validated adaptive public form and Brevo/adapter delivery or explicit mail-app fallback | Durable submission store, owner statuses/notes/assignment, delivery outbox and retries |
 | Fans | Explicit signup consent and existing Brevo subscription adapter | Durable consent history, suppression/preferences, fan directory/export/correction/deletion and retention |
 | Campaigns | Not implemented | Drafts/templates/preview, approved test/send, scheduling, unsubscribe, delivery history and idempotency |
@@ -24,10 +24,18 @@ Updated 23 October 2026. The approved cinematic design is locked by DESIGN-LOCK.
 
 No production launch or promotion is authorized by this register. Use protected feature previews while completing the platform. Passing fixture/local tests does not establish hosted Auth, email delivery, Spotify playback, payments or backup restoration.
 
-Database provisioning: owner selected `kingbob-3860’s projects`; quoted project price is $0/month and cost acknowledgement is pending. Payment provider connection is intentionally deferred by the owner.
+Database: user connected **NORTH MOB Website**, project `cbybcyeltayiuazbhskm`, through the **THE BIGGEST HQ** account. Existing schema, approved seeds and policies are installed. No new billable project was created. Payment integration remains explicitly excluded by the owner. Branch-scoped preview uses only URL and publishable key. Owner email supplied: thebiggest.kingbob@gmail.com; no Auth user or membership has been created.
 
 Apply all migrations and the idempotent seed before setting the Supabase URL/publishable-key environment variables. Configured public content readers fail closed on database errors; they do not resurrect archived bundled content. The seed preserves owner changes on conflicts.
 
 ## Artist-module verification
 
 TypeScript, ESLint and production build passed. 75 unit tests and 55 Chromium browser tests passed. The network-isolated PostgreSQL checks verified owner/non-owner access, private drafts, publication, archive, stale revisions and append-only history. Hosted authentication, database integration and real-device checks remain outstanding. No production changes or messages were sent.
+
+## Content-module checkpoint — 23 October 2026
+
+TypeScript, ESLint, production build, 92 unit tests, the disposable PostgreSQL policy/history suite, and all 80 browser regressions passed; eight affected browser checks passed again after the final player/API changes. Hosted anonymous queries confirm 13 tracks (11 H4B), six videos and nine photographs, with no anonymous writes or access to media rights/original paths. Hosted security advisor returned no findings. These are not a claim of hosted login or owner upload acceptance: the database still has zero Auth users and zero owners. Fixture playback tests do not establish real Spotify availability.
+
+Migrations were applied through the connected Supabase migration API. Local migration filenames are aligned to the observed remote ledger; do not reapply the earlier original filenames. `visualz-seed.sql` and `music-seed.sql` are idempotent and preserve owner edits. Media originals are private; only published, processed derivatives are anonymously readable. Published imagery is inherently public; archiving blocks subsequent origin requests but cannot retract a downloaded copy.
+
+Studio development remains incomplete: enquiries inbox/storage/workflow, fan directory/consent lifecycle, campaigns, products/inventory/orders (without live payments), settings, analytics, shared limiting, MFA/recovery and operational backup/restore remain future work. No mock completion screens were added for these modules. This checkpoint does not authorize production promotion.

@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   openGraph: { title: "THE NORTH MOB", description: "Sound. Vision. A movement.", images: [{ url: "/assets/group_wide.jpeg", alt: "THE NORTH MOB collective" }] },
   robots: siteUrl ? { index: true, follow: true } : { index: false, follow: false },
 };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><SoundtrackProvider><SiteShell>{children}</SiteShell></SoundtrackProvider></body></html>;
+import { publishedMusic } from "@/lib/studio/public-music";
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const music=await publishedMusic();
+  return <html lang="en"><body><SoundtrackProvider initialTracks={music.tracks}><SiteShell>{children}</SiteShell></SoundtrackProvider></body></html>;
 }

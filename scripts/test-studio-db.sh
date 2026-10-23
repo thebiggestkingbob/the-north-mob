@@ -11,6 +11,6 @@ for attempt in $(seq 1 30); do
  if docker exec "$studio_db" pg_isready -h 127.0.0.1 -U postgres >/dev/null 2>&1; then break; fi
  sleep 1
 done
-for file in supabase/tests/bootstrap.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/events.sql supabase/tests/artists.sql; do
+for file in supabase/tests/bootstrap.sql supabase/migrations/*.sql supabase/seed.sql supabase/visualz-seed.sql supabase/music-seed.sql supabase/tests/events.sql supabase/tests/artists.sql supabase/tests/media.sql supabase/tests/music.sql; do
  docker exec -i -e PGPASSWORD=local-test-only "$studio_db" psql -h 127.0.0.1 -X -v ON_ERROR_STOP=1 -U postgres < "$file"
 done

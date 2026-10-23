@@ -1,7 +1,7 @@
 "use client";
 import { preconnect } from "react-dom";
 import { useEffect, useRef, useState } from "react";
-import { videoIds } from "@/config/videos";
+import type { GalleryVideo } from "@/lib/studio/public-visualz";
 import { useClientReady } from "@/lib/use-client-ready";
 import { YouTubeVideo } from "./youtube-video";
 function Thumbnail({id,index}:{id:string;index:number}){
@@ -18,12 +18,13 @@ function Thumbnail({id,index}:{id:string;index:number}){
  // eslint-disable-next-line @next/next/no-img-element
  return <img ref={image} src={`https://i.ytimg.com/vi/${id}/${fallback?"hqdefault":"maxresdefault"}.jpg`} srcSet={fallback?undefined:`https://i.ytimg.com/vi/${id}/mqdefault.jpg 320w, https://i.ytimg.com/vi/${id}/maxresdefault.jpg 1280w`} sizes="(max-width: 800px) 100vw, 50vw" width={1280} height={720} alt="" loading={index<2?"eager":"lazy"} fetchPriority={index<2?"high":"auto"} onError={()=>setFallback(value=>value===fallback?Math.min(value+1,2):value)} onLoad={event=>{if(event.currentTarget.naturalWidth<=120)setFallback(value=>value===fallback?Math.min(value+1,2):value);}}/>;
 }
-export function VideoGallery(){
+export function VideoGallery({videos}:{videos:GalleryVideo[]}){
+ const videoIds=videos.map(video=>video.id);
  preconnect("https://i.ytimg.com");
- const interactive=useClientReady();const [titles,setTitles]=useState<Record<string,string>>({});const [selected,setSelected]=useState<string|null>(null);
+ const interactive=useClientReady();const [titles,setTitles]=useState<Record<string,string>>(Object.fromEntries(videos.filter(video=>video.title).map(video=>[video.id,video.title])));const [selected,setSelected]=useState<string|null>(null);
  const dialog=useRef<HTMLDialogElement>(null);const trigger=useRef<HTMLButtonElement|null>(null);
  const [selectedTitle,setSelectedTitle]=useState("");
- useEffect(()=>{const abort=new AbortController();fetch("/api/videos",{signal:abort.signal}).then(response=>response.ok?response.json():null).then(data=>{if(!Array.isArray(data?.videos))return;const next:Record<string,string>={};for(const video of data.videos)if(videoIds.includes(video.id)&&typeof video.title==="string"&&video.title.trim())next[video.id]=video.title.slice(0,300);setTitles(next);}).catch(()=>{});return()=>abort.abort();},[]);
+ useEffect(()=>{const abort=new AbortController();fetch("/api/videos",{signal:abort.signal}).then(response=>response.ok?response.json():null).then(data=>{if(!Array.isArray(data?.videos))return;const next:Record<string,string>={};for(const video of data.videos)if(videos.some(item=>item.id===video.id)&&typeof video.title==="string"&&video.title.trim())next[video.id]=video.title.slice(0,300);setTitles(previous=>({...next,...previous}));}).catch(()=>{});return()=>abort.abort();},[videos]);
  useEffect(()=>{
   if(!selected){dialog.current?.close();return;}
   window.dispatchEvent(new Event("northmob:video-open"));dialog.current?.showModal();

@@ -1,4 +1,5 @@
 import {afterEach,expect,it,vi} from "vitest";
+vi.mock("server-only",()=>({}));
 import {GET} from "./route";
 import {videoIds} from "@/config/videos";
 afterEach(()=>vi.unstubAllGlobals());

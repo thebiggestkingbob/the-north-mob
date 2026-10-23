@@ -1,0 +1,21 @@
+-- Exact approved catalogue. Supplementary rows are explicitly source references, not invented album metadata.
+insert into public.music_releases(slug,title,artist,year,cover,spotify_uri,source,kind,status) values
+('here-4-business','HERE 4 BUSINESS (with Carlow Picasso)','THE NORTHMOB.','2026','/assets/h4b-album-cover.jpg','spotify:album:3f1HZdfe4bPLqQOu5sfmvO','https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO','album','published'),
+('tatana-mathata','tatana, mathata.','Trophy, Orieblxckmaestro, Carlow Picasso, MajorIcey',null,null,'spotify:track:6VwibeE8WERPrdtq9zPF75','https://open.spotify.com/track/6VwibeE8WERPrdtq9zPF75','reference','published'),
+('ground-2-glory','Fetlhela (feat. Trophy, Orielblxckmaestro, Majoricey & Carlow Picasso)','Loatinover Pounds, THE NORTHMOB.',null,null,null,'https://open.spotify.com/album/10upZ9wALA9z8ByE3nZTHk','reference','published')
+on conflict(slug) do nothing;
+insert into public.music_tracks(catalogue_id,release_slug,title,artist,credits,duration,spotify_uri,source,sort_order,status) values
+('h4b-1','here-4-business','peke , fosholo','THE NORTHMOB.','THE NORTHMOB., Trophy, Orieblxckmaestro, MajorIcey, Carlow Picasso','03:02',null,'https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO',0,'published'),
+('h4b-2','here-4-business','momma , phone','THE NORTHMOB.','THE NORTHMOB., Lowfeye, Trophy, Orieblxckmaestro, MajorIcey, Carlow Picasso','04:17','spotify:track:0uOQ2hUkWqG7Mk38yQpYt9','https://open.spotify.com/track/0uOQ2hUkWqG7Mk38yQpYt9',1,'published'),
+('h4b-3','here-4-business','cut , box','THE NORTHMOB.','THE NORTHMOB., Trophy, Orieblxckmaestro, MajorIcey, Carlow Picasso','02:26',null,'https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO',2,'published'),
+('h4b-4','here-4-business','sjepa','THE NORTHMOB.','THE NORTHMOB., Young Stunna, Trophy, Orieblxckmaestro, MajorIcey, Carlow Picasso','03:01',null,'https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO',3,'published'),
+('h4b-5','here-4-business','peaky , blinder','THE NORTHMOB.','THE NORTHMOB., Trophy, Orieblxckmaestro, MajorIcey, Carlow Picasso','03:16','spotify:track:6DiWTgc5snndkCPs2ohJwN','https://open.spotify.com/track/6DiWTgc5snndkCPs2ohJwN',4,'published'),
+('h4b-6','here-4-business','highway , dimas','THE NORTHMOB.','THE NORTHMOB., Trophy, Orieblxckmaestro, MajorIcey, Carlow Picasso','03:07',null,'https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO',5,'published'),
+('h4b-7','here-4-business','gerr , ten','THE NORTHMOB.','THE NORTHMOB., Focalistic, Orieblxckmaestro, Trophy, Carlow Picasso, MajorIcey','03:36',null,'https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO',6,'published'),
+('h4b-8','here-4-business','ten , toes','THE NORTHMOB.','THE NORTHMOB., Blxckie, Trophy, MajorIcey, Carlow Picasso, Orieblxckmaestro, Loatinover Pounds','03:44',null,'https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO',7,'published'),
+('h4b-9','here-4-business','often [with Carlow Piccaso)','THE NORTHMOB.','THE NORTHMOB., Trophy, Orieblxckmaestro, MajorIcey','03:12',null,'https://open.spotify.com/album/3f1HZdfe4bPLqQOu5sfmvO',8,'published'),
+('h4b-10','here-4-business','camp , chair','THE NORTHMOB.','THE NORTHMOB., Trophy, Orieblxckmaestro, Focalistic, MajorIcey, Carlow Picasso','03:17','spotify:track:0qmPvb3cGQpSN5chcx6djF','https://open.spotify.com/track/0qmPvb3cGQpSN5chcx6djF',9,'published'),
+('h4b-11','here-4-business','maatla , thata','THE NORTHMOB.','THE NORTHMOB., Orieblxckmaestro, Trophy, MajorIcey, Carlow Picasso, LaCabra','02:39','spotify:track:3HdLERcMc38Yq5UDnCFGf3','https://open.spotify.com/track/3HdLERcMc38Yq5UDnCFGf3',10,'published'),
+('tatana-mathata','tatana-mathata','tatana, mathata.','Trophy, Orieblxckmaestro, Carlow Picasso, MajorIcey','Trophy, Orieblxckmaestro, Carlow Picasso, MajorIcey','02:33','spotify:track:6VwibeE8WERPrdtq9zPF75','https://open.spotify.com/track/6VwibeE8WERPrdtq9zPF75',11,'published'),
+('fetlhela','ground-2-glory','Fetlhela (feat. Trophy, Orielblxckmaestro, Majoricey & Carlow Picasso)','Loatinover Pounds, THE NORTHMOB.','Loatinover Pounds, THE NORTHMOB., Trophy, Orielblxckmaestro, MajorIcey, Carlow Picasso','03:42',null,'https://open.spotify.com/album/10upZ9wALA9z8ByE3nZTHk',12,'published')
+on conflict(catalogue_id) do nothing;

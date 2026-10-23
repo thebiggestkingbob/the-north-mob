@@ -14,7 +14,7 @@ test("unconfigured Studio fails closed without exposing owner data or starting a
   expect(response.headers()["x-robots-tag"]).toContain("noindex");
 });
 test("Studio rejects cross-origin session and event writes", async ({ request }) => {
-  for (const endpoint of ["session", "events", "artists"]) {
+  for (const endpoint of ["session", "events", "artists", "media", "visualz", "music"]) {
     const response = await request.post(`/api/studio/${endpoint}`, { headers: { origin: "https://other.example" }, data: {} });
     expect(response.status()).toBe(403);
   }
@@ -25,4 +25,9 @@ test("artist management requires an owner session", async ({page,request})=>{
  await expect(page).toHaveURL(/studio\/login$/);
  const response=await request.post("/api/studio/artists",{headers:{origin:"http://127.0.0.1:3000"},data:{name:"Unauthorized"}});
  expect(response.status()).toBe(401);
+});
+
+test("media and Visualz administration stay private",async({page,request})=>{
+ for(const section of ["media","visualz","music"]){await page.goto(`/studio/${section}`);await expect(page).toHaveURL(/studio\/login$/);const response=await request.post(`/api/studio/${section}`,{headers:{origin:"http://127.0.0.1:3000"},data:{}});expect(response.status()).toBe(401);}
+ const image=await request.get("/api/studio/media/00000000-0000-4000-8000-000000000001");expect(image.status()).toBe(401);
 });

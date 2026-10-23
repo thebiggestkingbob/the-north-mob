@@ -16,6 +16,6 @@ export function SpotifyTrackList({ additional = false }: { additional?: boolean 
 }
 
 
-export function AlbumArtwork() {
-  return <Image src={album.cover} alt={`${album.title} — official cover artwork`} style={{ objectFit: "contain" }} fill priority quality={90} sizes="(max-width: 600px) 100vw, 48vw" />;
+export function AlbumArtwork({cover=album.cover,title=album.title}:{cover?:string;title?:string}) {
+  return <Image unoptimized={cover.startsWith("/api/media/")} src={cover} alt={`${title} — official cover artwork`} style={{ objectFit: "contain" }} fill priority quality={90} sizes="(max-width: 600px) 100vw, 48vw" />;
 }

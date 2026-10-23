@@ -1,0 +1,8 @@
+import { z } from "zod";
+const slug=z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100);
+const common={id:z.uuid().optional(),version:z.number().int().positive().optional(),status:z.enum(["draft","published","archived"])};
+const versioned=(v:{id?:string;version?:number})=>!v.id||!!v.version;
+export const releaseSchema=z.object({...common,slug,title:z.string().trim().min(2).max(200),artist:z.string().trim().min(2).max(300),year:z.string().regex(/^\d{4}$/).nullable(),kind:z.enum(["album","reference"]),cover:z.string().refine(v=>(/^\/assets\/[a-zA-Z0-9_./-]+\.(webp|png|jpe?g)$/.test(v)&&!v.includes(".."))||/^\/api\/media\/[a-f0-9-]{36}$/.test(v)).nullable(),spotify_uri:z.string().regex(/^spotify:(album|track):[A-Za-z0-9]{22}$/).nullable(),source:z.string().regex(/^https:\/\/open\.spotify\.com\/(album|track)\/[A-Za-z0-9]{22}$/)}).strict().refine(v=>v.kind!=="album"||!!v.year,{path:["year"],message:"A verified album needs a release year."}).refine(versioned,{path:["version"],message:"Reload before editing."});
+export const trackSchema=z.object({...common,catalogue_id:slug,release_slug:slug,title:z.string().trim().min(1).max(300),artist:z.string().trim().min(2).max(300),credits:z.string().trim().max(1000),duration:z.string().regex(/^\d{1,3}:[0-5][0-9]$/),spotify_uri:z.string().regex(/^spotify:track:[A-Za-z0-9]{22}$/).nullable(),source:z.string().regex(/^https:\/\/open\.spotify\.com\/(album|track)\/[A-Za-z0-9]{22}$/),sort_order:z.number().int().min(0).max(1000)}).strict().refine(versioned,{path:["version"],message:"Reload before editing."});
+export type ReleaseRecord=z.infer<typeof releaseSchema>;
+export type TrackRecord=z.infer<typeof trackSchema>;
