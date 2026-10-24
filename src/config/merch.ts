@@ -1,7 +1,7 @@
 import images from "./merch-images.json";
 export type MerchStatus="available"|"sold-out"|"coming-soon";
 export type MerchImage={src:string;width:number;height:number;alt:string;original:string};
-export type MerchProduct={id:string;name:string;description:string;category:string;price:number;status:MerchStatus;stock:number;images:MerchImage[];variants:{id:string;label:string;image?:number}[];variantLabel?:string;note?:string};
+export type MerchProduct={id:string;name:string;description:string;category:string;price:number;status:MerchStatus;stock:number;images:MerchImage[];variants:{id:string;label:string;image?:number}[];variantLabel?:string;note?:string;limitedEdition?:boolean};
 function photos(files:string[],name:string):MerchImage[]{return files.map((file,index)=>{const image=images.find(image=>image.original===file+".png");if(!image)throw new Error(`Missing merch image: ${file}`);return {src:image.web,width:image.width,height:image.height,original:image.original,alt:`${name} — supplied merchandise photograph ${index+1}`};});}
 function product(id:string,name:string,description:string,category:string,price:number,status:MerchStatus,stock:number,files:string[],extra:Partial<MerchProduct>={}):MerchProduct{return {id,name,description,category,price:price*100,status,stock,images:photos(files,name),variants:[],...extra};}
 const sizing="Garment sizing has not been supplied.";
@@ -19,6 +19,9 @@ export const merch:MerchProduct[]=[
  product("h4b-mug","H4B Mug","North Mob and Here 4 Business lettering wrap the pictured black and white mugs.","Mug",149,"available",12,["10"],{variantLabel:"Colour",variants:[{id:"black",label:"Black"},{id:"white",label:"White"}],note:"Price is per mug. Both colours appear in the supplied photograph; capacity is unconfirmed."}),
  product("h4b-keyring","H4B Keyring","Choose the North Mob logo, H4B lettering or collective photograph as your keyring design.","Keyring",99,"available",24,["11.1","11.2","11.3","11.4"],{variantLabel:"Design",variants:[{id:"logo",label:"North Mob logo",image:1},{id:"portrait",label:"H4B photograph",image:2},{id:"business",label:"Here 4 Business",image:3}],note:"Price is per keyring. The first photograph shows the design collection."}),
  product("mob-stickers","Mob Sticker Sheet","A monochrome sticker sheet collecting North Mob logos, artist portraits and H4B graphics.","Stickers",79,"available",30,["12"]),
+ product("mob-cap","Mob Cap","Black cap with the North Mob mark at the front and H4B lettering at the back.","Cap",249,"coming-soon",0,["13"],{note:"Stock and sizing have not been confirmed."}),
+ product("mob-string-bucket-hat","Mob String Bucket Hat","Black bucket hat with chin cords, the North Mob mark and H4B lettering.","Bucket hat",399,"coming-soon",0,["14"],{note:"Stock and sizing have not been confirmed."}),
+ product("h4b-worksuit","H4B Worksuit","Matching black utility vest and trousers with contrasting bands and North Mob / H4B details.","Worksuit",1099,"coming-soon",0,["15","15.1","15.2","15.3"],{limitedEdition:true,note:"Limited Edition. Garment sizing, stock quantities and release date have not been supplied."}),
 ];
 export const demoDelivery={delivery:7900,collection:0};
 export const money=(cents:number)=>new Intl.NumberFormat("en-ZA",{style:"currency",currency:"ZAR",minimumFractionDigits:0,maximumFractionDigits:2}).format(cents/100);

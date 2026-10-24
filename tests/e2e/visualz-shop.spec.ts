@@ -12,7 +12,7 @@ test("Home introduces Visualz and Shop as dedicated chapters with working routes
   await page.goto("/");
   await page.locator(".home-shop-scene").getByRole("link", { name: "Visit the shop" }).click();
   await expect(page).toHaveURL(/shop$/);
-  await expect(page.locator(".merch-polaroid")).toHaveCount(13);
+  await expect(page.locator(".merch-polaroid")).toHaveCount(16);
 });
 test("Visualz keeps six official videos and the existing photo archive", async ({page})=>{
  await mockYouTube(page);await page.goto("/visuals");
@@ -33,5 +33,5 @@ test("Shop keeps the shared cinematic identity, real signup and an honest catalo
   await expect(page.getByRole("heading", { level: 1, name: /OBJECTS.*MERCHANDISE/ })).toBeVisible();
   await expect(page.locator(".newsletter-signup")).toHaveCount(1);
   await expect(page.getByRole("button", { name: /Open cart/ })).toBeVisible();
-  await expect(page.locator(".shop-page")).toContainText("13 objects / collection");
+  await expect(page.locator(".shop-page")).toContainText("16 objects / collection");
 });

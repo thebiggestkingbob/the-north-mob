@@ -158,5 +158,53 @@
     "height": 1536,
     "originalBytes": 2112711,
     "webBytes": 214244
+  },
+  {
+    "original": "13.png",
+    "web": "/assets/merch/13.webp",
+    "width": 1672,
+    "height": 941,
+    "originalBytes": 2287460,
+    "webBytes": 176498
+  },
+  {
+    "original": "14.png",
+    "web": "/assets/merch/14.webp",
+    "width": 1672,
+    "height": 941,
+    "originalBytes": 2090774,
+    "webBytes": 146022
+  },
+  {
+    "original": "15.png",
+    "web": "/assets/merch/15.webp",
+    "width": 1536,
+    "height": 1024,
+    "originalBytes": 2377921,
+    "webBytes": 198552
+  },
+  {
+    "original": "15.1.png",
+    "web": "/assets/merch/15.1.webp",
+    "width": 1122,
+    "height": 1402,
+    "originalBytes": 2333877,
+    "webBytes": 201858
+  },
+  {
+    "original": "15.2.png",
+    "web": "/assets/merch/15.2.webp",
+    "width": 1122,
+    "height": 1402,
+    "originalBytes": 2377910,
+    "webBytes": 202228
+  },
+  {
+    "original": "15.3.png",
+    "web": "/assets/merch/15.3.webp",
+    "width": 1122,
+    "height": 1402,
+    "originalBytes": 2087561,
+    "webBytes": 136250
   }
 ]

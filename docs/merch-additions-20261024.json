@@ -1,0 +1,56 @@
+[
+  {
+    "original": "13.png",
+    "web": "/assets/merch/13.webp",
+    "width": 1672,
+    "height": 941,
+    "originalBytes": 2287460,
+    "webBytes": 176498,
+    "originalSha256": "c3708474f1d2eabe1acd685c0b2301d0de559214da0f3f09bd61c284629be0a6"
+  },
+  {
+    "original": "14.png",
+    "web": "/assets/merch/14.webp",
+    "width": 1672,
+    "height": 941,
+    "originalBytes": 2090774,
+    "webBytes": 146022,
+    "originalSha256": "77462e6b25a9436568b886be8e224853bcd7ca2d582dfa8e02649f8b04c33a83"
+  },
+  {
+    "original": "15.png",
+    "web": "/assets/merch/15.webp",
+    "width": 1536,
+    "height": 1024,
+    "originalBytes": 2377921,
+    "webBytes": 198552,
+    "originalSha256": "44868e6ecb7d3ee480839ede1674fb96b62d24337db6ccbe72833244af40c400"
+  },
+  {
+    "original": "15.1.png",
+    "web": "/assets/merch/15.1.webp",
+    "width": 1122,
+    "height": 1402,
+    "originalBytes": 2333877,
+    "webBytes": 201858,
+    "originalSha256": "321d61e44ca5f5d8d71d469077e568a098e59d44a4e051e396d8296fa7177388"
+  },
+  {
+    "original": "15.2.png",
+    "web": "/assets/merch/15.2.webp",
+    "width": 1122,
+    "height": 1402,
+    "originalBytes": 2377910,
+    "webBytes": 202228,
+    "originalSha256": "31390adfb8799d38e9ede3d2e528f358faf702c3b7cb1ad991c23817ac68609a"
+  },
+  {
+    "original": "15.3.png",
+    "web": "/assets/merch/15.3.webp",
+    "width": 1122,
+    "height": 1402,
+    "originalBytes": 2087561,
+    "webBytes": 136250,
+    "originalSha256": "a5a691c3cd32a8df3fc9addf01ef5a3b96268961cc852bf3b1493b4720998d2d"
+  }
+]

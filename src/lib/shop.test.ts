@@ -1,10 +1,10 @@
 import { expect,it } from "vitest";
 import { merch,demoDelivery } from "@/config/merch";
 import { addCart,cartSubtotal,changeQuantity,completeDemo,decodeShop,emptyShop,safeCart } from "./shop";
-it("maps all 20 supplied images to 13 products and the prototype status distribution",()=>{
- expect(merch).toHaveLength(13);expect(merch.flatMap(p=>p.images)).toHaveLength(20);
- expect(new Set(merch.flatMap(p=>p.images.map(i=>i.original))).size).toBe(20);
- expect(merch.filter(p=>p.status==="available")).toHaveLength(9);expect(merch.filter(p=>p.status==="sold-out")).toHaveLength(2);expect(merch.filter(p=>p.status==="coming-soon")).toHaveLength(2);
+it("maps all 26 supplied images to 16 products and the approved status distribution",()=>{
+ expect(merch).toHaveLength(16);expect(merch.flatMap(p=>p.images)).toHaveLength(26);
+ expect(new Set(merch.flatMap(p=>p.images.map(i=>i.original))).size).toBe(26);
+ expect(merch.filter(p=>p.status==="available")).toHaveLength(9);expect(merch.filter(p=>p.status==="sold-out")).toHaveLength(2);expect(merch.filter(p=>p.status==="coming-soon")).toHaveLength(5);
 });
 it("rejects unavailable products, invalid variants, noninteger quantities and forged prices",()=>{
  const cart=safeCart([{productId:"mob-socks",variant:"",quantity:1},{productId:"mob-flag",variant:"black",quantity:1},{productId:"h4b-mug",variant:"red",quantity:1},{productId:"lineup-tee",variant:"",quantity:2,price:1},{productId:"mob-tote",variant:"",quantity:1.5}]);
