@@ -2,7 +2,7 @@ import { mockYouTube } from "./youtube-fixture";
 import { expect, test } from "@playwright/test";
 import { mockSpotify } from "./spotify-fixture";
 test.beforeEach(async ({ page }) => { await mockSpotify(page); await mockYouTube(page); });
-const routes = [["/", "THE NORTH MOB"], ["/music", "HERE 4 BUSINESS"], ["/the-mob", "THE MOB"], ["/visuals", "VISUALZ"], ["/live", "LIVE"], ["/business", "BUSINESS AS USUAL"], ["/shop", "SHOP"]];
+const routes = [["/", "THE NORTH MOB"], ["/music", "HERE 4 BUSINESS"], ["/the-mob", "THE MOB"], ["/visuals", "VISUALZ"], ["/live", "LIVE"], ["/business", "BUSINESS AS USUAL"], ["/shop", "OBJECTS /MERCHANDISE"]];
 for (const width of [320, 375, 768, 1024, 1440, 1920]) {
   test(`seven pages fit at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });

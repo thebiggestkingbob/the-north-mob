@@ -15,7 +15,7 @@ Updated 23 October 2026. The approved cinematic design is locked by DESIGN-LOCK.
 | Enquiries | Validated adaptive public form and Brevo/adapter delivery or explicit mail-app fallback | Durable submission store, owner statuses/notes/assignment, delivery outbox and retries |
 | Fans | Explicit signup consent and existing Brevo subscription adapter | Durable consent history, suppression/preferences, fan directory/export/correction/deletion and retention |
 | Campaigns | Not implemented | Drafts/templates/preview, approved test/send, scheduling, unsubscribe, delivery history and idempotency |
-| Custom commerce | Branded Shop empty state; custom-store decision retained | Products/variants/inventory/cart/orders plus approved pricing/photos/policies. Gateway connection deferred by owner; no functional checkout claimed |
+| Custom commerce | Shop-only Polaroid prototype: 13 visually audited products/20 images, recommended prices, local cart/wishlist/demo stock and simulated checkout; no real payment or order | Studio products/orders, durable commerce inventory, confirmed sizes/fulfilment/policies and operational tests remain. Live payment integration is explicitly excluded for now |
 | Cross-content discovery | Per-library Visualz search and artist deep links implemented | Unified search across music, artists, videos, photos, events and products |
 | Settings / Analytics | Not implemented as Studio modules | Editable safe settings, privacy-conscious real metrics; never fabricate counts |
 | Operations | Local build, unit/browser and PostgreSQL policy checks | Shared rate limiting, production monitoring, backups/restore rehearsal, hosted provider/sandbox purchase tests and launch review |
@@ -41,3 +41,7 @@ Migrations were applied through the connected Supabase migration API. Local migr
 Studio development remains incomplete: enquiries inbox/storage/workflow, fan directory/consent lifecycle, campaigns, products/inventory/orders (without live payments), settings, analytics, shared limiting, MFA/recovery and operational backup/restore remain future work. No mock completion screens were added for these modules. This checkpoint does not authorize production promotion.
 
 The performance advisor identified duplicate permissive read policies and two missing audit foreign-key indexes. The sixth migration consolidates public/owner read predicates without changing visibility, adds the indexes and preserves all passing role tests. Fresh indexes may be reported as unused until real traffic; they are retained for history/foreign-key access.
+
+## Shop prototype — 24 October 2026
+
+The separate Shop brief authorizes prototype prices and stock recommendations, simulated availability and browser-only checkout. This permission does not authorize real sales or imply that Studio commerce administration is complete. See SHOP-PROTOTYPE.md and MERCH-ASSET-AUDIT.csv for all thirteen products, twenty image mappings, prices, statuses and limitations. Product sizes, manufacturing claims, release dates, actual fulfilment and actual payment were not invented. No database migrations, provider charges, notifications or production promotions are part of this work.

@@ -12,7 +12,7 @@ test("Home introduces Visualz and Shop as dedicated chapters with working routes
   await page.goto("/");
   await page.locator(".home-shop-scene").getByRole("link", { name: "Visit the shop" }).click();
   await expect(page).toHaveURL(/shop$/);
-  await expect(page.getByText("No products announced.", { exact: true })).toBeVisible();
+  await expect(page.locator(".merch-polaroid")).toHaveCount(13);
 });
 test("Visualz keeps six official videos and the existing photo archive", async ({page})=>{
  await mockYouTube(page);await page.goto("/visuals");
@@ -30,8 +30,8 @@ test("Shop keeps the shared cinematic identity, real signup and an honest catalo
   await page.goto("/shop");
   const logo = await page.locator(".brand").boundingBox();
   expect(Math.abs(logo!.x + logo!.width / 2 - 720)).toBeLessThan(2);
-  await expect(page.getByRole("heading", { level: 1, name: "SHOP", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /OBJECTS.*MERCHANDISE/ })).toBeVisible();
   await expect(page.locator(".newsletter-signup")).toHaveCount(1);
-  await expect(page.getByRole("button", { name: /Add to cart|Buy now|Checkout/i })).toHaveCount(0);
-  await expect(page.locator(".shop-page")).toContainText("No products announced.");
+  await expect(page.getByRole("button", { name: /Open cart/ })).toBeVisible();
+  await expect(page.locator(".shop-page")).toContainText("no real orders");
 });
