@@ -105,3 +105,9 @@ html{scroll-padding-top:calc(var(--shell-header-height,100px) + 24px)}
 .header-shop-actions :focus-visible{outline:2px solid var(--paper);outline-offset:2px}
 @media(max-width:1000px){.header-shop-actions{grid-column:1;justify-self:start;margin:0}.site-shell .site-header{column-gap:8px}}
 @media(max-width:350px){.site-shell .site-header .brand{width:88px}}
+.page-continuation{display:flex;flex-wrap:wrap;align-items:center;gap:18px 40px;padding:35px 0 55px;width:100%}
+.page-continuation>p{width:100%;color:var(--muted)}
+.page-continuation>a{display:inline-flex;align-items:center;gap:30px;min-height:44px;font-family:var(--display);font-size:clamp(25px,3vw,44px);text-transform:uppercase}
+.page-continuation>a:hover{text-decoration:underline;text-underline-offset:8px}.page-continuation>a span{font-family:var(--mono);font-size:18px}
+.mob-page .artist-info{min-height:0;padding-bottom:18px}.mob-page .artist-info h2{margin-bottom:0}
+.mob-page>.collective-story:first-child{margin-top:0;border-top:0;padding-top:0;margin-bottom:70px}

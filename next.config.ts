@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // TypeScript 5 exposes the compiler API; avoid spawning the CLI for config parsing.
+  experimental: { useTypeScriptCli: false },
   images: { qualities: [75, 90] },
   async headers() {
     return [{ source: "/((?!spotify-player(?:/|$)).*)", headers: [

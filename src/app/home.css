@@ -63,3 +63,10 @@
 @media(hover:hover){.home-merch-item:hover{opacity:1;transform:rotate(0) translateY(-6px);box-shadow:0 20px 35px #000c}}
 @media(max-width:750px){.home-merch-rail{gap:28px;padding-inline:14px}.home-merch-item{transform:rotate(-1deg)}.home-merch-item:nth-child(even){transform:rotate(1deg)}}
 @media(prefers-reduced-motion:reduce){.home-merch-item{transition:none}}
+/* One continuous chapter link, above all artwork and captions. */
+.home-section-link{position:absolute;inset:0;z-index:10}
+.home-section-link:focus-visible{outline:2px solid var(--paper);outline-offset:-10px}
+.home-section-link:hover~.home-statement,.home-section-link:hover~.home-visuals-title{opacity:.8}
+.home-artist-names{position:absolute;inset:0;z-index:4;pointer-events:none;font-family:var(--mono);font-size:clamp(11px,1.4vw,20px);text-transform:uppercase}
+.home-artist-names span{position:absolute}.home-artist-names span:nth-child(1){top:19%;left:12%}.home-artist-names span:nth-child(2){top:39%;right:5%}.home-artist-names span:nth-child(3){bottom:25%;left:10%}.home-artist-names span:nth-child(4){bottom:17%;right:18%}
+@media(max-width:750px){.home-artist-names span:nth-child(2){top:20%;right:6%}.home-artist-names span:nth-child(3){bottom:24%;left:6%}.home-artist-names span:nth-child(4){bottom:17%;right:6%}}

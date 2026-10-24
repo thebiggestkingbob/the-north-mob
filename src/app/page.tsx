@@ -20,10 +20,10 @@ export default function Home() {
     </section>
     <section id="movement" className="home-movement-scene" aria-labelledby="home-statement">
       <div className="home-scene-stage">
-        <p className="home-scene-label eyebrow">02 / THE COLLECTIVE</p>
-        <h2 id="home-statement" className="home-statement"><span>REAL</span><span>SOUNDS.</span></h2>
+        <Link href="/the-mob" className="home-section-link" aria-label="Explore THE MOB" /><p className="home-scene-label eyebrow">02 / THE COLLECTIVE</p><div className="home-artist-names" aria-label="The collective"><span>Trophy</span><span>Orieblxckmaestro</span><span>Carlow Picasso</span><span>MajorIcey</span></div>
+        <h2 id="home-statement" className="home-statement"><span>THE</span><span>MOB</span></h2>
         <figure className="home-editorial-photo"><Image src="/assets/mob-ties/mob-ties-13.webp" alt="THE NORTH MOB photographed in the courtyard" fill sizes="(max-width: 750px) 62vw, 32vw" /></figure>
-        <div className="home-movement-copy"><p className="eyebrow">A collective.<br />A sound.<br />A movement.</p><Link className="home-editorial-link" href="/the-mob">Explore the Mob </Link></div>
+        <div className="home-movement-copy"><p className="eyebrow">A collective.<br />A sound.<br />A movement.</p><span className="home-editorial-link">Explore the Mob ↗</span></div>
         <p className="home-impact eyebrow">BIGGER IMPACTS.</p>
       </div>
     </section>
@@ -38,11 +38,11 @@ export default function Home() {
     </section>
     <section className="home-visuals-scene" aria-labelledby="home-visuals-title">
       <div className="home-scene-stage">
-        <p className="home-scene-label eyebrow">04 / VISUALZ</p>
+        <Link href="/visuals" className="home-section-link" aria-label="Explore Visualz" /><p className="home-scene-label eyebrow">04 / VISUALZ</p>
         <figure className="home-visuals-wide"><Image src="/assets/mob-ties/mob-ties-22.webp" alt="Mob Ties editorial group photograph" fill sizes="100vw" /></figure>
         <h2 id="home-visuals-title" className="home-visuals-title">VISUALZ</h2>
         <figure className="home-visuals-detail"><Image src="/assets/mob-ties/mob-ties-09.webp" alt="THE NORTH MOB photographed on location" fill sizes="(max-width: 750px) 62vw, 30vw" /></figure>
-        <div className="home-visuals-copy"><p className="eyebrow">Films.<br />Photography.<br />The collective.</p><Link href="/visuals" className="home-editorial-link">Explore Visualz </Link></div>
+        <div className="home-visuals-copy"><p className="eyebrow">Films.<br />Photography.<br />The collective.</p><span className="home-editorial-link">Explore Visualz ↗</span></div>
       </div>
     </section>
     <section className="home-shop-scene" aria-labelledby="home-shop-title">
