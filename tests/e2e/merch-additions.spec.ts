@@ -9,6 +9,6 @@ for(const width of [1440,390])test(`new merchandise prices, views and local pre-
   if(images===4){await expect(dialog.locator('.merch-edition')).toHaveText('Limited Edition');await expect(dialog.locator('.merch-thumbnails button')).toHaveCount(4);await dialog.getByRole('button',{name:'View 4 of H4B Worksuit',exact:true}).click();await expect(dialog.locator('.merch-large-image')).toHaveAttribute('src',/15\.3/);}
   await page.keyboard.press('Escape');
  }
- await page.reload();await page.getByRole('button',{name:'Open saved items, 3 items',exact:true}).click();await expect(page.getByRole('dialog').locator('.merch-preorders .button').filter({hasText:/Mob Cap|Mob String Bucket Hat|H4B Worksuit/})).toHaveCount(3);
+ await page.reload();await page.getByRole('button',{name:'Open wishlist, 3 items',exact:true}).click();await expect(page.getByRole('dialog').locator('.merch-preorders .button').filter({hasText:/Mob Cap|Mob String Bucket Hat|H4B Worksuit/})).toHaveCount(3);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

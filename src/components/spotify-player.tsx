@@ -8,7 +8,7 @@ export function SpotifyTrackList({ additional = false }: { additional?: boolean 
   const visible = tracks.filter(track => additional ? track.releaseId !== album.id : track.releaseId === album.id);
   return <div className="song-list">{visible.map((song, index) => {
     const playing = status === "playing" && song.uri === currentUri;
-    return <div key={song.id} className="catalogue-row">
+    return <div key={song.id} className={`catalogue-row ${playing?"is-playing":""}`} aria-current={playing?"true":undefined}>
       {playing ? <button type="button" className="song-play" aria-label={`Pause ${song.title}`} onClick={pause}><span className="eyebrow">{String(index + 1).padStart(2, "0")}</span><span>{song.title}</span><span aria-hidden="true">Ⅱ</span></button> : song.uri ? <SpotifyPlayButton uri={song.uri} className="song-play"><span className="eyebrow">{String(index + 1).padStart(2, "0")}</span><span>{song.title}</span><span aria-hidden="true">▷</span></SpotifyPlayButton> : <a href={song.source} onClick={pause} target="_blank" rel="noreferrer" className="song-play"><span className="eyebrow">{String(index + 1).padStart(2, "0")}</span><span>{song.title}<small>Listen on Spotify</small></span></a>}
       <p className="track-credit">{song.credits}<span>{song.duration}</span></p>
     </div>;

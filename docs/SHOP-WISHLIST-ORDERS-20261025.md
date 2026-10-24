@@ -1,0 +1,21 @@
+# Shop journeys and contrast — 25 October 2026
+
+## Public changes
+
+- Business enquiry select explicitly uses a dark colour scheme with light option text and dark option backgrounds. Inputs, placeholders and focus indicators stay readable; form fields, validation and delivery behaviour remain intact.
+- Saved items become Wishlist, represented by a heart. Older `saved` selections and `#saved` links migrate to Wishlist; the storage key is unchanged. Existing pre-order selections remain available.
+- Shop Polaroids and Home featured Polaroids contain separate cart, wishlist and share icons with accessible names, pressed state and 44px targets. There are no nested buttons/links. Products requiring an option open their details first; unavailable stock cannot be added to the cart.
+- Stickers cost R99. Existing receipt totals are not changed by this or later catalogue updates.
+- Product details and receipts provide icon actions for WhatsApp-first sharing, printing and gifting. The share panel offers WhatsApp first, native sharing/clipboard next, readable copyable text and printing. Sharing never automatically sends a message. Local orders share a summary plus the public Shop URL, not a broken private receipt link.
+- Previous orders are accessible from the header clock icon, cart and an order-history panel. Each record opens a receipt with quantities, option names, original line prices where recorded, fulfilment estimate, total and gift flag. New orders snapshot product names, photos and unit prices. Legacy orders retain their original totals and explicitly identify unrecorded historical unit prices. History restoration does not filter purchases by current stock.
+- History can be exported/imported as bounded, validated JSON with duplicate references merged. Files contain no customer addresses, emails, phone numbers, recipient names or gift messages. Up to 30 receipts are kept. Storage remains local to the browser and origin; export/import can move history between origins. Deleted storage or inaccessible older-origin data cannot be recovered automatically.
+- Gift an available item or repeat a previous order as a gift: review cart, choose gift, enter buyer and recipient details/message, select delivery to the recipient or collection, review and open the local confirmation. Gift intent survives navigation. Only the gift flag is kept in the receipt; recipient/message/address remain in the active checkout. A printable gift note is available before leaving confirmation. Unavailable gifts explain that wishlist/pre-order is available instead.
+- Printing renders a separate receipt/product/gift document, with safe DOM text insertion and an isolated print stylesheet. Unrelated page navigation and the player are excluded. No automatic popup message, email, live payment or fulfilment is introduced.
+- Icon clicks use a tiny SVG scale change; shop windows open with a 4px / 140ms entrance. Reduced-motion preferences disable these effects.
+- The playing music row (song and artist credits) is inverted: light background, dark text, with a matching active featured-song control. Pausing removes the active styling. The existing soundtrack engine remains mounted across navigation.
+
+## Verification
+
+TypeScript, ESLint, 108 unit tests and production build pass. Thirty-eight targeted browser scenarios pass across the final runs. Browser verification covers product cards, Home actions, 320px header fit, WhatsApp draft URLs, print-document generation, gift checkout, receipt reopening after reload, private-data omission, history export/import, legacy wishlist migration and historical totals, enquiry option colours, and music active/paused styles. Existing merchandise, chain-option prices, pre-orders, cart/checkout, responsive navigation and single-player tests are retained. The print-media layout is verified to hide the site and show only the receipt, then restore the order view. Native print dialogs and WhatsApp sending are not triggered by automated tests; Spotify is verified against its integration fixture. Physical Windows native-popup rendering is not directly verified by this environment.
+
+No external messages, paid orders, delivery requests, database migrations or production release were performed.

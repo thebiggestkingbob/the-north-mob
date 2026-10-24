@@ -116,3 +116,14 @@ html{scroll-padding-top:calc(var(--shell-header-height,100px) + 24px)}
 .mob-page .artist-view-controls{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:12px 20px;background:var(--black)}
 @media(max-width:700px){.mob-page .artist-detail{grid-template-columns:1fr}.mob-page .detail-image{min-height:75dvh}.mob-page .artist-view-controls{padding:8px 12px}.mob-page .artist-view-controls .button{padding:10px;font-size:10px;gap:6px}}
 .mob-page .artist-image{height:auto;aspect-ratio:4/5}.mob-page .artist-image img{object-fit:contain}
+/* Explicit native-popup colours keep enquiry choices legible on Windows. */
+.business-page .contact-form select{color-scheme:dark;background:#101010;color:#f4f2ea;min-height:48px;padding:13px 10px}
+.business-page .contact-form select option,.merch-dialog select option{background:#101010;color:#f4f2ea}
+.business-page .contact-form select option:disabled{color:#b8b8af}
+.business-page .contact-form input,.business-page .contact-form textarea{color:#f4f2ea;caret-color:#f4f2ea}
+.business-page .contact-form input::placeholder,.business-page .contact-form textarea::placeholder{color:#aaa99f;opacity:1}
+@media(max-width:1000px){.header-shop-actions .orders-trigger{position:absolute;right:64px;top:14px}}
+.shop-icon-button svg{transition:transform .12s ease}.shop-icon-button:active svg{transform:scale(.89)}
+@media(prefers-reduced-motion:reduce){.shop-icon-button svg{transition:none}.shop-icon-button:active svg{transform:none}}
+.shop-icon-button{min-width:44px;min-height:44px;padding:10px;display:inline-grid;place-items:center;background:transparent;border:0;color:inherit;flex-shrink:0}
+.shop-icon-button[aria-pressed=true] svg{fill:currentColor}.shop-icon-button:disabled{opacity:.35;cursor:not-allowed}

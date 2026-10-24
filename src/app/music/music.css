@@ -30,3 +30,7 @@
 .artist-view-controls{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:12px 20px;background:var(--black)}
 .featured-artist-slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:thin}.featured-artist-slides>.h4b-artist-content{flex:0 0 100%;min-width:0;scroll-snap-align:start;align-self:start;padding:30px clamp(20px,5vw,80px) 60px;box-sizing:border-box}.featured-artist-slides .h4b-artist-content>img{max-height:75dvh;object-fit:contain}.featured-artist-slides .h4b-artist-content ul{list-style:none;padding:0}.featured-artist-slides .button{text-align:left}
 @media(max-width:700px){.music-page .h4b-milestones{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 18px}.music-page .h4b-milestones dd{font-size:clamp(52px,13vw,85px)}.artist-view-controls{padding:8px 12px}.artist-view-controls .button{font-size:10px;padding:10px;gap:6px}.featured-artist-slides .h4b-artist-content>img{max-height:60dvh}}
+.music-page .catalogue-row.is-playing{background:#f3f1e9;color:#101010}
+.music-page .catalogue-row.is-playing .song-play,.music-page .catalogue-row.is-playing .track-credit,.music-page .catalogue-row.is-playing .song-play span{color:#101010}
+.music-page .catalogue-row.is-playing .track-credit{border-bottom-color:#10101040}
+.h4b-artist-content .button.is-playing{background:#f3f1e9;color:#101010}

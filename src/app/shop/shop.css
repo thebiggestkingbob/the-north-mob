@@ -34,3 +34,35 @@
 .merch-dialog:not(.is-drawer)>.merch-detail{padding:0 35px 35px}
 @media(max-width:600px){.merch-dialog:not(.is-drawer)>.product-browse{padding:8px 18px 18px}.merch-dialog:not(.is-drawer)>.merch-detail{padding:0 18px 25px}}
 .merch-edition{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin:12px 0;line-height:1.6}
+/* Compact actions use the Polaroid frame instead of adding another card. */
+.merch-product-open{display:block;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit}
+.merch-product-open>img{display:block;width:100%;height:auto;object-fit:contain;background:#171717}
+.merch-card-actions,.shop-action-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.merch-card-actions{justify-content:space-between;padding:16px 6px 0}
+.shop-icon-button{min-width:44px;min-height:44px;padding:10px;display:inline-grid;place-items:center;background:transparent;border:0;color:inherit;flex-shrink:0}
+.shop-icon-button svg{transition:transform .12s ease,fill .12s ease}.shop-icon-button:active svg{transform:scale(.89)}
+.shop-icon-button[aria-pressed=true] svg{fill:currentColor}.shop-icon-button:disabled{opacity:.35;cursor:not-allowed}
+.merch-polaroid .shop-icon-button:focus-visible,.merch-product-open:focus-visible{outline:2px solid #141414;outline-offset:3px}
+.shop-action-row{margin:18px 0}.shop-action-row>span{font-size:12px}
+.merch-dialog .shop-icon-button{border:1px solid #ffffff40}
+.merch-share,.merch-orders,.merch-receipt{min-width:0}.merch-share h2,.merch-orders h2,.merch-receipt h2{font-size:clamp(32px,5vw,55px);line-height:1.1;margin:15px 0 25px;overflow-wrap:anywhere}
+.merch-share textarea,.gift-fields textarea{width:100%;background:#171717;color:#f2f0e7;border:1px solid #666;padding:14px;font:inherit;font-size:13px;line-height:1.6}
+.share-options{display:flex;flex-direction:column;align-items:stretch;gap:8px}.share-options .button{justify-content:flex-start}
+.order-history-list,.receipt-items,.merch-wishlist{list-style:none;padding:0;margin:25px 0}
+.order-history-open{width:100%;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;border:0;border-bottom:1px solid #ffffff30;padding:20px 0;background:none;text-align:left;color:inherit;font-size:13px;min-height:44px}
+.receipt-items li{display:grid;grid-template-columns:90px minmax(0,1fr);gap:18px;padding:18px 0}.receipt-items img{width:90px;height:100px;object-fit:contain}.receipt-items h3{font-size:24px;line-height:1.15;margin-bottom:8px}
+.merch-receipt p,.merch-orders p,.merch-share p{font-size:13px;line-height:1.8}.merch-receipt .merch-note,.merch-orders .merch-note{color:#bbb9af;font-size:11px}
+.merch-wishlist li{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:15px 0}.wishlist-open{background:none;border:0;color:inherit;text-align:left;min-height:44px}
+.shop-feedback{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:160;max-width:calc(100vw - 40px);background:#f2f0e7;color:#101010!important;font-size:12px;line-height:1.6;pointer-events:none;margin:0}.shop-feedback.has-message{padding:12px 18px}
+.merch-form .gift-choice{display:flex;align-items:center;gap:12px}.merch-form .gift-choice input{width:20px;min-height:20px;height:20px}.gift-note{padding:20px 0}.gift-note h3{font-size:24px}.gift-note p{white-space:pre-wrap}
+@keyframes shop-window-in{from{opacity:0;translate:0 4px}to{opacity:1;translate:0 0}}
+.merch-dialog[open],.merch-dialog.is-drawer[open]{animation:shop-window-in .14s ease-out both}
+#shop-print-content{display:none}
+@media(prefers-reduced-motion:reduce){.shop-icon-button svg{transition:none}.shop-icon-button:active svg{transform:none}.merch-dialog[open],.merch-dialog.is-drawer[open]{animation:none}}
+@media print{body.shop-printing> *:not(#shop-print-content){display:none!important}body.shop-printing dialog{display:none!important}body.shop-printing #shop-print-content{display:block!important;background:white;color:black;font-family:Arial,sans-serif;padding:24px}#shop-print-content img{display:block;max-width:100%;max-height:45vh;object-fit:contain}#shop-print-content h1{font-size:28px;line-height:1.2}#shop-print-content p{font-size:12px;line-height:1.6;white-space:pre-wrap}}
+.merch-dialog .gift-fields label{display:grid;align-items:start}
+@media print{body.shop-printing{background:white!important;color:black!important;overflow:visible!important}}
+.shop-modal-notice{font-size:12px;line-height:1.6;margin:0 0 20px;color:#f2f0e7}
+.merch-dialog.is-drawer{padding:0 35px 35px}
+.merch-dialog.is-drawer>.merch-dialog-header{height:68px;margin:0 -35px 20px;padding:12px 20px;top:0}
+@media(max-width:600px){.merch-dialog.is-drawer{padding:0 18px 25px}.merch-dialog.is-drawer>.merch-dialog-header{margin:0 -18px 20px;padding:12px 18px}}

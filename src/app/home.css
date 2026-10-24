@@ -70,3 +70,7 @@
 .home-artist-names{position:absolute;inset:0;z-index:4;pointer-events:none;font-family:var(--mono);font-size:clamp(11px,1.4vw,20px);text-transform:uppercase}
 .home-artist-names span{position:absolute}.home-artist-names span:nth-child(1){top:19%;left:12%}.home-artist-names span:nth-child(2){top:39%;right:5%}.home-artist-names span:nth-child(3){bottom:25%;left:10%}.home-artist-names span:nth-child(4){bottom:17%;right:18%}
 @media(max-width:750px){.home-artist-names span:nth-child(2){top:20%;right:6%}.home-artist-names span:nth-child(3){bottom:24%;left:6%}.home-artist-names span:nth-child(4){bottom:17%;right:6%}}
+.home-merch-item .home-merch-caption{display:block;margin:0;padding:18px 7px 0}
+.home-merch-item>.home-merch-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:16px 0 0;padding:0 4px}
+.home-merch-item-main{display:block;color:inherit}.home-merch-item .shop-icon-button:focus-visible,.home-merch-item-main:focus-visible{outline:2px solid #141414;outline-offset:3px}
+.home-merch-status{min-height:24px;font-size:12px;margin-top:16px}
