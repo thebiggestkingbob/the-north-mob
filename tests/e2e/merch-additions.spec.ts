@@ -2,7 +2,7 @@ import { expect,test } from "@playwright/test";
 import { money } from "../../src/config/merch";
 for(const width of [1440,390])test(`new merchandise prices, views and local pre-orders at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:"reduce"});await page.addInitScript(()=>sessionStorage.setItem('northmob:sound','off'));await page.goto('/shop');
- await expect(page.locator('.merch-collection-count')).toHaveText('16 objects / collection');
+ await expect(page.locator('.merch-collection-count')).toHaveText('18 objects / collection');
  for(const [name,price,images] of [['Mob Cap',24900,1],['Mob String Bucket Hat',39900,1],['H4B Worksuit',109900,4]] as const){
   const card=page.getByRole('button',{name:`View ${name}`,exact:true});await card.click();const dialog=page.getByRole('dialog');await expect(dialog.locator('.merch-detail-price')).toHaveText(money(price));await expect(dialog.locator('.merch-large-image')).toHaveCSS('object-fit','contain');
   await expect(dialog.getByRole('button',{name:'Add to cart',exact:true})).toHaveCount(0);await dialog.getByRole('button',{name:'Pre-order',exact:true}).click();await expect(dialog.getByRole('status')).toContainText('No payment or order has been sent');

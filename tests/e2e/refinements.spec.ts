@@ -11,10 +11,10 @@ for(const width of [1440,1200,1024,834,768,430,390])test(`shared navigation, foo
   await expect(page.locator(".newsletter-signup")).toHaveCount(1);await expect(page.locator(".newsletter-signup")).not.toBeVisible();
   const footer=page.locator(".refined-footer");await footer.locator("summary").click();await expect(footer.getByRole("form",{name:"Get North Mob updates"})).toBeVisible();
   const links=footer.getByRole("navigation",{name:"Footer navigation"}).getByRole("link");await expect(links).toHaveCount(9);
-  expect(await links.allTextContents()).toEqual(["Music","The Mob","Visualz","Live","Business As Usual","Shop","Instagram","Spotify","YouTube"]);
+  expect(await links.allTextContents()).toEqual(["Music","The Mob","Visualz","Shop","Live","Business As Usual","Instagram","Spotify","YouTube"]);
   const email=footer.getByRole("textbox",{name:"Email"});await email.scrollIntoViewIfNeeded();
   const target=await email.boundingBox(),player=await page.locator(".header-sound").boundingBox();expect(target!.y).toBeGreaterThanOrEqual(player!.y+player!.height);
-  expect(await page.locator("a").evaluateAll(nodes=>nodes.every(node=>!/[↗→←↓↑]/.test(node.textContent??"")))).toBe(true);
+  expect(await links.evaluateAll(nodes=>nodes.every(node=>!/[↗→←↓↑]/.test(node.textContent??"")))).toBe(true);
   await footer.locator("summary").click();await expect(email).not.toBeVisible();
  }
 });

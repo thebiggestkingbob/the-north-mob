@@ -4,7 +4,7 @@ export const pages = [
   { name: "Music", path: "/music" },
   { name: "The Mob", path: "/the-mob" },
   { name: "Visualz", path: "/visuals" },
+  { name: "Shop", path: "/shop" },
   { name: "Live", path: "/live" },
   { name: "Business As Usual", path: "/business" },
-  { name: "Shop", path: "/shop" },
 ] as const;

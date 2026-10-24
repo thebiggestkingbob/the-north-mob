@@ -1,7 +1,7 @@
 import images from "./merch-images.json";
 export type MerchStatus="available"|"sold-out"|"coming-soon";
 export type MerchImage={src:string;width:number;height:number;alt:string;original:string};
-export type MerchProduct={id:string;name:string;description:string;category:string;price:number;status:MerchStatus;stock:number;images:MerchImage[];variants:{id:string;label:string;image?:number}[];variantLabel?:string;note?:string;limitedEdition?:boolean};
+export type MerchProduct={id:string;name:string;description:string;category:string;price:number;status:MerchStatus;stock:number;images:MerchImage[];variants:{id:string;label:string;image?:number;price?:number}[];variantLabel?:string;note?:string;limitedEdition?:boolean};
 function photos(files:string[],name:string):MerchImage[]{return files.map((file,index)=>{const image=images.find(image=>image.original===file+".png");if(!image)throw new Error(`Missing merch image: ${file}`);return {src:image.web,width:image.width,height:image.height,original:image.original,alt:`${name} — supplied merchandise photograph ${index+1}`};});}
 function product(id:string,name:string,description:string,category:string,price:number,status:MerchStatus,stock:number,files:string[],extra:Partial<MerchProduct>={}):MerchProduct{return {id,name,description,category,price:price*100,status,stock,images:photos(files,name),variants:[],...extra};}
 const sizing="Garment sizing has not been supplied.";
@@ -22,7 +22,12 @@ export const merch:MerchProduct[]=[
  product("mob-cap","Mob Cap","Black cap with the North Mob mark at the front and H4B lettering at the back.","Cap",249,"coming-soon",0,["13"],{note:"Stock and sizing have not been confirmed."}),
  product("mob-string-bucket-hat","Mob String Bucket Hat","Black bucket hat with chin cords, the North Mob mark and H4B lettering.","Bucket hat",399,"coming-soon",0,["14"],{note:"Stock and sizing have not been confirmed."}),
  product("h4b-worksuit","H4B Worksuit","Matching black utility vest and trousers with contrasting bands and North Mob / H4B details.","Worksuit",1099,"coming-soon",0,["15","15.1","15.2","15.3"],{limitedEdition:true,note:"Limited Edition. Garment sizing, stock quantities and release date have not been supplied."}),
+ product("h4b-crop-skirt-set","H4B Crop & Skirt Set","Matching black crop top and pleated skirt with North Mob and Here 4 Business lettering.","Two-piece set",699,"coming-soon",0,["16","16.1","16.2"],{limitedEdition:true,note:"Price includes the crop top and skirt together. Sizes, stock quantities and release date are unconfirmed."}),
+ product("mob-pendant-chains","Mob Pendant Chains","Choose the North Mob logo pendant, the Here 4 Business pendant, or both chains together.","Chains",299,"coming-soon",0,["17","17.2","17.3"],{limitedEdition:true,variantLabel:"Chain selection",variants:[{id:"pair",label:"Both chains",image:0,price:49900},{id:"h4b",label:"Here 4 Business chain",image:1,price:29900},{id:"mob",label:"North Mob logo chain",image:2,price:29900}],note:"Each single option includes one pictured pendant and chain; the pair includes both. Metal composition, chain length, stock and release date are unconfirmed."}),
 ];
 export const demoDelivery={delivery:7900,collection:0};
 export const money=(cents:number)=>new Intl.NumberFormat("en-ZA",{style:"currency",currency:"ZAR",minimumFractionDigits:0,maximumFractionDigits:2}).format(cents/100);
 export function findMerch(id:string){return merch.find(product=>product.id===id);}
+
+export const productPrice=(product:MerchProduct,variant:string)=>product.variants.find(option=>option.id===variant)?.price??product.price;
+export const hasPriceRange=(product:MerchProduct)=>new Set([product.price,...product.variants.map(option=>option.price??product.price)]).size>1;

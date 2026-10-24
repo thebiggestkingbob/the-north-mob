@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { findMerch,merch,demoDelivery } from "@/config/merch";
+import { findMerch,merch,demoDelivery,productPrice } from "@/config/merch";
 export const SHOP_STORAGE_KEY="northmob:shop-demo:v1";
 export type CartLine={productId:string;variant:string;quantity:number};
+export type PreorderLine=Pick<CartLine,"productId"|"variant">;
 export type DemoOrder={reference:string;createdAt:string;items:CartLine[];subtotal:number;fee:number;total:number;fulfilment:"delivery"|"collection"};
-export type ShopState={version:1;cart:CartLine[];saved:string[];preorders?:string[];purchased:Record<string,number>;orders:DemoOrder[]};
+export type ShopState={version:1;cart:CartLine[];saved:string[];preorders?:string[];preorderLines?:PreorderLine[];purchased:Record<string,number>;orders:DemoOrder[]};
 export const emptyShop:ShopState={version:1,cart:[],saved:[],purchased:{},orders:[]};
 export const lineKey=(line:Pick<CartLine,"productId"|"variant">)=>`${line.productId}:${line.variant}`;
 export function stockLeft(state:ShopState,id:string){const product=findMerch(id);return product?.status==="available"?Math.max(0,product.stock-(state.purchased[id]??0)):0;}
@@ -17,6 +18,13 @@ export function safeCart(raw:unknown,purchased:Record<string,number>={}):CartLin
  const existing=cart.find(line=>line.productId===p.id&&line.variant===variant);if(existing)existing.quantity+=quantity;else cart.push({productId:p.id,variant,quantity});
  }return cart;
 }
+function safePreorders(raw:unknown):PreorderLine[]{
+ if(!Array.isArray(raw))return [];const lines:PreorderLine[]=[];for(const item of raw.slice(0,100)){if(!item||typeof item!=="object")continue;const product=findMerch(item.productId);if(!product)continue;const variant=product.variants.length?product.variants.find(option=>option.id===item.variant)?.id:item.variant===""?"":undefined;if(variant===undefined||lines.some(line=>line.productId===product.id&&line.variant===variant))continue;lines.push({productId:product.id,variant});}return lines;
+}
+export function preorderEntries(state:ShopState):PreorderLine[]{return safePreorders([...(state.preorderLines??[]),...(state.preorders??[]).flatMap(id=>{const product=findMerch(id);return product?[{productId:id,variant:product.variants[0]?.id??""}]:[];})]);}
+export function togglePreorder(state:ShopState,line:PreorderLine):ShopState{
+ const valid=safePreorders([line])[0];if(!valid)return state;const lines=preorderEntries(state),exists=lines.some(item=>lineKey(item)===lineKey(valid));return {...state,preorders:[],preorderLines:exists?lines.filter(item=>lineKey(item)!==lineKey(valid)):[...lines,valid]};
+}
 export function decodeShop(raw:string|null):ShopState{
  try{const value=JSON.parse(raw??"null");if(value?.version!==1)return {...emptyShop};
  const purchased:Record<string,number>={};for(const p of merch){const count=value.purchased?.[p.id];if(Number.isSafeInteger(count)&&count>0)purchased[p.id]=Math.min(count,p.stock);}
@@ -27,7 +35,7 @@ export function decodeShop(raw:string|null):ShopState{
  const subtotal=cartSubtotal(items),fee=demoDelivery[order.fulfilment];
  return [{reference:order.reference,createdAt:order.createdAt,items,subtotal,fee,total:subtotal+fee,fulfilment:order.fulfilment}];
  }):[];
- return {version:1,cart:safeCart(value.cart,purchased),saved:Array.isArray(value.saved)?[...new Set<string>(value.saved.slice(0,100).filter((id:unknown)=>typeof id==="string"&&!!findMerch(id)))]:[],preorders:Array.isArray(value.preorders)?[...new Set<string>(value.preorders.slice(0,100).filter((id:unknown)=>typeof id==="string"&&!!findMerch(id)))]:[],purchased,orders};
+ return {version:1,cart:safeCart(value.cart,purchased),saved:Array.isArray(value.saved)?[...new Set<string>(value.saved.slice(0,100).filter((id:unknown)=>typeof id==="string"&&!!findMerch(id)))]:[],preorders:Array.isArray(value.preorders)?[...new Set<string>(value.preorders.slice(0,100).filter((id:unknown)=>typeof id==="string"&&!!findMerch(id)))]:[],preorderLines:safePreorders(value.preorderLines),purchased,orders};
  }catch{return {...emptyShop};}
 }
 export function changeQuantity(state:ShopState,line:CartLine,quantity:number):ShopState{
@@ -40,7 +48,7 @@ export function changeQuantity(state:ShopState,line:CartLine,quantity:number):Sh
 export function addCart(state:ShopState,line:CartLine):ShopState{
  const existing=state.cart.find(item=>lineKey(item)===lineKey(line));return changeQuantity(state,line,(existing?.quantity??0)+line.quantity);
 }
-export function cartSubtotal(cart:CartLine[]){return cart.reduce((sum,line)=>sum+(findMerch(line.productId)?.price??0)*line.quantity,0);}
+export function cartSubtotal(cart:CartLine[]){return cart.reduce((sum,line)=>sum+(findMerch(line.productId)?productPrice(findMerch(line.productId)!,line.variant):0)*line.quantity,0);}
 export function completeDemo(state:ShopState,fulfilment:"delivery"|"collection"): {state:ShopState;order:DemoOrder}|null{
  const cart=safeCart(state.cart,state.purchased);if(!cart.length)return null;
  const subtotal=cartSubtotal(cart),fee=demoDelivery[fulfilment];

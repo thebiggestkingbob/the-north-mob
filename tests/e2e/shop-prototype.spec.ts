@@ -2,7 +2,7 @@ import { expect,test } from "@playwright/test";
 import { mockSpotify } from "./spotify-fixture";
 test.beforeEach(async({page})=>{await mockSpotify(page,true);await page.emulateMedia({reducedMotion:"reduce"});});
 for(const width of [1440,1024,768,430,390])test(`Polaroid exhibition is readable and contained at ${width}px`,async({page})=>{
- await page.setViewportSize({width,height:1000});await page.goto("/shop");await expect(page.locator(".merch-polaroid")).toHaveCount(16);
+ await page.setViewportSize({width,height:1000});await page.goto("/shop");await expect(page.locator(".merch-polaroid")).toHaveCount(18);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  const boxes=await page.locator(".merch-polaroid").evaluateAll(items=>items.map(item=>{const r=item.getBoundingClientRect();return {x:r.x,right:r.right,top:r.top,bottom:r.bottom};}));
  for(const box of boxes){expect(box.x).toBeGreaterThanOrEqual(0);expect(box.right).toBeLessThanOrEqual(width+1);}

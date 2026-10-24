@@ -1,10 +1,10 @@
 import { expect,it } from "vitest";
 import { merch,demoDelivery } from "@/config/merch";
 import { addCart,cartSubtotal,changeQuantity,completeDemo,decodeShop,emptyShop,safeCart } from "./shop";
-it("maps all 26 supplied images to 16 products and the approved status distribution",()=>{
- expect(merch).toHaveLength(16);expect(merch.flatMap(p=>p.images)).toHaveLength(26);
- expect(new Set(merch.flatMap(p=>p.images.map(i=>i.original))).size).toBe(26);
- expect(merch.filter(p=>p.status==="available")).toHaveLength(9);expect(merch.filter(p=>p.status==="sold-out")).toHaveLength(2);expect(merch.filter(p=>p.status==="coming-soon")).toHaveLength(5);
+it("maps all 32 supplied images to 18 products and the approved status distribution",()=>{
+ expect(merch).toHaveLength(18);expect(merch.flatMap(p=>p.images)).toHaveLength(32);
+ expect(new Set(merch.flatMap(p=>p.images.map(i=>i.original))).size).toBe(32);
+ expect(merch.filter(p=>p.status==="available")).toHaveLength(9);expect(merch.filter(p=>p.status==="sold-out")).toHaveLength(2);expect(merch.filter(p=>p.status==="coming-soon")).toHaveLength(7);
 });
 it("rejects unavailable products, invalid variants, noninteger quantities and forged prices",()=>{
  const cart=safeCart([{productId:"mob-socks",variant:"",quantity:1},{productId:"mob-flag",variant:"black",quantity:1},{productId:"h4b-mug",variant:"red",quantity:1},{productId:"lineup-tee",variant:"",quantity:2,price:1},{productId:"mob-tote",variant:"",quantity:1.5}]);
@@ -38,4 +38,17 @@ it("keeps cart lines in place when changing quantities",()=>{
 it("restores sold-out saves and pre-order selections without admitting unavailable cart lines",()=>{
  const state=decodeShop(JSON.stringify({...emptyShop,saved:["mob-socks","mob-socks","invalid"],preorders:["portrait-tank","invalid","portrait-tank"],cart:[{productId:"mob-socks",variant:"",quantity:1}]}));
  expect(state.saved).toEqual(["mob-socks"]);expect(state.preorders).toEqual(["portrait-tank"]);expect(state.cart).toEqual([]);
+});
+it("prices the chain pair and singles independently without trusting client amounts",async()=>{
+ const {findMerch,productPrice}=await import("@/config/merch");const chains=findMerch("mob-pendant-chains")!;
+ expect(productPrice(chains,"pair")).toBe(49900);expect(productPrice(chains,"h4b")).toBe(29900);expect(productPrice(chains,"mob")).toBe(29900);
+ expect(cartSubtotal([{productId:chains.id,variant:"pair",quantity:1},{productId:chains.id,variant:"mob",quantity:2}])).toBe(109700);
+ expect(safeCart([{productId:chains.id,variant:"pair",quantity:1}])).toEqual([]);
+});
+it("retains separate pre-order chain variants and legacy product selections across reloads",async()=>{
+ const {togglePreorder,preorderEntries}=await import("./shop");
+ let state=togglePreorder({...emptyShop,preorders:["mob-cap"]},{productId:"mob-pendant-chains",variant:"pair"});state=togglePreorder(state,{productId:"mob-pendant-chains",variant:"h4b"});
+ state=decodeShop(JSON.stringify({...state,preorderLines:[...state.preorderLines!,{productId:"mob-pendant-chains",variant:"invalid",price:1}]}));
+ expect(preorderEntries(state)).toEqual([{productId:"mob-cap",variant:""},{productId:"mob-pendant-chains",variant:"pair"},{productId:"mob-pendant-chains",variant:"h4b"}]);
+ state=togglePreorder(state,{productId:"mob-pendant-chains",variant:"pair"});expect(preorderEntries(state)).toHaveLength(2);expect(preorderEntries(state).some(line=>line.variant==="h4b")).toBe(true);
 });
