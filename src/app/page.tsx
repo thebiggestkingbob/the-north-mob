@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { album } from "@/config/catalogue";
 import { CinemaHero } from "@/components/cinema-hero";
+import { HomeShopCarousel } from "@/components/home-shop-carousel";
 import { HomeSequence } from "@/components/home-sequence";
 import "./home.css";
 
@@ -48,8 +49,8 @@ export default function Home() {
       <div className="home-scene-stage">
         <p className="home-scene-label eyebrow">05 / SHOP</p>
         <h2 id="home-shop-title" className="home-shop-title">SHOP</h2>
-        <div className="home-shop-wordmark"><Image src="/assets/official-logo-transparent.png" alt="THE NORTH MOB" width={1983} height={793} sizes="(max-width: 750px) 60vw, 28vw" /></div>
-        <div className="home-shop-copy"><p>No products announced.</p><Link href="/shop" className="home-editorial-link">Visit the shop </Link></div>
+        <HomeShopCarousel />
+        <div className="home-shop-copy"><Link href="/shop" className="home-editorial-link">Visit the shop </Link></div>
         <nav className="home-chapter-links" aria-label="More from the collective"><Link href="/music">Music</Link><Link href="/the-mob">The Mob</Link><Link href="/live">Live</Link><Link href="/business">Business As Usual</Link></nav>
       </div>
     </section>

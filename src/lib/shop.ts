@@ -22,7 +22,7 @@ export function decodeShop(raw:string|null):ShopState{
  const purchased:Record<string,number>={};for(const p of merch){const count=value.purchased?.[p.id];if(Number.isSafeInteger(count)&&count>0)purchased[p.id]=Math.min(count,p.stock);}
  // Only identifiers, totals and fulfilment are restored. Never restore customer or address data.
  const orders:DemoOrder[]=Array.isArray(value.orders)?value.orders.slice(-30).flatMap((order:DemoOrder)=>{
- if(!order||typeof order.reference!=="string"||!/^NM-DEMO-[A-F0-9]{8}$/.test(order.reference)||typeof order.createdAt!=="string"||!Number.isFinite(Date.parse(order.createdAt))||!["delivery","collection"].includes(order.fulfilment))return [];
+ if(!order||typeof order.reference!=="string"||!/^NM-(?:DEMO-)?[A-F0-9]{8}$/.test(order.reference)||typeof order.createdAt!=="string"||!Number.isFinite(Date.parse(order.createdAt))||!["delivery","collection"].includes(order.fulfilment))return [];
  const items=safeCart(order.items);if(!items.length)return [];
  const subtotal=cartSubtotal(items),fee=demoDelivery[order.fulfilment];
  return [{reference:order.reference,createdAt:order.createdAt,items,subtotal,fee,total:subtotal+fee,fulfilment:order.fulfilment}];
@@ -44,7 +44,7 @@ export function cartSubtotal(cart:CartLine[]){return cart.reduce((sum,line)=>sum
 export function completeDemo(state:ShopState,fulfilment:"delivery"|"collection"): {state:ShopState;order:DemoOrder}|null{
  const cart=safeCart(state.cart,state.purchased);if(!cart.length)return null;
  const subtotal=cartSubtotal(cart),fee=demoDelivery[fulfilment];
- const order:DemoOrder={reference:`NM-DEMO-${crypto.randomUUID().replaceAll("-","").slice(0,8).toUpperCase()}`,createdAt:new Date().toISOString(),items:cart,subtotal,fee,total:subtotal+fee,fulfilment};
+ const order:DemoOrder={reference:`NM-${crypto.randomUUID().replaceAll("-","").slice(0,8).toUpperCase()}`,createdAt:new Date().toISOString(),items:cart,subtotal,fee,total:subtotal+fee,fulfilment};
  const purchased={...state.purchased};for(const line of cart)purchased[line.productId]=(purchased[line.productId]??0)+line.quantity;
  return {order,state:{...state,cart:[],purchased,orders:[...state.orders,order].slice(-30)}};
 }

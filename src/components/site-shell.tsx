@@ -7,6 +7,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/animation";
 import { pages } from "@/config/pages";
 import { SiteFooter } from "@/components/site-footer";
+import { ShopHeaderActions } from "@/components/shop-header-actions";
 import { SoundtrackControls } from "@/components/soundtrack";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
@@ -98,6 +99,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     <a href="#main" className="skip-link">Skip to content</a>
     <header className="site-header" ref={header}>
       <SoundtrackControls />
+      <ShopHeaderActions />
       <Link href="/" className="brand" aria-label="THE NORTH MOB — Home"><Image src="/assets/official-logo-transparent.png" alt="THE NORTH MOB" width={1983} height={793} unoptimized priority /></Link>
       <button ref={menuButton} type="button" className="menu-toggle" aria-label="Open navigation" aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen(true)}><span /><span /></button>
     </header>

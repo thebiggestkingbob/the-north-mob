@@ -76,3 +76,13 @@ See the final implementation report for command and browser results. Tests use s
 - All requested sizes (1440, 1024, 768, 430, 390) passed image/card containment and non-overlap checks. Existing seven-page regressions also passed at 320, 375, 768, 1024, 1440 and 1920 pixels.
 - Desktop and mobile screenshots were visually reviewed. Original artwork remains unchanged; description contrast and variant accessible names were corrected during QA. The existing reduced-motion-aware ShopMotion component now animates the new heading and toolbar, and the root player retains one engine through internal navigation.
 - No real payment, order email, newsletter signup, hosted customer record or database write was made by this prototype or its tests. Real Spotify and physical-device behavior remain outside these mocked/local checks; no production Core Web Vitals claim is made.
+
+## Home and Shop refinement — 24 October 2026
+
+The subsequent user revision replaces the Home Shop wordmark/empty message with a four-product horizontal carousel linking into the complete Shop and individual product views. Saved-items and cart controls now appear as compact header icons with live counts, including on other public chapters. The centred logo, music engine and menu remain intact; the narrowest mobile layout adjusts the logo width to keep all tap targets clear.
+
+All product image surfaces (Home, gallery, details, thumbnails and cart) explicitly use containment. Detail photography fits within a viewport-height image panel so the whole supplied photograph can be seen at once. Original image pixels are not regenerated or extended. Product modal closure explicitly restores the previous document scroll position.
+
+Repeated visible “demo” and “prototype” labels are removed. Checkout retains a short, neutral notice that payment is not connected and no real order will be placed. Its action previews a confirmation rather than claiming a payment. New references use NM-XXXXXXXX; older saved references remain readable and are displayed without the old prefix wording. Browser storage identifiers stay compatible so existing carts and saved items are preserved.
+
+Refinement verification: TypeScript, lint, production build and all 98 unit tests passed. The complete browser run covered 92 scenarios: 91 passed immediately; one existing hero assertion matched a hidden cached Home view and was corrected to assert exactly one visible hero, then passed on rerun. The mobile product-close scroll check now passes with explicit restoration. Header icon/logo/menu bounds were separately checked at 1440, 390 and 320 pixels, and Home/carousel/Shop screenshots were reviewed. No new payment connection, database write or production promotion was introduced.

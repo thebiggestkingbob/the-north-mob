@@ -33,5 +33,5 @@ test("Shop keeps the shared cinematic identity, real signup and an honest catalo
   await expect(page.getByRole("heading", { level: 1, name: /OBJECTS.*MERCHANDISE/ })).toBeVisible();
   await expect(page.locator(".newsletter-signup")).toHaveCount(1);
   await expect(page.getByRole("button", { name: /Open cart/ })).toBeVisible();
-  await expect(page.locator(".shop-page")).toContainText("no real orders");
+  await expect(page.locator(".shop-page")).toContainText("13 objects / collection");
 });

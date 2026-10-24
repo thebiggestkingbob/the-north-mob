@@ -21,7 +21,7 @@ export function HomeSequence() {
         .fromTo(root.querySelector(".home-statement span:first-child"), { xPercent: -10 }, { xPercent: 6, ease: "none" }, 0)
         .fromTo(root.querySelector(".home-statement span:last-child"), { xPercent: 10 }, { xPercent: -6, ease: "none" }, 0);
       gsap.fromTo(root.querySelector(".home-visuals-detail"), { yPercent: 16, rotation: 4 }, { yPercent: -12, rotation: -3, ease: "none", scrollTrigger: { trigger: root.querySelector(".home-visuals-scene"), start: "top bottom", end: "bottom top", scrub: 1 } });
-      gsap.fromTo(root.querySelector(".home-shop-wordmark"), { yPercent: 15 }, { yPercent: -10, ease: "none", scrollTrigger: { trigger: root.querySelector(".home-shop-scene"), start: "top bottom", end: "bottom bottom", scrub: 1 } });
+
       gsap.fromTo(root.querySelector(".home-release-art"), { yPercent: 12, rotation: 5 }, { yPercent: -7, rotation: -3, ease: "none", scrollTrigger: { trigger: release, start: "top bottom", end: "bottom bottom", scrub: 1 } });
     });
     return () => media.revert();

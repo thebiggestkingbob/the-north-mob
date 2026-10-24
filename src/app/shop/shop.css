@@ -16,3 +16,10 @@
 .merch-page .merch-polaroid .polaroid-caption p{color:#383832}
 .merch-dialog-header{position:sticky;top:0;z-index:5;background:#101010;margin:-65px -35px 20px;padding:8px 20px;text-align:right}.merch-dialog-header .merch-close{position:static;min-height:44px}
 @media(max-width:600px){.merch-dialog-header{top:0;margin:-60px -18px 20px;padding:8px 12px}}
+/* Merchandise is always displayed whole, including in detail and cart views. */
+.merch-page .polaroid-gallery .merch-polaroid>img{width:100%;height:auto;max-height:none;object-fit:contain;object-position:center;aspect-ratio:auto}
+.merch-dialog .merch-large-image{display:block;width:100%;height:auto;max-height:none;object-fit:contain;object-position:center;aspect-ratio:auto}
+.merch-dialog .merch-thumbnails img,.merch-dialog .merch-cart-items img{object-fit:contain;object-position:center}
+.merch-collection-count{margin-top:35px}
+.merch-dialog .merch-large-image{height:60dvh;max-height:720px;object-fit:contain}
+@media(max-width:750px){.merch-dialog .merch-large-image{height:48dvh}}

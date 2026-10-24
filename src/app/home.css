@@ -41,3 +41,12 @@
 .home-shop-copy{position:absolute;bottom:150px;left:var(--home-edge);display:grid;gap:20px;font-size:12px;color:var(--muted)}.home-shop-copy a{color:var(--paper)}
 @media(max-width:750px){.home-visuals-scene,.home-shop-scene{height:120svh}.home-visuals-title{font-size:29vw;top:24%;left:var(--home-edge)}.home-visuals-detail{top:35%;width:60vw;height:39svh;right:10%}.home-visuals-copy{bottom:110px;gap:8px}.home-visuals-copy p{font-size:8px}.home-shop-title{top:27%;font-size:38vw;left:var(--home-edge)}.home-shop-wordmark{top:47%;right:10%;width:60vw}.home-shop-copy{bottom:170px;font-size:11px;gap:12px}}
 @media(prefers-reduced-motion:reduce){.home-visuals-scene,.home-shop-scene{height:auto}}
+.home-shop-scene .home-scene-stage{height:auto;min-height:100svh;position:relative;padding:calc(var(--shell-header-height,100px) + 40px) var(--home-edge) 150px;overflow:visible}
+.home-shop-scene{height:auto;min-height:120svh}
+.home-shop-scene .home-scene-label{position:static;margin:0 0 25px}
+.home-shop-title{position:static;font-size:clamp(100px,15vw,230px);margin:0 0 24px}
+.home-shop-copy{position:static;margin-top:30px}
+.home-merch-carousel{min-width:0}.home-merch-controls{display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px}.home-merch-controls button{background:none;color:var(--paper);border:1px solid #ffffff40;width:44px;height:44px;font-size:20px}
+.home-merch-rail{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 20px;scrollbar-width:thin;scrollbar-color:#666 #111}
+.home-merch-item{flex:0 0 30%;min-width:0;scroll-snap-align:start}.home-merch-item img{display:block;width:100%;height:36svh;object-fit:contain;background:#101010}.home-merch-item>div{display:flex;justify-content:space-between;gap:14px;font-size:12px;margin-top:16px;line-height:1.6}
+@media(max-width:750px){.home-shop-scene .home-scene-stage{padding-top:calc(var(--shell-header-height,100px) + 25px);padding-bottom:140px}.home-merch-item{flex-basis:76%}.home-merch-item img{height:38svh}.home-merch-rail{gap:20px}.home-shop-title{font-size:30vw}}

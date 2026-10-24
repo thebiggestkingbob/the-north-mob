@@ -18,7 +18,7 @@ it("caps combined variant stock and merges duplicates on storage restoration",()
 it("updates quantities and creates a local order without any personal data",()=>{
  const line={productId:"h4b-mug",variant:"white",quantity:2};let state=addCart(emptyShop,line);
  state=changeQuantity(state,line,3);expect(cartSubtotal(state.cart)).toBe(44700);
- const result=completeDemo(state,"delivery")!;expect(result.order.total).toBe(44700+demoDelivery.delivery);expect(result.order.reference).toMatch(/^NM-DEMO-[A-F0-9]{8}$/);expect(result.state.cart).toEqual([]);expect(result.state.purchased["h4b-mug"]).toBe(3);
+ const result=completeDemo(state,"delivery")!;expect(result.order.total).toBe(44700+demoDelivery.delivery);expect(result.order.reference).toMatch(/^NM-[A-F0-9]{8}$/);expect(result.state.cart).toEqual([]);expect(result.state.purchased["h4b-mug"]).toBe(3);
  expect(safeCart([{...line,quantity:99}],result.state.purchased)[0].quantity).toBe(9);
  expect(decodeShop(JSON.stringify({...result.state,email:"private@example.com",address:"Private street"}))).not.toHaveProperty("email");
  expect(JSON.stringify(result.order)).not.toMatch(/email|phone|street|customer/);
