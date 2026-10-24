@@ -3,7 +3,7 @@ import { findMerch,merch,demoDelivery } from "@/config/merch";
 export const SHOP_STORAGE_KEY="northmob:shop-demo:v1";
 export type CartLine={productId:string;variant:string;quantity:number};
 export type DemoOrder={reference:string;createdAt:string;items:CartLine[];subtotal:number;fee:number;total:number;fulfilment:"delivery"|"collection"};
-export type ShopState={version:1;cart:CartLine[];saved:string[];purchased:Record<string,number>;orders:DemoOrder[]};
+export type ShopState={version:1;cart:CartLine[];saved:string[];preorders?:string[];purchased:Record<string,number>;orders:DemoOrder[]};
 export const emptyShop:ShopState={version:1,cart:[],saved:[],purchased:{},orders:[]};
 export const lineKey=(line:Pick<CartLine,"productId"|"variant">)=>`${line.productId}:${line.variant}`;
 export function stockLeft(state:ShopState,id:string){const product=findMerch(id);return product?.status==="available"?Math.max(0,product.stock-(state.purchased[id]??0)):0;}
@@ -27,7 +27,7 @@ export function decodeShop(raw:string|null):ShopState{
  const subtotal=cartSubtotal(items),fee=demoDelivery[order.fulfilment];
  return [{reference:order.reference,createdAt:order.createdAt,items,subtotal,fee,total:subtotal+fee,fulfilment:order.fulfilment}];
  }):[];
- return {version:1,cart:safeCart(value.cart,purchased),saved:Array.isArray(value.saved)?[...new Set<string>(value.saved.slice(0,100).filter((id:unknown)=>typeof id==="string"&&findMerch(id)?.status==="coming-soon"))]:[],purchased,orders};
+ return {version:1,cart:safeCart(value.cart,purchased),saved:Array.isArray(value.saved)?[...new Set<string>(value.saved.slice(0,100).filter((id:unknown)=>typeof id==="string"&&!!findMerch(id)))]:[],preorders:Array.isArray(value.preorders)?[...new Set<string>(value.preorders.slice(0,100).filter((id:unknown)=>typeof id==="string"&&!!findMerch(id)))]:[],purchased,orders};
  }catch{return {...emptyShop};}
 }
 export function changeQuantity(state:ShopState,line:CartLine,quantity:number):ShopState{

@@ -8,10 +8,10 @@ export const links = {
 
 // Names map to the filenames supplied by the owner, not faces in the mockup.
 export const artists = [
-  { slug: "trophy", name: "Trophy", tagline: "ICON.", portrait: "/assets/artists/trophy.webp", position: "43% 65%" },
-  { slug: "orieblxckmaestro", name: "Orieblxckmaestro", tagline: "HERE 4 BUSINESS(H4B).", portrait: "/assets/artists/orieblxckmaestro.webp", position: "40% 65%" },
-  { slug: "carlow-picasso", name: "Carlow Picasso", tagline: "WELCOME TO THE WORLD OF ART", portrait: "/assets/artists/carlow-picasso.webp", position: "38% 68%" },
-  { slug: "majoricey", name: "MajorIcey", tagline: "TRAPCARDI PIONEER", portrait: "/assets/artists/major-icey.webp", position: "35% 64%" },
+  { slug: "trophy", name: "Trophy", tagline: "ICON.", portrait: "/assets/artists/trophy-2026.webp", position: "50% 50%" },
+  { slug: "orieblxckmaestro", name: "Orieblxckmaestro", tagline: "HERE 4 BUSINESS(H4B).", portrait: "/assets/artists/orieblxckmaestro-2026.webp", position: "50% 50%" },
+  { slug: "carlow-picasso", name: "Carlow Picasso", tagline: "WELCOME TO THE WORLD OF ART", portrait: "/assets/artists/carlow-picasso-2026.webp", position: "50% 50%" },
+  { slug: "majoricey", name: "MajorIcey", tagline: "TRAPCARDI PIONEER", portrait: "/assets/artists/major-icey-2026.webp", position: "50% 50%" },
 ] as const;
 
 // Supplied Spotify biography is artist-authored. No invented tracklist or dates.

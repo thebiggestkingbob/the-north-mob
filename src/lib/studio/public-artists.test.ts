@@ -14,3 +14,7 @@ function result(data: unknown, error: unknown = null) {
 it("does not resurrect archived static profiles when a configured database is unavailable", async () => { result(null, new Error("unavailable")); expect(await publishedArtists()).toEqual({ artists: [], unavailable: true }); });
 it("respects an intentionally empty published catalogue", async () => { result([]); expect(await publishedArtists()).toEqual({ artists: [], unavailable: false }); });
 it("retains all four approved profiles before database configuration", async()=>{vi.stubEnv("SUPABASE_URL","");const result=await publishedArtists();expect(result.artists).toHaveLength(4);expect(result.unavailable).toBe(false);});
+it("upgrades supplied legacy portrait paths but preserves Studio-selected alternatives",async()=>{
+ result([{slug:"trophy",name:"Trophy",portrait:"/assets/artists/trophy.webp",position:"43% 65%"},{slug:"majoricey",name:"MajorIcey",portrait:"/assets/another-approved.webp",position:"30% 60%"}]);
+ const data=await publishedArtists();expect(data.artists[0].portrait).toBe("/assets/artists/trophy-2026.webp");expect(data.artists[0].position).toBe("50% 50%");expect(data.artists[1].portrait).toBe("/assets/another-approved.webp");
+});

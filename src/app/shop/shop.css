@@ -23,3 +23,13 @@
 .merch-collection-count{margin-top:35px}
 .merch-dialog .merch-large-image{height:60dvh;max-height:720px;object-fit:contain}
 @media(max-width:750px){.merch-dialog .merch-large-image{height:48dvh}}
+.merch-dialog:not(.is-drawer){width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0}
+.product-browse{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}.product-browse .button{margin:0}
+.merch-image-expand{display:block;width:100%;padding:0;border:0;background:transparent;cursor:zoom-in}.merch-detail.is-image-expanded{display:block}.merch-detail.is-image-expanded .merch-product-copy{display:none}.merch-detail.is-image-expanded .merch-large-image{height:75dvh;max-height:none}.merch-detail.is-image-expanded .merch-image-expand{cursor:zoom-out}
+@media(max-width:600px){.product-browse .button{font-size:10px;padding:10px;gap:5px}.product-browse>.eyebrow{font-size:9px}}
+/* Keep product browsing visible while zoomed artwork scrolls. */
+.merch-dialog:not(.is-drawer){padding:0}
+.merch-dialog:not(.is-drawer)>.merch-dialog-header{height:68px;margin:0;padding:12px 20px;top:0}
+.merch-dialog:not(.is-drawer)>.product-browse{position:sticky;top:68px;z-index:4;background:#101010;margin:0;padding:12px 35px 20px}
+.merch-dialog:not(.is-drawer)>.merch-detail{padding:0 35px 35px}
+@media(max-width:600px){.merch-dialog:not(.is-drawer)>.product-browse{padding:8px 18px 18px}.merch-dialog:not(.is-drawer)>.merch-detail{padding:0 18px 25px}}

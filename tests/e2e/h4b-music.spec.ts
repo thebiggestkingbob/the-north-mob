@@ -8,7 +8,7 @@ for(const width of [1440,834,390]){
   await expect(page.locator(".header-sound").getByRole("button",{name:"Pause soundtrack",exact:true})).toBeVisible();
   await expect(page.getByRole("heading",{name:"A SOUND FROM PITORI. BUILT FOR EVERYWHERE."})).toBeVisible();
   await expect(page.getByText("Reported first-month streams",{exact:true})).toBeVisible();
-  await expect(page.locator(".h4b-milestones dd")).toHaveText(["6M+","11","2026"]);
+  await expect(page.locator(".h4b-milestones dd")).toHaveText(["6M+","100k+","1.5M+","30k+"]);
   const rail=page.getByRole("region",{name:"H4B featured artist photographs"});await rail.scrollIntoViewIfNeeded();
   await expect(rail.locator("figcaption")).toHaveText(names);
   for(const name of names){const img=rail.getByAltText(`${name} — supplied H4B featured artist card`);await img.scrollIntoViewIfNeeded();await expect(img).toBeVisible();await expect.poll(()=>img.evaluate(node=>(node as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);}

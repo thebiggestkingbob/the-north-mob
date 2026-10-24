@@ -1,0 +1,13 @@
+# Viewer and music refinements — 24 October 2026
+
+- Music retains the previously approved 6M+ reported first-month streams, adds user-supplied 100k+ Spotify monthly listeners, 1.5M+ total YouTube streams and 30k+ Shazams. Track count/year removed from this stats strip. Counts animate once on entry and respect reduced motion; figures are editorial claims, not live provider counters.
+- Spotify and Apple Music artist links use the exact supplied destinations with accessible platform marks.
+- H4B artist cards open a full-screen, horizontally scrollable/snap gallery. Previous/next and keyboard controls stay inside the viewer. Credited songs use the single persistent soundtrack engine, including pause/resume. No Visuals redirect remains in this viewer. Unresolved track IDs are explicitly unavailable rather than guessed or linked to a different song; browser/provider limits still apply.
+- Shop uses a full-screen product dialog with previous/next, arrow keys, touch swipe over photographs, and click-to-enlarge uncropped images. Native dialog close/focus/scroll restoration is retained.
+- All products can be saved, including sold-out products. Unavailable products allow persistent local pre-order selections. These are not submitted orders, do not consume inventory, do not collect payment and do not promise fulfilment. The saved-items drawer lists/removes these selections. Cart still rejects unavailable stock.
+- Book the Mob links to Business on Music, Visualz and The Mob. Footer wordmark removed. Other continuation links retained.
+- New named Mob portraits mapped without identity inference; original hashes and asset processing recorded in mob-portrait-provenance-2026.json. Portraits show uncropped in cards/full-screen views, with previous/next and vertical scroll. Legacy published Studio portrait paths resolve to the approved new assets; custom Studio-selected paths remain intact. No database mutation or schema change.
+
+## Verification
+
+TypeScript, ESLint, production build and 100 unit tests pass. Nineteen targeted desktop/mobile browser scenarios pass across the final runs, including playback-contract pause/resume, horizontal browsing, full-screen sizes, new portrait mapping, pre-order persistence, booking CTAs, cart/checkout regression, focus and scroll restoration. One initial browser assertion assumed the opening track was paused; it was corrected to verify pause followed by resume. Spotify integration tests use fixtures and do not prove actual Spotify playback availability. A direct official metadata request returned 403; no track IDs were invented. Desktop/mobile screenshots were visually inspected. No payments, orders, emails or production deployment performed.

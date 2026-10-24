@@ -35,3 +35,7 @@ it("keeps cart lines in place when changing quantities",()=>{
  const state=addCart(addCart(emptyShop,first),second);
  expect(changeQuantity(state,first,2).cart.map(line=>line.productId)).toEqual(["lineup-tee","mob-tote"]);
 });
+it("restores sold-out saves and pre-order selections without admitting unavailable cart lines",()=>{
+ const state=decodeShop(JSON.stringify({...emptyShop,saved:["mob-socks","mob-socks","invalid"],preorders:["portrait-tank","invalid","portrait-tank"],cart:[{productId:"mob-socks",variant:"",quantity:1}]}));
+ expect(state.saved).toEqual(["mob-socks"]);expect(state.preorders).toEqual(["portrait-tank"]);expect(state.cart).toEqual([]);
+});

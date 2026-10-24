@@ -1,0 +1,30 @@
+[
+  {
+    "supplied_filename": "Carlow Picasso.jpg",
+    "original_sha256": "eabdbea01fb164833733dc3a8e0098b422514a976b6ae6f1c7b75aa2b9d28735",
+    "web_asset": "public/assets/artists/carlow-picasso-2026.webp",
+    "web_sha256": "1f72b21d2f002963e24b514ac088996c8ece420c2887bd1f7266dab57ff0484c",
+    "processing": "EXIF orientation, proportional resize to width 2000, WebP quality 90; no crop"
+  },
+  {
+    "supplied_filename": "MAJOR ICE.jpg",
+    "original_sha256": "ca684d83e8d26348feea630fbde8b8379319f6f7378739b2195a1513d298c054",
+    "web_asset": "public/assets/artists/major-icey-2026.webp",
+    "web_sha256": "0c6768d22617825cc4ff6850072a667b953159923eceae4786ce7b06d5d5e93e",
+    "processing": "EXIF orientation, proportional resize to width 2000, WebP quality 90; no crop"
+  },
+  {
+    "supplied_filename": "Orieblxckmaestro.jpg",
+    "original_sha256": "144d8c27e6f723d77bb58cb21f83366020d0bd3017c49d6d7da8710d7bc45a28",
+    "web_asset": "public/assets/artists/orieblxckmaestro-2026.webp",
+    "web_sha256": "955fcd1beb86a10a7fcf32965dc8da7c57c2c63254fd0e473152945469fbd46b",
+    "processing": "EXIF orientation, proportional resize to width 2000, WebP quality 90; no crop"
+  },
+  {
+    "supplied_filename": "TROPHY (2).jpg",
+    "original_sha256": "de64bdb563f706e8cabae8836f35877e0d510fed226601c0db3d49d353f7643b",
+    "web_asset": "public/assets/artists/trophy-2026.webp",
+    "web_sha256": "3b51b924cf6eda5e61f4f2bf92353e4831bb5c3a71f4eb25401868e3180ebd99",
+    "processing": "EXIF orientation, proportional resize to width 2000, WebP quality 90; no crop"
+  }
+]
