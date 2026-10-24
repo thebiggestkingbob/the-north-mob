@@ -9,7 +9,7 @@ export const merch:MerchProduct[]=[
  product("h4b-print","H4B Photo Print","The collective in monochrome, shown as a statement photograph for your wall.","Print",199,"coming-soon",0,["0"],{note:"The image shows a framed presentation. Frame inclusion and print dimensions are not confirmed."}),
  product("lineup-tee","Lineup Tee","Black tee with a discreet chest mark and bold collective names across the back.","T-shirt",299,"available",12,["1.1","1.2"],{note:sizing}),
  product("portrait-tank","Portrait Tank","Black sleeveless top pairing the North Mob chest mark with H4B portrait artwork.","Sleeveless top",249,"sold-out",0,["2"],{note:sizing}),
- product("h4b-features-tee","H4B Features Tee","Light-coloured tee with collective photography and featured-artist cards on the reverse.","T-shirt",349,"available",10,["3"],{note:sizing}),
+ product("h4b-features-tee","H4B Features Tee","Light-coloured tee with collective photography and featured-artist cards on the reverse.","T-shirt",349,"available",10,["Vintage H4B T-Shirt Merch Mockup (1)"],{note:sizing}),
  product("mob-hoodie","Mob Hoodie","Black hooded sweatshirt carrying the North Mob mark and H4B group portrait.","Hoodie",599,"available",8,["4.1","4.2"],{note:sizing}),
  product("business-long-sleeve","Business Long Sleeve","White long sleeve with chest branding, sleeve lettering and the collective lineup.","Long sleeve",399,"available",10,["5.1","5.2"],{note:sizing}),
  product("mob-beanie","Mob Beanie","Black beanie with a folded cuff and a contrasting North Mob logo patch.","Beanie",199,"available",15,["6"]),

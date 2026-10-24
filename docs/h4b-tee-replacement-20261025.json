@@ -1,0 +1,34 @@
+{
+  "productId": "h4b-features-tee",
+  "original": "Vintage H4B T-Shirt Merch Mockup (1).png",
+  "originalSha256": "df15c1985d173a5b549661bfda4c62fe5dfaa65340b369e71a369d47008cc98a",
+  "web": "/assets/merch/h4b-features-tee-vintage.webp",
+  "width": 1536,
+  "height": 1024,
+  "originalBytes": 3451693,
+  "webBytes": 456734,
+  "processing": "Proportional WebP conversion quality 88; no cropping or regeneration",
+  "retained": {
+    "name": "H4B Features Tee",
+    "priceZAR": 349,
+    "status": "available",
+    "stock": 10
+  },
+  "verification": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "unitTests": 104,
+    "productionBuild": "passed",
+    "browserWidths": [
+      1440,
+      390
+    ],
+    "checked": [
+      "correct replacement on card and product view",
+      "full uncropped image loading",
+      "R349 price retained",
+      "enlarged view",
+      "18 products retained"
+    ]
+  }
+}
