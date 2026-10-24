@@ -36,3 +36,12 @@ for (const width of [1440, 390]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 }
+test("every featured artist selects their credited Spotify song without leaving the viewer",async({page})=>{
+ await page.emulateMedia({reducedMotion:"reduce"});await mockSpotify(page,true);await page.goto('/music');await page.getByRole('button',{name:'Explore Focalistic on H4B',exact:true}).click();
+ const dialog=page.getByRole('dialog',{name:'H4B featured artists'});
+ for(const [artist,title,id] of [
+  ['Focalistic','gerr , ten','2Y8PzKNQSqbhursel7lSq8'],['Young Stunna','sjepa','3F9op8u11jyr1OGLyEIwDW'],['Blxckie','ten , toes','0DDcHNwB311alxJsMCEthU'],['Loatinover Pounds','ten , toes','0DDcHNwB311alxJsMCEthU'],['LaCabra','maatla , thata','3HdLERcMc38Yq5UDnCFGf3'],['Lowfeye','momma , phone','0uOQ2hUkWqG7Mk38yQpYt9']]){
+  const article=dialog.getByRole('article',{name:artist,exact:true});await article.getByRole('button',{name:new RegExp(`(?:Play|Pause) ${title}`)}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {__spotifyUri:string}).__spotifyUri)).toBe(`spotify:track:${id}`);await expect(dialog).toBeVisible();await expect(page).toHaveURL(/\/music$/);await dialog.getByRole('button',{name:'Next artist →',exact:true}).click();
+ }
+});

@@ -9,6 +9,13 @@ export const publishedMusic=cache(async function publishedMusic():Promise<{relea
  const [releases,tracks]=await Promise.all([client.from("music_releases").select("slug,title,artist,year,cover,kind,spotify_uri,source").eq("status","published").order("created_at"),client.from("music_tracks").select("catalogue_id,release_slug,title,artist,credits,duration,spotify_uri,source").eq("status","published").order("sort_order").order("id")]);
  if(releases.error||tracks.error||!releases.data||!tracks.data)return {releases:[],tracks:[],unavailable:true};
  const visible=new Set(releases.data.map(r=>r.slug));
- return {releases:releases.data,tracks:tracks.data.filter(t=>visible.has(t.release_slug)).map(t=>({id:t.catalogue_id,releaseId:t.release_slug,title:t.title,artist:t.artist,credits:t.credits,duration:t.duration,source:t.source,...(t.spotify_uri?{uri:t.spotify_uri}:{}),...(releases.data.find(r=>r.slug===t.release_slug)?.cover?{cover:releases.data.find(r=>r.slug===t.release_slug)!.cover!}:{})})),unavailable:false};
+ const publicTracks = tracks.data.filter(track=>visible.has(track.release_slug)).map(track=>{
+  // A Studio override wins. Fill only missing IDs for exact approved song matches.
+  const approved=allTracks.find(item=>item.id===track.catalogue_id&&item.releaseId===track.release_slug&&item.title===track.title);
+  const uri=track.spotify_uri??approved?.uri;
+  const cover=releases.data.find(release=>release.slug===track.release_slug)?.cover;
+  return {id:track.catalogue_id,releaseId:track.release_slug,title:track.title,artist:track.artist,credits:track.credits,duration:track.duration,source:track.source,...(uri?{uri}:{}),...(cover?{cover}:{})};
+ });
+ return {releases:releases.data,tracks:publicTracks,unavailable:false};
  }catch{return {releases:[],tracks:[],unavailable:true};}
 });
