@@ -50,3 +50,16 @@
 .home-merch-rail{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 20px;scrollbar-width:thin;scrollbar-color:#666 #111}
 .home-merch-item{flex:0 0 30%;min-width:0;scroll-snap-align:start}.home-merch-item img{display:block;width:100%;height:36svh;object-fit:contain;background:#101010}.home-merch-item>div{display:flex;justify-content:space-between;gap:14px;font-size:12px;margin-top:16px;line-height:1.6}
 @media(max-width:750px){.home-shop-scene .home-scene-stage{padding-top:calc(var(--shell-header-height,100px) + 25px);padding-bottom:140px}.home-merch-item{flex-basis:76%}.home-merch-item img{height:38svh}.home-merch-rail{gap:20px}.home-shop-title{font-size:30vw}}
+
+/* Match the Shop exhibition's physical Polaroid treatment. */
+.home-merch-rail{align-items:flex-start;gap:38px;padding:28px 20px 45px}
+.home-merch-item{display:block;background:#eeece4;color:#141414;padding:12px 12px 24px;transform:rotate(-2deg);box-shadow:0 10px 25px #0008;transition:transform .35s ease,box-shadow .35s ease}
+.home-merch-item:nth-child(even){transform:rotate(2deg);margin-top:24px}
+.home-merch-rail .home-merch-item img{display:block;width:100%;height:auto;max-height:none;object-fit:contain;aspect-ratio:auto}
+.home-merch-item>.home-merch-caption{display:block;margin:0;padding:18px 7px 0}
+.home-merch-number{font-size:9px;letter-spacing:.08em}.home-merch-caption h3{font-size:clamp(28px,2.6vw,40px);line-height:1.05;margin:10px 0}
+.home-merch-item .home-merch-caption p{font-size:12px;line-height:1.6;color:#383832;margin:0 0 20px}.home-merch-price{font-size:14px}
+.home-merch-item:focus-visible{outline:3px solid var(--paper);outline-offset:7px;transform:rotate(0) translateY(-6px)}
+@media(hover:hover){.home-merch-item:hover{opacity:1;transform:rotate(0) translateY(-6px);box-shadow:0 20px 35px #000c}}
+@media(max-width:750px){.home-merch-rail{gap:28px;padding-inline:14px}.home-merch-item{transform:rotate(-1deg)}.home-merch-item:nth-child(even){transform:rotate(1deg)}}
+@media(prefers-reduced-motion:reduce){.home-merch-item{transition:none}}
