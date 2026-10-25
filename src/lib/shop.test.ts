@@ -70,3 +70,8 @@ it("rejects malformed imported receipts and invalid gift notes",async()=>{
  const {giftSchema}=await import("./shop");expect(giftSchema.safeParse({recipientName:" ",message:"Hi"}).success).toBe(false);expect(giftSchema.safeParse({recipientName:"Friend",message:"x".repeat(501)}).success).toBe(false);
  expect(decodeShop(JSON.stringify({...emptyShop,orders:[{reference:"NM-ABCDEF12",createdAt:"2026-10-24",items:[{productId:"lineup-tee",variant:"",quantity:-2}],subtotal:29900,fee:0,total:29900,fulfilment:"collection"}]})).orders).toEqual([]);
 });
+it("prices poster sizes and limits cart quantity without inventing printed stock",async()=>{
+ const {posterProducts,productPrice}=await import("@/config/merch");const poster=posterProducts[0];expect(posterProducts).toHaveLength(25);expect(poster.stock).toBe(0);expect(productPrice(poster,"a3")).toBe(19900);expect(productPrice(poster,"a2")).toBe(29900);expect(productPrice(poster,"a1")).toBe(44900);
+ const state=addCart(emptyShop,{productId:poster.id,variant:"a1",quantity:2});expect(cartSubtotal(state.cart)).toBe(89800);const result=completeDemo(state,"collection")!;const restored=decodeShop(JSON.stringify(result.state));expect(restored.orders[0].items[0].variant).toBe("a1");expect(restored.orders[0].items[0].unitPrice).toBe(44900);expect(restored.orders[0].items[0].image).toBe(poster.images[0].src);expect(restored.purchased[poster.id]).toBeUndefined();
+ expect(safeCart([{productId:poster.id,variant:"a3",quantity:8},{productId:poster.id,variant:"a1",quantity:8}]).reduce((sum,line)=>sum+line.quantity,0)).toBe(10);expect(safeCart([{productId:poster.id,variant:"a4",quantity:1}])).toEqual([]);
+});

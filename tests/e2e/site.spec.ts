@@ -99,12 +99,12 @@ test("booking fallback prepares the approved recipient and preserves the enquiry
 test("photo archive keeps the collection and keyboard navigation with focus return", async ({ page }) => {
   await page.goto("/visuals");
   await expect(page.getByRole("searchbox")).toHaveCount(0);
-  await expect(page.locator(".archive-photo")).toHaveCount(9);
+  await expect(page.locator(".archive-photo")).toHaveCount(25);
   const trigger = page.getByRole("button", { name: "View Mob Ties / Photograph 09" });
   await trigger.click();
   await expect(page.locator(".photo-dialog")).toBeVisible();
   await page.keyboard.press("ArrowRight");
-  await expect(page.locator(".photo-navigation")).toContainText("Photograph 11");
+  await expect(page.locator(".photo-poster-layout figcaption")).toContainText("Photograph 11");
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
 });

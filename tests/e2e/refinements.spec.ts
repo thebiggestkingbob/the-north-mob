@@ -26,7 +26,7 @@ test("footer navigation retains a single soundtrack engine across all chapters",
 });
 test("cleanup preserves the H4B album and photo collection",async({page})=>{
  await mockSpotify(page);await mockYouTube(page);await page.goto("/music");await expect(page.getByText("More from the collective",{exact:true})).toHaveCount(0);await expect(page.locator(".catalogue-row")).toHaveCount(11);await expect(page.locator(".h4b-features figure")).toHaveCount(6);await expect(page.getByText(/HERE 4 BUSINESS introduces TRAPCARDI/)).toBeVisible();
- await page.goto("/visuals");await expect(page.getByRole("searchbox")).toHaveCount(0);await expect(page.locator(".archive-photo")).toHaveCount(9);await expect(page.locator(".youtube-thumbnail")).toHaveCount(6);await expect(page.locator('a[href*="instagram.com/reel"]')).toHaveCount(0);
+ await page.goto("/visuals");await expect(page.getByRole("searchbox")).toHaveCount(0);await expect(page.locator(".archive-photo")).toHaveCount(25);await expect(page.locator(".youtube-thumbnail")).toHaveCount(6);await expect(page.locator('a[href*="instagram.com/reel"]')).toHaveCount(0);
  await page.locator(".youtube-thumbnail").nth(4).click();await expect(page.locator(".youtube-stage iframe")).toHaveAttribute("src",/on_eg9HLysA/);
 });
 test("Business fields and event information remain clear of the audio dock",async({page})=>{

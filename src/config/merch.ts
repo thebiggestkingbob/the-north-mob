@@ -1,7 +1,8 @@
 import images from "./merch-images.json";
+import photoArchive from "./visualz-photos.json";
 export type MerchStatus="available"|"sold-out"|"coming-soon";
 export type MerchImage={src:string;width:number;height:number;alt:string;original:string};
-export type MerchProduct={id:string;name:string;description:string;category:string;price:number;status:MerchStatus;stock:number;images:MerchImage[];variants:{id:string;label:string;image?:number;price?:number}[];variantLabel?:string;note?:string;limitedEdition?:boolean};
+export type MerchProduct={id:string;name:string;description:string;category:string;price:number;status:MerchStatus;stock:number;images:MerchImage[];variants:{id:string;label:string;image?:number;price?:number}[];variantLabel?:string;note?:string;limitedEdition?:boolean;photoId?:string;madeToOrder?:boolean};
 function photos(files:string[],name:string):MerchImage[]{return files.map((file,index)=>{const image=images.find(image=>image.original===file+".png");if(!image)throw new Error(`Missing merch image: ${file}`);return {src:image.web,width:image.width,height:image.height,original:image.original,alt:`${name} — supplied merchandise photograph ${index+1}`};});}
 function product(id:string,name:string,description:string,category:string,price:number,status:MerchStatus,stock:number,files:string[],extra:Partial<MerchProduct>={}):MerchProduct{return {id,name,description,category,price:price*100,status,stock,images:photos(files,name),variants:[],...extra};}
 const sizing="Garment sizing has not been supplied.";
@@ -27,7 +28,11 @@ export const merch:MerchProduct[]=[
 ];
 export const demoDelivery={delivery:7900,collection:0};
 export const money=(cents:number)=>new Intl.NumberFormat("en-ZA",{style:"currency",currency:"ZAR",minimumFractionDigits:0,maximumFractionDigits:2}).format(cents/100);
-export function findMerch(id:string){return merch.find(product=>product.id===id);}
+export function findMerch(id:string){return [...merch,...posterProducts].find(product=>product.id===id);}
 
 export const productPrice=(product:MerchProduct,variant:string)=>product.variants.find(option=>option.id===variant)?.price??product.price;
 export const hasPriceRange=(product:MerchProduct)=>new Set([product.price,...product.variants.map(option=>option.price??product.price)]).size>1;
+
+export const posterSizes=[{id:"a3",label:"A3 · 297 × 420 mm",price:19900},{id:"a2",label:"A2 · 420 × 594 mm",price:29900},{id:"a1",label:"A1 · 594 × 841 mm",price:44900}] as const;
+export const posterCartLimit=10;
+export const posterProducts:MerchProduct[]=photoArchive.map(photo=>({id:`poster-${photo.id}`,photoId:photo.id,name:photo.posterTitle,description:`${photo.title} — full-image poster selection.`,category:"Poster",price:posterSizes[0].price,status:"available",stock:0,madeToOrder:true,images:[{src:photo.src,width:photo.width,height:photo.height,alt:photo.title,original:photo.original}],variantLabel:"Paper size",variants:posterSizes.map(size=>({...size})),note:"Image fits within the paper without cropping; margins may remain. Framing, paper finish and fulfilment are not confirmed."}));

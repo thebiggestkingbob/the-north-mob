@@ -1,9 +1,10 @@
 "use client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect,useState,type CSSProperties } from "react";
-import { merch,money,hasPriceRange,productPrice } from "@/config/merch";
+import { merch,findMerch,money,hasPriceRange,productPrice } from "@/config/merch";
 import { addCart,stockLeft,preorderEntries,togglePreorder,type CartLine,type DemoOrder } from "@/lib/shop";
-import { productContent,orderContent,type ShareContent } from "@/lib/shop-sharing";
+import { productContent,productPath,orderContent,type ShareContent } from "@/lib/shop-sharing";
 import { useShop,updateShop } from "@/lib/use-shop";
 import { useClientReady } from "@/lib/use-client-ready";
 import { ShopModal } from "./shop-modal";
@@ -16,6 +17,7 @@ import { ShopSharePanel } from "./shop-share-panel";
 type Panel={kind:"product";id:string;variant?:string}|{kind:"cart"|"checkout"|"wishlist"|"orders"}|{kind:"order";reference:string}|{kind:"share";content:ShareContent;back:Panel}|null;
 const angles=[-3,2,-2,4,-1,2,-4,1,-2,3,-1,2,-3];
 export function ShopGallery(){
+ const router=useRouter();
  const {state,storageAvailable}=useShop(),ready=useClientReady(),preorders=preorderEntries(state);
  const [panel,setPanel]=useState<Panel>(null),[notice,setNotice]=useState("");const gift=state.giftCart===true;
  useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(""),3000);return()=>clearTimeout(timer);},[notice]);
@@ -27,7 +29,8 @@ export function ShopGallery(){
  const order=panel?.kind==="order"?state.orders.find(order=>order.reference===panel.reference):null;
  const browse=(direction:number)=>{if(!product)return;const index=merch.findIndex(p=>p.id===product.id);setPanel({kind:"product",id:merch[(index+direction+merch.length)%merch.length].id});};
  const wishlist=(id:string)=>{const exists=state.wishlist.includes(id);updateShop(current=>({...current,wishlist:exists?current.wishlist.filter(item=>item!==id):[...current.wishlist,id]}));setNotice(exists?"Removed from your wishlist.":"Added to your wishlist on this browser.");};
- const shareProduct=(id:string,variant="")=>{const item=merch.find(p=>p.id===id);if(item)setPanel({kind:"share",content:productContent(item,variant),back:panel});};
+ const openProduct=(id:string,variant="")=>{const item=findMerch(id);if(item?.photoId){setPanel(null);router.push(productPath(item,variant));}else if(item)setPanel({kind:"product",id,variant});};
+ const shareProduct=(id:string,variant="")=>{const item=findMerch(id);if(item)setPanel({kind:"share",content:productContent(item,variant),back:panel});};
  const shareOrder=(item:DemoOrder)=>setPanel({kind:"share",content:orderContent(item),back:{kind:"order",reference:item.reference}});
  const giftItems=(lines:CartLine[])=>{
   let added=0;updateShop(current=>{let next=current;const before=current.cart.reduce((n,line)=>n+line.quantity,0);for(const line of lines)next=addCart(next,line);added=next.cart.reduce((n,line)=>n+line.quantity,0)-before;return added?{...next,giftCart:true}:current;});
@@ -49,8 +52,8 @@ export function ShopGallery(){
  :panel?.kind==="share"?<ShopSharePanel key={panel.content.title} content={panel.content} onBack={()=>setPanel(panel.back)}/>
  :panel?.kind==="orders"?<ShopOrders state={state} onOpen={openOrder}/>
  :order?<OrderReceipt order={order} onShare={shareOrder} onGift={order=>giftItems(order.items)} onBack={()=>setPanel({kind:"orders"})}/>
- :panel?.kind==="wishlist"?<section className="merch-cart"><h2>Wishlist</h2><p className="merch-note">Your wishlist stays on this browser.</p>{state.wishlist.length?<ul className="merch-wishlist">{state.wishlist.map(id=>{const item=merch.find(p=>p.id===id)!;return <li key={id}><button className="wishlist-open" onClick={()=>setPanel({kind:"product",id})}>{item.name}</button><ShopIconButton icon="heart" label={`Remove ${item.name} from wishlist`} aria-pressed onClick={()=>wishlist(id)}/></li>;})}</ul>:<p>Your wishlist is empty.</p>}
- {!!preorders.length&&<div className="merch-preorders"><h3>Pre-order selections</h3><p className="merch-note">Selections only; no orders have been sent.</p>{preorders.map(line=>{const item=merch.find(p=>p.id===line.productId)!,variant=item.variants.find(option=>option.id===line.variant);return <p key={`${line.productId}:${line.variant}`}><button className="button" onClick={()=>setPanel({kind:"product",id:item.id,variant:line.variant})}>{item.name}{variant?` / ${variant.label}`:""} · {money(productPrice(item,line.variant))}</button><button className="button" aria-label={`Remove pre-order ${item.name}${variant?` / ${variant.label}`:""}`} onClick={()=>updateShop(current=>togglePreorder(current,line))}>Remove</button></p>;})}</div>}
+ :panel?.kind==="wishlist"?<section className="merch-cart"><h2>Wishlist</h2><p className="merch-note">Your wishlist stays on this browser.</p>{state.wishlist.length?<ul className="merch-wishlist">{state.wishlist.map(id=>{const item=findMerch(id)!;return <li key={id}><button className="wishlist-open" onClick={()=>openProduct(id)}>{item.name}</button><ShopIconButton icon="heart" label={`Remove ${item.name} from wishlist`} aria-pressed onClick={()=>wishlist(id)}/></li>;})}</ul>:<p>Your wishlist is empty.</p>}
+ {!!preorders.length&&<div className="merch-preorders"><h3>Pre-order selections</h3><p className="merch-note">Selections only; no orders have been sent.</p>{preorders.map(line=>{const item=findMerch(line.productId)!,variant=item.variants.find(option=>option.id===line.variant);return <p key={`${line.productId}:${line.variant}`}><button className="button" onClick={()=>openProduct(item.id,line.variant)}>{item.name}{variant?` / ${variant.label}`:""} · {money(productPrice(item,line.variant))}</button><button className="button" aria-label={`Remove pre-order ${item.name}${variant?` / ${variant.label}`:""}`} onClick={()=>updateShop(current=>togglePreorder(current,line))}>Remove</button></p>;})}</div>}
  <button className="button" onClick={()=>setPanel(null)}>Continue shopping</button></section>:null}
  </ShopModal></>;
 }

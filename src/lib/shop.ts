@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { findMerch,merch,demoDelivery,productPrice } from "@/config/merch";
+import { findMerch,merch,demoDelivery,productPrice,posterCartLimit } from "@/config/merch";
 export const SHOP_STORAGE_KEY="northmob:shop-demo:v1";
 export type CartLine={productId:string;variant:string;quantity:number};
 export type PreorderLine=Pick<CartLine,"productId"|"variant">;
@@ -8,14 +8,14 @@ export type DemoOrder={reference:string;createdAt:string;gift?:boolean;items:Ord
 export type ShopState={version:1;giftCart?:boolean;cart:CartLine[];wishlist:string[];preorders?:string[];preorderLines?:PreorderLine[];purchased:Record<string,number>;orders:DemoOrder[]};
 export const emptyShop:ShopState={version:1,cart:[],wishlist:[],purchased:{},orders:[]};
 export const lineKey=(line:Pick<CartLine,"productId"|"variant">)=>`${line.productId}:${line.variant}`;
-export function stockLeft(state:ShopState,id:string){const product=findMerch(id);return product?.status==="available"?Math.max(0,product.stock-(state.purchased[id]??0)):0;}
+export function stockLeft(state:ShopState,id:string){const product=findMerch(id);return product?.status==="available"?product.madeToOrder?posterCartLimit:Math.max(0,product.stock-(state.purchased[id]??0)):0;}
 export function safeCart(raw:unknown,purchased:Record<string,number>={}):CartLine[]{
  if(!Array.isArray(raw))return [];const cart:CartLine[]=[];
  for(const row of raw.slice(0,100)){
  if(!row||typeof row!=="object")continue;const p=findMerch(row.productId);if(!p||p.status!=="available"||!Number.isSafeInteger(row.quantity)||row.quantity<=0)continue;
  const variant=p.variants.length?p.variants.find(v=>v.id===row.variant)?.id:row.variant===""?"":undefined;if(variant===undefined)continue;
  const allocated=cart.filter(line=>line.productId===p.id).reduce((sum,line)=>sum+line.quantity,0);
- const quantity=Math.min(row.quantity,Math.max(0,p.stock-(purchased[p.id]??0)-allocated));if(!quantity)continue;
+ const quantity=Math.min(row.quantity,Math.max(0,(p.madeToOrder?posterCartLimit:p.stock-(purchased[p.id]??0))-allocated));if(!quantity)continue;
  const existing=cart.find(line=>line.productId===p.id&&line.variant===variant);if(existing)existing.quantity+=quantity;else cart.push({productId:p.id,variant,quantity});
  }return cart;
 }
@@ -34,7 +34,7 @@ function historicItems(raw:unknown):OrderItem[]{
   const name=typeof item.name==="string"&&item.name.length<=200?item.name:product.name;
   const variantLabel=typeof item.variantLabel==="string"&&item.variantLabel.length<=200?item.variantLabel:variant?.label;
   const unitPrice=Number.isSafeInteger(item.unitPrice)&&item.unitPrice>=0&&item.unitPrice<=100000000?item.unitPrice:undefined;
-  const image=typeof item.image==="string"&&/^\/assets\/merch\/[a-zA-Z0-9._-]+\.webp$/.test(item.image)&&!item.image.includes("..")?item.image:product.images[variant?.image??0].src;
+  const image=typeof item.image==="string"&&/^\/assets\/(?:merch|visualz|mob-ties)\/[a-zA-Z0-9._-]+\.webp$/.test(item.image)&&!item.image.includes("..")?item.image:product.images[variant?.image??0].src;
   return [{productId:product.id,variant:variant?.id??"",quantity:item.quantity,name,variantLabel,unitPrice,image}];
  });
 }
@@ -66,7 +66,7 @@ export function completeDemo(state:ShopState,fulfilment:"delivery"|"collection",
  const cart=safeCart(state.cart,state.purchased);if(!cart.length)return null;
  const subtotal=cartSubtotal(cart),fee=demoDelivery[fulfilment];
  const order:DemoOrder={reference:`NM-${crypto.randomUUID().replaceAll("-","").slice(0,8).toUpperCase()}`,createdAt:new Date().toISOString(),items:cart.map(line=>{const product=findMerch(line.productId)!,variant=product.variants.find(option=>option.id===line.variant);return {...line,name:product.name,variantLabel:variant?.label,unitPrice:productPrice(product,line.variant),image:product.images[variant?.image??0].src};}),subtotal,fee,total:subtotal+fee,fulfilment,gift};
- const purchased={...state.purchased};for(const line of cart)purchased[line.productId]=(purchased[line.productId]??0)+line.quantity;
+ const purchased={...state.purchased};for(const line of cart)if(!findMerch(line.productId)?.madeToOrder)purchased[line.productId]=(purchased[line.productId]??0)+line.quantity;
  return {order,state:{...state,cart:[],giftCart:false,purchased,orders:[...state.orders,order].slice(-30)}};
 }
 
