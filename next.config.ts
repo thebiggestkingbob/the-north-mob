@@ -4,8 +4,18 @@ const nextConfig: NextConfig = {
   // TypeScript 5 exposes the compiler API; avoid spawning the CLI for config parsing.
   experimental: { useTypeScriptCli: false },
   images: { qualities: [75, 90] },
+  async rewrites() {
+    return [
+      { source: "/partnership", destination: "/documents/partnership.html" },
+      { source: "/investor", destination: "/documents/investor.html" },
+    ];
+  },
   async headers() {
-    return [{ source: "/((?!spotify-player(?:/|$)).*)", headers: [
+    return [
+      ...["/partnership", "/investor", "/documents/:path*"].map(source => ({ source, headers: [
+        { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+      ] })),
+      { source: "/((?!spotify-player(?:/|$)).*)", headers: [
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
