@@ -22,6 +22,17 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(source).toContain("WebGLRenderer");
   });
 
+  test("walk-through interiors do not navigate to separate pages", async ({ request }) => {
+    const engine = await (await request.get("/world-engine/index.html")).text();
+    const rooms = await (await request.get("/world-engine/interiors.js")).text();
+    expect(engine).not.toContain("window.location.assign");
+    expect(engine).toContain("arrowup");
+    expect(engine).toContain("arrowleft");
+    expect(rooms).toContain("function blocked");
+    expect(rooms).toContain("function inside");
+    expect(rooms).toContain("Wall gallery");
+  });
+
   test("3D interiors are served locally and exhibits have published data", async ({ request }) => {
     const module = await request.get("/world-engine/interiors.js");
     expect(module.ok()).toBeTruthy();
