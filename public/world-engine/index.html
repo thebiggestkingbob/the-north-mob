@@ -31,9 +31,12 @@ try{
   throw secondError;
  }
 }
-window.__northMob3dReady=true;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xb4b2ae);scene.fog=new THREE.Fog(0xb4b2ae,60,125);
-const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,150);const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;document.body.prepend(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,150);let renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true});}
+catch(error){console.error('WebGL unavailable',error);document.querySelector('#intro .eyebrow').textContent='3D GRAPHICS UNAVAILABLE · CHOOSE A CHARACTER TO EXPLORE';throw error;}
+window.__northMob3dReady=true;
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;document.body.prepend(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2.3));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(-18,35,15);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
 const mat=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:.85});const asphalt=mat(0x292929),concrete=mat(0xd0cec9),black=mat(0x111111),white=mat(0xf4f0e9),grey=mat(0x777777);
 function box(x,y,z,w,h,d,m,cast=true){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=cast;o.receiveShadow=true;scene.add(o);return o}
