@@ -60,6 +60,31 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(engine).not.toContain("const pathStart=");
   });
 
+
+  test("3D runtime moves the avatar, exposes state and respects map bounds", async ({ page }) => {
+    await page.goto("/world-engine/index.html");
+    await page.waitForFunction(() => typeof (window as any).__northMobWorldState === "function", { timeout: 20000 });
+    const before = await page.evaluate(() => (window as any).__northMobWorldState());
+    expect(before.ready).toBe(true);
+    expect(before.driving).toBe(false);
+    await page.keyboard.down("w");
+    await page.waitForTimeout(500);
+    await page.keyboard.up("w");
+    const after = await page.evaluate(() => (window as any).__northMobWorldState());
+    expect(after.z).toBeLessThan(before.z);
+    expect(Math.abs(after.x)).toBeLessThan(46);
+    expect(Math.abs(after.z)).toBeLessThan(48);
+  });
+
+  test("mobile interaction controls are accessible", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/world-engine/index.html");
+    await expect(page.getByRole("button", { name: "VIEW" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "INTERACT" })).toBeVisible();
+    await expect(page.locator("[data-key=w]")).toBeVisible();
+    await expect(page.locator("[data-key=a]")).toBeVisible();
+  });
+
   test("3D interiors are served locally and exhibits have published data", async ({ request }) => {
     const module = await request.get("/world-engine/interiors.js");
     expect(module.ok()).toBeTruthy();
