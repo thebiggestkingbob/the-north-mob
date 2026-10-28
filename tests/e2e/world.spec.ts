@@ -22,6 +22,21 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(source).toContain("WebGLRenderer");
   });
 
+  test("3D interiors are served locally and exhibits have published data", async ({ request }) => {
+    const module = await request.get("/world-engine/interiors.js");
+    expect(module.ok()).toBeTruthy();
+    const source = await module.text();
+    expect(source).toContain("createInteriors");
+    expect(source).toContain("EXIT TO STREET");
+    const response = await request.get("/api/world/exhibits");
+    expect(response.ok()).toBeTruthy();
+    const exhibits = await response.json();
+    for (const key of ["shop", "studio", "cinema", "museum", "live"]) {
+      expect(Array.isArray(exhibits[key])).toBeTruthy();
+    }
+    expect(exhibits.shop.length).toBeGreaterThan(0);
+  });
+
   test("world shop displays products from the canonical merchandise catalogue", async ({ page }) => {
     await page.goto("/world/catalog");
     await expect(page.getByRole("heading", { name: "MOB SHOP" })).toBeVisible();
