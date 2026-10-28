@@ -3,7 +3,7 @@
 </style></head><body>
 <div id="intro"><section><div class="eyebrow">PRETORIA · HERE 4 BUSINESS · THE NORTH MOB</div><h1>ENTER<br>THE MOB.</h1><p class="eyebrow" role="status">LOADING THE WORLD…</p></section></div>
 <a href="/" style="position:fixed;right:16px;top:16px;z-index:22;background:#111;color:#fff;border:1px solid #777;padding:10px 14px;font:12px monospace;text-decoration:none">EXIT WORLD</a><div id="hud"><strong>THE NORTH MOB WORLD</strong><div id="who"></div><div>W/S OR ↑/↓ WALK · A/D OR ←/→ TURN · E INTERACT</div><div id="place">THE STREET</div></div><div id="prompt"></div><div id="musicDock" style="position:fixed;left:16px;top:118px;bottom:auto;right:auto;z-index:23;max-width:min(320px,75vw)"><button id="musicToggle" aria-label="Play THE NORTH MOB music">♫ PLAY H4B</button><div id="musicEmbed" style="display:none;margin-top:8px"></div></div>
-<div id="controls"><div id="pad"><span></span><button data-key="w">▲</button><span></span><button data-key="a">◀</button><button data-key="s">▼</button><button data-key="d">▶</button></div><div style="display:flex;gap:5px"><button id="view">VIEW</button><button id="interact">ENTER</button></div></div>
+<div id="controls"><div id="pad"><span></span><button data-key="w">▲</button><span></span><button data-key="a">◀</button><button data-key="s">▼</button><button data-key="d">▶</button></div><div style="display:flex;gap:5px"><button id="resetCar" style="display:none">RESET CAR</button><button id="view">VIEW</button><button id="interact">ENTER</button></div></div>
 <div id="panel"><article><header><span class="eyebrow" id="panelType">DESTINATION</span><button id="close">CLOSE ×</button></header><h2 id="panelTitle"></h2><div id="panelContent"></div></article></div>
 <div id="error">Unable to load the 3D engine. Check your internet connection and refresh. <a href="/" style="color:white">Return to website</a></div>
 <script>
@@ -137,7 +137,7 @@ function showExhibit(item){
 }
 
 function close(){keys.clear();held.clear();document.getElementById('panel').style.display='none';document.getElementById('panelContent').replaceChildren();active=null}
-document.getElementById('close').onclick=close;document.getElementById('interact').onclick=()=>{const s=near();if(s)openSite(s)};document.getElementById('view').onclick=()=>mode=(mode+1)%2;
+document.getElementById('close').onclick=close;document.getElementById('interact').onclick=()=>{const s=near();if(s)openSite(s)};document.getElementById('view').onclick=()=>mode=(mode+1)%2;document.getElementById('resetCar').onclick=resetCar;
 document.getElementById('musicToggle').onclick=()=>{
  const dock=document.getElementById('musicEmbed');
  const playing=dock.style.display!=='none';
@@ -169,7 +169,7 @@ const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);cons
  if(collided){carSpeed=0;carStuckFrames++}else if(moved)carStuckFrames=0;
  car.rotation.y=carYaw;
  x=car.position.x;z=car.position.z;yaw=carYaw;
- }else{if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;elevation=interiors.floorHeight(x,z,elevation);avatar.position.set(x,elevation,z);avatar.rotation.y=yaw;}const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / INTERACT — '+s.title;document.getElementById('interact').textContent=s?.kind==='car'?(driving?'EXIT CAR':'DRIVE'):s?'VIEW':'INTERACT';document.getElementById('place').textContent=driving?'DRIVING · H4B CAR · R TO RESET':interiors.inside(x,z)?.title||'THE STREET'}
+ }else{if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;elevation=interiors.floorHeight(x,z,elevation);avatar.position.set(x,elevation,z);avatar.rotation.y=yaw;}const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / INTERACT — '+s.title;document.getElementById('resetCar').style.display=driving?'block':'none';document.getElementById('interact').textContent=s?.kind==='car'?(driving?'EXIT CAR':'DRIVE'):s?'VIEW':'INTERACT';document.getElementById('place').textContent=driving?'DRIVING · H4B CAR · R TO RESET':interiors.inside(x,z)?.title||'THE STREET'}
 const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const eye=new THREE.Vector3(x,1.8+(driving?0:elevation),z);const indoor=!driving&&interiors.inside(x,z);
 let desired=driving?eye.clone().addScaledVector(dir,-11).add(new THREE.Vector3(0,5,0)):indoor?eye.clone():mode===0?eye.clone().addScaledVector(dir,-7).add(new THREE.Vector3(0,3,0)):eye.clone();
 if(!indoor&&(mode===0||driving)){
