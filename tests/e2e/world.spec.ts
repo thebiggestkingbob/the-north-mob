@@ -38,6 +38,10 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(engine).toContain("interiors.cameraWalls()");
     expect(engine).toContain("HERE 4 BUSINESS");
     expect(engine).toContain("musicToggle");
+    expect(engine).toContain("function toggleCar()");
+    expect(engine).toContain("function carBlocked(");
+    expect(engine).toContain("carFootprint(nx,nz,.35)");
+    expect(engine).not.toContain("const pathStart=");
   });
 
   test("3D interiors are served locally and exhibits have published data", async ({ request }) => {
