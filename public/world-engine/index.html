@@ -36,15 +36,47 @@ function box(x,y,z,w,h,d,m,cast=true){const o=new THREE.Mesh(new THREE.BoxGeomet
 box(0,-.13,0,100,.2,100,concrete,false);box(0,-.02,0,12,.05,100,asphalt,false);for(let z=-45;z<48;z+=8)box(0,.02,z,.18,.02,3,white,false);
 for(const x of [-7,7])box(x,.02,0,2,.06,100,grey,false);
 const sites=[
-{id:'shop',title:'MOB SHOP',x:-18,z:3,w:15,d:13,h:8,color:0x191919},
+{id:'shop',title:'MOB SHOP',x:-22,z:3,w:23,d:24,h:10,color:0x191919},
 {id:'studio',title:'THE STUDIO',x:18,z:-14,w:15,d:13,h:9,color:0x555555},
 {id:'cinema',title:'VISUALS CINEMA',x:-18,z:-21,w:15,d:13,h:10,color:0x181818},
 {id:'museum',title:'MOB MUSEUM',x:18,z:13,w:15,d:13,h:8,color:0x484848},
 {id:'live',title:'LIVE YARD',x:-18,z:27,w:15,d:12,h:5,color:0x252525}
 ];
 function signTexture(label){const c=document.createElement('canvas');c.width=1024;c.height=256;const ctx=c.getContext('2d');ctx.fillStyle='#f4f0e9';ctx.fillRect(0,0,1024,256);ctx.fillStyle='#090909';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 86px Arial';ctx.fillText(label,512,130,980);return new THREE.CanvasTexture(c)}
-// Buildings are constructed as actual open-door rooms by interiors.js.
-for(const s of sites){const sign=new THREE.Mesh(new THREE.PlaneGeometry(12,2),new THREE.MeshBasicMaterial({map:signTexture(s.title),side:THREE.DoubleSide}));sign.position.set(s.x,s.h-.8,s.z+s.d/2+.07);scene.add(sign);box(s.x,.06,s.z+s.d/2+2.8,5,.1,2.8,white,false)}
+// Physical entrances with uninterrupted pedestrian walkways.
+const photoLoader=new THREE.TextureLoader();
+for(const s of sites){
+ const sign=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(s.w-2,12),2),new THREE.MeshBasicMaterial({map:signTexture(s.title),side:THREE.DoubleSide}));
+ sign.position.set(s.x,s.h-.8,s.z+s.d/2+.08);scene.add(sign);
+ const front=s.z+s.d/2;
+ const pathStart=s.x<0?-6:6;
+ box((s.x+pathStart)/2,.035,front+2,Math.abs(s.x-pathStart)+3,.07,3.2,white,false);
+}
+const murals=[
+ ['shop','/assets/h4b-album-cover.jpg'],
+ ['studio','/assets/h4b-album-cover.jpg'],
+ ['cinema','/assets/h4b-album-cover.jpg'],
+ ['museum','/assets/h4b-album-cover.jpg'],
+ ['live','/assets/h4b-album-cover.jpg']
+];
+for(const site of sites){
+ const src=murals.find(([id])=>id===site.id)?.[1];
+ if(src)photoLoader.load(src,texture=>{
+  const ratio=texture.image.width/texture.image.height;
+  const height=Math.min(site.h-2,6.5),width=Math.min(site.d-2,height*ratio);
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}));
+  mesh.rotation.y=site.x<0?Math.PI/2:-Math.PI/2;
+  mesh.position.set(site.x+(site.x<0?-site.w/2-.03:site.w/2+.03),site.h/2,site.z);
+  scene.add(mesh);
+ },undefined,()=>{});
+}
+// A stationary branded H4B car on the street, clear of the pedestrian route.
+const car=new THREE.Group();const carBody=new THREE.Mesh(new THREE.BoxGeometry(2.3,.75,4.4),black);carBody.position.y=.85;car.add(carBody);
+const roof=new THREE.Mesh(new THREE.BoxGeometry(1.9,.7,2.3),grey);roof.position.set(0,1.52,-.25);car.add(roof);
+for(const sx of [-1.2,1.2])for(const zz of [-1.35,1.35]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.24,16),black);wheel.rotation.z=Math.PI/2;wheel.position.set(sx,.45,zz);car.add(wheel)}
+const carMark=new THREE.Mesh(new THREE.PlaneGeometry(2.1,.54),new THREE.MeshBasicMaterial({map:signTexture('HERE 4 BUSINESS'),side:THREE.DoubleSide}));
+carMark.rotation.y=Math.PI/2;carMark.position.set(1.17,1,-.2);car.add(carMark);car.position.set(3,0,27);scene.add(car);
+
 for(let i=0;i<24;i++){const z=-44+i*4;for(const x of [-8.6,8.6]){if(i%3===0){box(x,1.5,z,.15,3,.15,black);box(x,3.1,z,.65,.3,.65,white)}}}
 const interiors=createInteriors(THREE,scene,sites);
 const avatar=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(.8,1.25,.5),black),head=new THREE.Mesh(new THREE.SphereGeometry(.37,12,12),mat(0x9e7c64));body.position.y=1.05;head.position.y=1.96;avatar.add(body,head);scene.add(avatar);
@@ -57,8 +89,9 @@ function showExhibit(item){
  const panel=document.getElementById('panel'),target=document.getElementById('panelContent');
  panel.style.display='flex';document.getElementById('panelTitle').textContent=item.name||'EXHIBIT';target.replaceChildren();
  const description=document.createElement('p');description.textContent=item.description||'';target.append(description);
- if(item.image&&item.image.startsWith('/')){const img=document.createElement('img');img.src=item.image;img.alt=item.name||'Exhibit';target.append(img)}
+ if(item.image&&(item.image.startsWith('/')||item.image.startsWith('https://i.ytimg.com/'))){const img=document.createElement('img');img.src=item.image;img.alt=item.name||'Exhibit';target.append(img)}
  if(item.videoId&&/^[a-zA-Z0-9_-]{11}$/.test(item.videoId)){const player=document.createElement('iframe');player.title=item.name||'Music video';player.src='https://www.youtube-nocookie.com/embed/'+item.videoId;player.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';player.allowFullscreen=true;target.append(player)}
+ if(item.spotify?.startsWith('spotify:track:')){const player=document.createElement('iframe');player.title='Listen to '+item.name;player.src='https://open.spotify.com/embed/track/'+encodeURIComponent(item.spotify.slice(14));player.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';target.append(player)}
  if(item.spotify?.startsWith('spotify:album:')){const player=document.createElement('iframe');player.title='Listen to '+item.name;player.src='https://open.spotify.com/embed/album/'+encodeURIComponent(item.spotify.slice(14));player.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';target.append(player)}
  if(item.price!=null){const price=document.createElement('p');price.textContent='R'+(item.price/100).toLocaleString('en-ZA')+' · '+(item.status||'').replaceAll('-',' ').toUpperCase();target.append(price)}
  if(item.href&&(/^(https:\/\/|\/)/).test(item.href)){const link=document.createElement('a');link.href=item.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='OPEN OFFICIAL LINK ↗';link.style.cssText='display:inline-block;padding:12px;margin-top:14px;background:#fff;color:#000;font-weight:bold';target.append(link)}
@@ -70,5 +103,12 @@ document.getElementById('who').textContent='EXPLORE THE WORLD';document.getEleme
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','v','escape'].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!active&&near())openSite(near());if(k==='v')mode=(mode+1)%2;if(k==='escape')close()});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;for(const event of ['pointerdown','pointerup','pointercancel','pointerleave'])b.addEventListener(event,e=>{e.preventDefault();if(event==='pointerdown')held.add(k);else held.delete(k)})});
 let dragging=false,lastX=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX});addEventListener('pointerup',()=>dragging=false);addEventListener('pointermove',e=>{if(dragging){yaw-=(e.clientX-lastX)*.006;lastX=e.clientX}});
 const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.04);if(started&&!active){const on=k=>keys.has(k)||held.has(k);if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;avatar.position.set(x,0,z);avatar.rotation.y=yaw;const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / ENTER — '+s.title;document.getElementById('place').textContent=interiors.inside(x,z)?.title||'THE STREET'}
-const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const eye=new THREE.Vector3(x,1.8,z);const desired=mode===0?eye.clone().addScaledVector(dir,-7).add(new THREE.Vector3(0,3,0)):eye.clone();camera.position.lerp(desired,.16);camera.lookAt(eye.clone().addScaledVector(dir,mode===0?5:10));avatar.visible=mode===0;renderer.render(scene,camera)}frame();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const eye=new THREE.Vector3(x,1.8,z);const indoor=interiors.inside(x,z);
+let desired=indoor?eye.clone():mode===0?eye.clone().addScaledVector(dir,-7).add(new THREE.Vector3(0,3,0)):eye.clone();
+if(!indoor&&mode===0){
+ const ray=new THREE.Raycaster(eye,desired.clone().sub(eye).normalize(),.05,eye.distanceTo(desired));
+ const hits=ray.intersectObjects(interiors.cameraWalls(),false);
+ if(hits.length)desired=eye.clone().addScaledVector(desired.clone().sub(eye).normalize(),Math.max(.15,hits[0].distance-.4));
+}
+camera.position.lerp(desired,indoor?1:.16);camera.lookAt(eye.clone().addScaledVector(dir,mode===0?5:10));avatar.visible=mode===0&&!indoor;renderer.render(scene,camera)}frame();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
