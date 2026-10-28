@@ -14,6 +14,14 @@ test.describe("THE NORTH MOB WORLD", () => {
     await expect(page.getByRole("link", { name: "EXIT WORLD" })).toBeVisible();
   });
 
+  test("Three.js is served from the same origin", async ({ request }) => {
+    const response = await request.get("/world-engine/three.module.js");
+    expect(response.ok()).toBeTruthy();
+    expect(response.headers()["content-type"]).toMatch(/javascript/);
+    const source = await response.text();
+    expect(source).toContain("WebGLRenderer");
+  });
+
   test("world shop displays products from the canonical merchandise catalogue", async ({ page }) => {
     await page.goto("/world/catalog");
     await expect(page.getByRole("heading", { name: "MOB SHOP" })).toBeVisible();
