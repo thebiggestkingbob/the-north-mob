@@ -35,7 +35,7 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(rooms).toContain("function inside");
     expect(rooms).toContain("Wall gallery");
     expect(rooms).toContain("texture.image.width/image.height");
-    expect(engine).toContain("interiors.cameraWalls()");
+    expect(engine).toContain("interiors.cameraSolids()");
     expect(engine).toContain("HERE 4 BUSINESS");
     expect(engine).toContain("musicToggle");
     expect(engine).toContain("function toggleCar()");
@@ -44,6 +44,9 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(rooms).toContain("UPSTAIRS · MOB COLLECTION");
     expect(engine).toContain("function carBlocked(");
     expect(engine).toContain("carFootprint(nx,nz,.35)");
+    expect(engine).toContain("const travel=carSpeed*dt,steps=");
+    expect(engine).toContain("for(const side of [1,-1])");
+    expect(rooms).toContain("function floorHeight(x,z,current=0)");
     expect(engine).not.toContain("const pathStart=");
   });
 
@@ -52,7 +55,7 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(module.ok()).toBeTruthy();
     const source = await module.text();
     expect(source).toContain("createInteriors");
-    expect(source).toContain("EXIT TO STREET");
+    expect(source).toContain("Walk-through buildings");
     const response = await request.get("/api/world/exhibits");
     expect(response.ok()).toBeTruthy();
     const exhibits = await response.json();
