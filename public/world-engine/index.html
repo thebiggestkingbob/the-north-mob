@@ -73,13 +73,13 @@ for(const sx of [-1.2,1.2])for(const zz of [-1.35,1.35]){const wheel=new THREE.M
 const carMark=new THREE.Mesh(new THREE.PlaneGeometry(2.1,.54),new THREE.MeshBasicMaterial({map:signTexture('HERE 4 BUSINESS'),side:THREE.DoubleSide}));
 carMark.rotation.y=Math.PI/2;carMark.position.set(1.17,1,-.2);car.add(carMark);car.position.set(3,0,27);scene.add(car);
 let driving=false,carSpeed=0,carYaw=0;
-const carFootprint=(px,pz,pad=0)=>Math.abs(px-car.position.x)<1.35+pad&&Math.abs(pz-car.position.z)<2.4+pad;
+const carFootprint=(px,pz,pad=0)=>{const dx=px-car.position.x,dz=pz-car.position.z;const lx=dx*Math.cos(carYaw)+dz*Math.sin(carYaw),lz=-dx*Math.sin(carYaw)+dz*Math.cos(carYaw);return Math.abs(lx)<1.35+pad&&Math.abs(lz)<2.4+pad};
 function toggleCar(){
  if(driving){
   // Exit only into free space beside the vehicle; never into a building or traffic.
   for(const side of [1,-1]){
    const nx=car.position.x+Math.cos(carYaw)*3.1*side,nz=car.position.z-Math.sin(carYaw)*3.1*side;
-   if(!carBlocked(nx,nz)&&!carFootprint(nx,nz,.4)){
+   if(Math.abs(nx)<45&&Math.abs(nz)<46&&!interiors.blocked(nx,nz,0)&&!sites.some(s=>Math.abs(nx-s.x)<s.w/2+.5&&Math.abs(nz-s.z)<s.d/2+.5)&&!carFootprint(nx,nz,.4)){
     driving=false;carSpeed=0;x=nx;z=nz;yaw=carYaw;elevation=0;return;
    }
   }
@@ -130,7 +130,7 @@ document.getElementById('musicToggle').onclick=()=>{
  dock.replaceChildren(player);dock.style.display='block';document.getElementById('musicToggle').textContent='♫ HIDE PLAYER';
 };
 document.getElementById('who').textContent='EXPLORE THE WORLD';document.getElementById('intro').style.display='none';
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','v','escape'].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!active&&near())openSite(near());if(k==='v')mode=(mode+1)%2;if(k==='escape')close()});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;for(const event of ['pointerdown','pointerup','pointercancel','pointerleave'])b.addEventListener(event,e=>{e.preventDefault();if(event==='pointerdown')held.add(k);else held.delete(k)})});
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','v','escape'].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!active&&near()&&!e.repeat)openSite(near());if(k==='v'&&!e.repeat)mode=(mode+1)%2;if(k==='escape')close()});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{keys.clear();held.clear()});document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;for(const event of ['pointerdown','pointerup','pointercancel','pointerleave'])b.addEventListener(event,e=>{e.preventDefault();if(event==='pointerdown')held.add(k);else held.delete(k)})});
 let dragging=false,lastX=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX});addEventListener('pointerup',()=>dragging=false);addEventListener('pointermove',e=>{if(dragging){if(driving){carYaw-=(e.clientX-lastX)*.002}else{yaw-=(e.clientX-lastX)*.006}lastX=e.clientX}});
 const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.04);if(started&&!active){const on=k=>keys.has(k)||held.has(k);if(driving){
  const throttle=Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown'));
@@ -146,7 +146,7 @@ const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);cons
  }
  car.rotation.y=carYaw;
  x=car.position.x;z=car.position.z;yaw=carYaw;
- }else{if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;elevation=interiors.floorHeight(x,z,elevation);avatar.position.set(x,elevation,z);avatar.rotation.y=yaw;}const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / ENTER — '+s.title;document.getElementById('place').textContent=driving?'DRIVING · H4B CAR':interiors.inside(x,z)?.title||'THE STREET'}
+ }else{if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;elevation=interiors.floorHeight(x,z,elevation);avatar.position.set(x,elevation,z);avatar.rotation.y=yaw;}const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / INTERACT — '+s.title;document.getElementById('interact').textContent=s?.kind==='car'?(driving?'EXIT CAR':'DRIVE'):s?'VIEW':'INTERACT';document.getElementById('place').textContent=driving?'DRIVING · H4B CAR':interiors.inside(x,z)?.title||'THE STREET'}
 const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const eye=new THREE.Vector3(x,1.8+(driving?0:elevation),z);const indoor=!driving&&interiors.inside(x,z);
 let desired=driving?eye.clone().addScaledVector(dir,-11).add(new THREE.Vector3(0,5,0)):indoor?eye.clone():mode===0?eye.clone().addScaledVector(dir,-7).add(new THREE.Vector3(0,3,0)):eye.clone();
 if(!indoor&&(mode===0||driving)){
