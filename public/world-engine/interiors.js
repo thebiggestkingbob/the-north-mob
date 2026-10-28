@@ -2,6 +2,7 @@
 export function createInteriors(THREE,scene,sites){
  const group=new THREE.Group();scene.add(group);
  const solid=[],exhibits=[],loaded=new Set(),walls=[];
+ const upperExhibits=[];
  const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.82});
  const dark=mat(0x181818),floor=mat(0x333333),white=mat(0xe9e5df),steel=mat(0x555555);
  const loader=new THREE.TextureLoader();
@@ -66,20 +67,44 @@ export function createInteriors(THREE,scene,sites){
     art(item,wallX,3.1,zz,left?Math.PI/2:-Math.PI/2,2.05,2.6);
     exhibits.push({item,x:xx+(left?1.5:-1.5),z:zz,site:id});
    });
-   // Upper-floor balcony / architectural mezzanine, kept visually separate from ground-floor path.
-   block(x,5.4,back+2.6,w-1,.25,4.5,steel);
-   for(const xx of [x-w/2+1,x+w/2-1])block(xx,6.4,back+4.7,.15,1.8,.15,white);
-   label('MOB SHOP · UPPER GALLERY',x,7,back+.38,6);
+   // Walkable mezzanine with a stairway, rails and additional merchandise.
+   const upperY=4.7,stairs=10,stepH=upperY/stairs;
+   const stairX=x+w/2-3.2,stairStart=front-3.8;
+   for(let i=0;i<stairs;i++){
+    const depth=.72,zz=stairStart-i*depth;
+    block(stairX,(i+1)*stepH/2,zz,2.2,(i+1)*stepH,depth,steel,true);
+   }
+   // Balcony floor occupies the rear half; the front remains open to the shop below.
+   const balconyFront=z-.2,balconyBack=back+.25,balconyDepth=balconyFront-balconyBack;
+   block(x,upperY-.14,(balconyFront+balconyBack)/2,w-.7,.28,balconyDepth,steel);
+   block(x,upperY+.55,balconyFront,w-4,1.1,.12,white);
+   for(const item of items.slice(8)){
+    const i=items.indexOf(item)-8,side=i%2===0?-1:1,slot=Math.floor(i/2);
+    const zz=balconyFront-1.7-slot*2.2;
+    if(zz<balconyBack+1.2)continue;
+    const xx=x+side*(w/2-1.45);
+    art(item,x+side*(w/2-.4),upperY+2.1,zz,side<0?Math.PI/2:-Math.PI/2,2,2.4);
+    upperExhibits.push({item,x:xx-side*1.3,z:zz,site:id});
+   }
+   label('UPSTAIRS · MOB COLLECTION',x,upperY+2.8,back+.38,7);
+
   }
   if(id==='cinema'){block(x,2.8,back+.48,w-2,4.5,.18,white);for(const xx of [x-3.5,x,x+3.5])block(xx,.5,z+1,2.2,1,1.4,steel,true)}
   if(id==='studio'){block(x,.8,z,4,1.6,2,steel,true);label('LISTEN · H4B',x,2,z-1.2,3.6)}
   if(id==='live'){block(x,.7,back+2,w-2,1.4,3.2,steel,true);label('LIVE · THE MOB',x,3.5,back+.42,6)}
   if(!items.length)label('MORE COMING SOON',x,2.5,back+.4,5);
  }
- function near(x,z){
+ function near(x,z,y=0){
   let best=null,dist=2.1;
-  for(const exhibit of exhibits){const d=Math.hypot(x-exhibit.x,z-exhibit.z);if(d<dist){best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item};dist=d}}
+  for(const exhibit of (y>2?upperExhibits:exhibits)){const d=Math.hypot(x-exhibit.x,z-exhibit.z);if(d<dist){best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item};dist=d}}
   return best;
+ }
+ function floorHeight(x,z){
+  const shop=sites.find(s=>s.id==='shop');if(!shop)return 0;
+  const stairX=shop.x+shop.w/2-3.2,stairStart=shop.z+shop.d/2-3.8;
+  if(Math.abs(x-stairX)<1.25){for(let i=9;i>=0;i--){const zz=stairStart-i*.72;if(Math.abs(z-zz)<.42)return (i+1)*.47}}
+  if(Math.abs(x-shop.x)<shop.w/2-.35&&z<shop.z-.2&&z>shop.z-shop.d/2+.3)return 4.7;
+  return 0;
  }
  function blocked(x,z){
   const radius=.38;
@@ -89,5 +114,5 @@ export function createInteriors(THREE,scene,sites){
  function inside(x,z){return sites.find(s=>Math.abs(x-s.x)<s.w/2-.3&&Math.abs(z-s.z)<s.d/2-.3)||null}
  // Fill rooms after published data arrives; street remains playable while fetching.
  ready.then(()=>sites.forEach(populate));
- return {ready,near,blocked,inside,cameraWalls,get content(){return content}};
+ return {ready,near,blocked,inside,cameraWalls,floorHeight,get content(){return content}};
 }
