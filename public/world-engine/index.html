@@ -187,6 +187,8 @@ const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);cons
   collided=true;break;
  }
  if(collided){carSpeed=0;carStuckFrames++}else if(moved)carStuckFrames=0;
+ // At a wall, reverse is always available; steer before applying the next throttle.
+ if(collided&&throttle<0)carSpeed=-Math.min(2,Math.abs(carSpeed)+2);
  car.rotation.y=carYaw;
  x=car.position.x;z=car.position.z;yaw=carYaw;
  }else{if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;elevation=interiors.floorHeight(x,z,elevation);avatar.position.set(x,elevation,z);avatar.rotation.y=yaw;}const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / INTERACT — '+s.title;document.getElementById('resetCar').style.display=driving?'block':'none';document.getElementById('interact').textContent=s?.kind==='car'?(driving?'EXIT CAR':'DRIVE'):s?'VIEW':'INTERACT';document.getElementById('place').textContent=driving?'DRIVING · H4B CAR · R TO RESET':interiors.inside(x,z)?.title||'THE STREET'}
