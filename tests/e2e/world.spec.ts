@@ -1,10 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("THE NORTH MOB WORLD", () => {
-  test("world route presents a full-screen experience with an exit", async ({ page }) => {
+  test("world route opens the engine without a blocked iframe", async ({ page }) => {
     await page.goto("/world");
-    await expect(page.getByRole("main")).toBeVisible();
-    await expect(page.getByRole("iframe", { name: "THE NORTH MOB interactive world" })).toHaveAttribute("src", "/world-engine/index.html");
+    await expect(page).toHaveURL(/\/world-engine\/index\.html$/);
     await expect(page.getByRole("link", { name: "EXIT WORLD" })).toHaveAttribute("href", "/");
   });
 
