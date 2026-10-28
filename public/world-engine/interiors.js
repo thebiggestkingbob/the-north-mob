@@ -93,6 +93,18 @@ export function createInteriors(THREE,scene,sites){
    part(.85,.9,.22,0,.45,0);
    part(.3,.38,.22,-.57,.72,0);part(.3,.38,.22,.57,.72,0);
   }
+  // A real product photo is mapped to the front as an honest visual reference.
+  // The shape remains a stylised proxy until a dedicated textured GLB is supplied.
+  if(item.image&&(item.image.startsWith('/')||item.image.startsWith('https://i.ytimg.com/'))){
+   const badge=new THREE.Mesh(new THREE.PlaneGeometry(.58,.58),new THREE.MeshBasicMaterial({transparent:true,side:THREE.DoubleSide}));
+   badge.position.set(0,.55,.22);piece.add(badge);
+   loader.load(item.image,texture=>{
+    const image=texture.image;if(!image)return;
+    const aspect=image.width/image.height;
+    badge.geometry.dispose();badge.geometry=new THREE.PlaneGeometry(Math.min(.6,.6*aspect),Math.min(.6,.6/aspect));
+    badge.material.map=texture;badge.material.needsUpdate=true;
+   },undefined,()=>{piece.remove(badge)});
+  }
   return piece;
  }
  // Reusable low-poly retail fixtures. Every piece is geometry, not a billboard.
