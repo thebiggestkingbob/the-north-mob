@@ -1,7 +1,7 @@
 // Walk-through buildings share world coordinates with the street: no teleporting or redirects.
 export function createInteriors(THREE,scene,sites){
  const group=new THREE.Group();scene.add(group);
- const solid=[],exhibits=[],loaded=new Set();
+ const solid=[],exhibits=[],loaded=new Set(),walls=[];
  const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.82});
  const dark=mat(0x181818),floor=mat(0x333333),white=mat(0xe9e5df),steel=mat(0x555555);
  const loader=new THREE.TextureLoader();
@@ -9,7 +9,7 @@ export function createInteriors(THREE,scene,sites){
  const ready=fetch('/api/world/exhibits',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Exhibits '+r.status);return r.json()}).then(d=>{content=d;return d}).catch(e=>{console.warn('World exhibits',e);return null});
  function block(x,y,z,w,h,d,m,collide=false){
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);mesh.receiveShadow=true;mesh.castShadow=true;group.add(mesh);
-  if(collide)solid.push({x,z,w,d});return mesh;
+  if(collide){solid.push({x,z,w,d});if(h>3)walls.push(mesh)}return mesh;
  }
  function textMesh(label,width=3,height=.6){
   const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');
@@ -17,15 +17,23 @@ export function createInteriors(THREE,scene,sites){
   return new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(canvas),side:THREE.DoubleSide}));
  }
  function label(t,x,y,z,w=3){const mesh=textMesh(t,w);mesh.position.set(x,y,z);group.add(mesh);return mesh}
- function art(item,x,y,z,rotation=0,w=2.6,h=2.3){
-  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:0xdedbd4,side:THREE.DoubleSide}));mesh.position.set(x,y,z);mesh.rotation.y=rotation;group.add(mesh);
-  if(item.image&&item.image.startsWith('/'))loader.load(item.image,texture=>{mesh.material.dispose();mesh.material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide});},undefined,()=>{});
+ function art(item,x,y,z,rotation=0,maxW=3,maxH=3){
+  const material=new THREE.MeshBasicMaterial({color:0xdedbd4,side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(maxW,maxH),material);mesh.position.set(x,y,z);mesh.rotation.y=rotation;group.add(mesh);
+  if(item.image&&(item.image.startsWith('/')||item.image.startsWith('https://i.ytimg.com/'))){
+   loader.load(item.image,texture=>{
+    const image=texture.image;if(!image)return;
+    const aspect=image.width/image.height;const w=Math.min(maxW,maxH*aspect),h=w/aspect;
+    mesh.geometry.dispose();mesh.geometry=new THREE.PlaneGeometry(w,h);
+    mesh.material.dispose();mesh.material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide});
+   },undefined,()=>{});
+  }
   return mesh;
  }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
-  const items=(content[id]||[]).slice(0,id==='shop'?18:12);
+  const items=(content[id]||[]);
   // Full-size interiors: walls and displays occupy the same physical building as its facade.
   block(x,0,z,w,.15,d,floor);
   block(x,h-.15,z,w,.3,d,dark);
@@ -40,22 +48,22 @@ export function createInteriors(THREE,scene,sites){
   const title=label(site.title,x,h-1,back+.38,Math.min(w-2,9));
   // Wall gallery: artwork on the side and rear walls, never in the middle of the room.
   if(id==='museum'||id==='cinema'||id==='studio'){
-   items.slice(0,9).forEach((item,i)=>{
-    const side=i%3,slot=Math.floor(i/3);
-    if(side===0){const zz=front-2.3-slot*2.8;art(item,x-w/2+.37,3.4,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
-    else if(side===1){const zz=front-2.3-slot*2.8;art(item,x+w/2-.37,3.4,zz,-Math.PI/2,2.4,2.7);exhibits.push({item,x:x+w/2-1.8,z:zz,site:id})}
-    else{const xx=x-3+slot*3;art(item,xx,3.4,back+.38,0,2.4,2.7);exhibits.push({item,x:xx,z:back+1.8,site:id})}
+   items.forEach((item,i)=>{
+    const side=i%3,slot=Math.floor(i/3),spacing=2.9;
+    if(side===0&&front-2.3-slot*spacing>back+1.3){const zz=front-2.3-slot*spacing;art(item,x-w/2+.37,3.4,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
+    else if(side===1&&front-2.3-slot*spacing>back+1.3){const zz=front-2.3-slot*2.8;art(item,x+w/2-.37,3.4,zz,-Math.PI/2,2.4,2.7);exhibits.push({item,x:x+w/2-1.8,z:zz,site:id})}
+    else if(side===2&&x-w/2+2.1+slot*2.9<x+w/2-1){const xx=x-w/2+2.1+slot*2.9;art(item,xx,3.4,back+.38,0,2.4,2.7);exhibits.push({item,x:xx,z:back+1.8,site:id})}
    });
   }
   if(id==='shop'){
    // Perimeter fixtures leave a central aisle. Product photographs hang above real display plinths.
    items.forEach((item,i)=>{
-    const left=i%2===0,slot=Math.floor(i/2),zz=front-2-slot*1.22;
-    if(zz<back+1.1)return;
+    const left=i%2===0,slot=Math.floor(i/2),zz=front-2.4-slot*2.35;
+    if(zz<back+1.5)return;
     const xx=x+(left?-w/2+1.25:w/2-1.25);
     block(xx,.7,zz,1.65,1.4,.9,steel,true);
     const wallX=x+(left?-w/2+.38:w/2-.38);
-    art(item,wallX,2.9,zz,left?Math.PI/2:-Math.PI/2,1.05,1.5);
+    art(item,wallX,3.1,zz,left?Math.PI/2:-Math.PI/2,2.05,2.6);
     exhibits.push({item,x:xx+(left?1.5:-1.5),z:zz,site:id});
    });
    // Upper-floor balcony / architectural mezzanine, kept visually separate from ground-floor path.
@@ -77,8 +85,9 @@ export function createInteriors(THREE,scene,sites){
   const radius=.38;
   return solid.some(b=>Math.abs(x-b.x)<b.w/2+radius&&Math.abs(z-b.z)<b.d/2+radius);
  }
+ function cameraWalls(){return walls}
  function inside(x,z){return sites.find(s=>Math.abs(x-s.x)<s.w/2-.3&&Math.abs(z-s.z)<s.d/2-.3)||null}
  // Fill rooms after published data arrives; street remains playable while fetching.
  ready.then(()=>sites.forEach(populate));
- return {ready,near,blocked,inside};
+ return {ready,near,blocked,inside,cameraWalls,get content(){return content}};
 }
