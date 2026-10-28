@@ -6,6 +6,30 @@ export function createInteriors(THREE,scene,sites){
  const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.82});
  const dark=mat(0x181818),floor=mat(0x333333),white=mat(0xe9e5df),steel=mat(0x555555);
  const loader=new THREE.TextureLoader();
+ // Model manifest is optional: a missing asset always leaves the existing 3D proxy visible.
+ let modelLoaderPromise;
+ const modelCache=new Map();
+ function loadModel(item,piece){
+  const url=item.model;
+  if(typeof url!=='string'||!/^\\/world-engine\\/models\\/[a-z0-9/_-]+\\.glb$/i.test(url))return;
+  if(!modelLoaderPromise)modelLoaderPromise=import('/world-engine/GLTFLoader.js').then(m=>new m.GLTFLoader());
+  modelLoaderPromise.then(gltfLoader=>{
+   if(!modelCache.has(url))modelCache.set(url,new Promise((resolve,reject)=>gltfLoader.load(url,resolve,undefined,reject)));
+   return modelCache.get(url);
+  }).then(gltf=>{
+   if(!gltf)return;
+   const model=gltf.scene.clone(true);
+   const bounds=new THREE.Box3().setFromObject(model);
+   const size=bounds.getSize(new THREE.Vector3());
+   if(size.x<=0||size.y<=0||size.z<=0)return;
+   const scale=Math.min(1.45/size.x,1.65/size.y,1.1/size.z);
+   model.scale.setScalar(scale);
+   const fitted=new THREE.Box3().setFromObject(model);
+   const center=fitted.getCenter(new THREE.Vector3());
+   model.position.set(-center.x,.82-fitted.min.y,-center.z);
+   piece.clear();piece.add(model);
+  }).catch(error=>console.warn('Merch model unavailable:',url,error));
+ }
  let content={};
  const ready=fetch('/api/world/exhibits',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Exhibits '+r.status);return r.json()}).then(d=>{content=d;return d}).catch(e=>{console.warn('World exhibits',e);return null});
  function block(x,y,z,w,h,d,m,collide=false){
@@ -106,6 +130,7 @@ export function createInteriors(THREE,scene,sites){
     badge.material.map=texture;badge.material.needsUpdate=true;
    },undefined,()=>{piece.remove(badge)});
   }
+  loadModel(item,piece);
   return piece;
  }
  // Reusable low-poly retail fixtures. Every piece is geometry, not a billboard.
