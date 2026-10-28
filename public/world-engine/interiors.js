@@ -72,7 +72,7 @@ export function createInteriors(THREE,scene,sites){
    const stairX=x+w/2-3.2,stairStart=front-3.8;
    for(let i=0;i<stairs;i++){
     const depth=.72,zz=stairStart-i*depth;
-    block(stairX,(i+1)*stepH/2,zz,2.2,(i+1)*stepH,depth,steel,true);
+    block(stairX,(i+1)*stepH/2,zz,2.2,(i+1)*stepH,depth,steel,false);
    }
    // Balcony floor occupies the rear half; the front remains open to the shop below.
    const balconyFront=z-.2,balconyBack=back+.25,balconyDepth=balconyFront-balconyBack;
