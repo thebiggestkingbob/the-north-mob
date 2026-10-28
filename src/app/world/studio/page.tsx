@@ -1,7 +1,7 @@
 import { publishedMusic } from "@/lib/studio/public-music";
 export default async function WorldStudio(){
  const {releases,tracks,unavailable}=await publishedMusic();
- return <main style={{minHeight:"100vh",background:"#111",color:"white",fontFamily:"Arial,sans-serif",padding:20}}>
+ return <main style={{minHeight:"100vh",background:"#111",color:"white",fontFamily:"Arial,sans-serif",padding:20}}><a href="/world" style={{display:"inline-block",padding:"9px 13px",background:"#fff",color:"#000",fontSize:12,fontWeight:700,textDecoration:"none",marginBottom:20}}>BACK TO WORLD</a>
  <p style={{fontFamily:"monospace",letterSpacing:".18em",fontSize:11}}>THE NORTH MOB / OFFICIAL MUSIC</p><h1 style={{fontSize:"clamp(38px,7vw,70px)",margin:"10px 0"}}>THE STUDIO</h1>
  {unavailable?<p role="status">Published music is temporarily unavailable.</p>:<>
  {releases.map(release=><section key={release.slug} style={{marginBottom:25,borderBottom:"1px solid #444",paddingBottom:20}}>
