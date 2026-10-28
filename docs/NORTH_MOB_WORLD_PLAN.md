@@ -30,3 +30,30 @@ Status: planning scaffold on feature/north-mob-world. Production website remains
 - No main branch writes or production deployment.
 - Do not invent likenesses, product prices, event details, or usage rights.
 - Preserve a 2D navigation fallback.
+
+## Implemented on development branch
+- /world embeds an isolated 3D street prototype with member selection and five destination triggers.
+- /world/catalog reads the canonical merchandise config; product links lead to the official shop.
+- /world/visualz uses publishedVisualz() for videos and photo archives.
+- /world/studio uses publishedMusic() and official Spotify embeds.
+- /world/live uses publishedEvents() and published ticket URLs.
+- tests/e2e/world.spec.ts contains route/content smoke tests.
+
+## Verification commands
+Run on a checked-out feature branch with Node 22 and dependencies installed:
+```sh
+npm ci
+npm run typecheck
+npm run lint
+npm run build
+npm run test:e2e -- tests/e2e/world.spec.ts
+```
+The tests have been committed but not executed in this session. A browser/network environment is needed to verify the Three.js CDN module import and real 3D controls. Vercel deployment listing returned 403, so preview status remains unverified.
+
+## Known gaps
+- 3D canvas currently uses a CDN-hosted Three.js module and simple primitive geometry; production bundling, asset loading, accessibility and error handling require more work.
+- World interiors currently open embedded published-content views, not spatial 3D rooms.
+- Current character meshes are placeholders; no member likeness has been approved or imported.
+- Commerce uses official shop navigation, not an in-world cart.
+- Existing root SiteShell is inherited by world subroutes; review its layout and focus behavior on mobile.
+- Validate video/photo embeds and any third-party playback restrictions in browser.
