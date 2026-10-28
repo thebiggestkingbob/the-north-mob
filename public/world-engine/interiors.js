@@ -10,7 +10,7 @@ export function createInteriors(THREE,scene,sites){
  const ready=fetch('/api/world/exhibits',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Exhibits '+r.status);return r.json()}).then(d=>{content=d;return d}).catch(e=>{console.warn('World exhibits',e);return null});
  function block(x,y,z,w,h,d,m,collide=false){
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);mesh.receiveShadow=true;mesh.castShadow=true;group.add(mesh);
-  if(collide){solid.push({x,z,w,d});if(h>3)walls.push(mesh)}return mesh;
+  if(collide){solid.push({x,z,w,d,y,h});if(h>3)walls.push(mesh)}return mesh;
  }
  function textMesh(label,width=3,height=.6){
   const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');
@@ -77,7 +77,8 @@ export function createInteriors(THREE,scene,sites){
    // Balcony floor occupies the rear half; the front remains open to the shop below.
    const balconyFront=z-.2,balconyBack=back+.25,balconyDepth=balconyFront-balconyBack;
    block(x,upperY-.14,(balconyFront+balconyBack)/2,w-.7,.28,balconyDepth,steel);
-   block(x,upperY+.55,balconyFront,w-4,1.1,.12,white);
+   // Leave the stair landing clear and protect the rest of the balcony edge.
+   block(x-(w-4)/4,upperY+.55,balconyFront,(w-4)/2,1.1,.12,white,true);
    for(const item of items.slice(8)){
     const i=items.indexOf(item)-8,side=i%2===0?-1:1,slot=Math.floor(i/2);
     const zz=balconyFront-1.7-slot*2.2;
@@ -99,20 +100,26 @@ export function createInteriors(THREE,scene,sites){
   for(const exhibit of (y>2?upperExhibits:exhibits)){const d=Math.hypot(x-exhibit.x,z-exhibit.z);if(d<dist){best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item};dist=d}}
   return best;
  }
- function floorHeight(x,z){
+ function floorHeight(x,z,current=0){
   const shop=sites.find(s=>s.id==='shop');if(!shop)return 0;
-  const stairX=shop.x+shop.w/2-3.2,stairStart=shop.z+shop.d/2-3.8;
-  if(Math.abs(x-stairX)<1.25){for(let i=9;i>=0;i--){const zz=stairStart-i*.72;if(Math.abs(z-zz)<.42)return (i+1)*.47}}
-  if(Math.abs(x-shop.x)<shop.w/2-.35&&z<shop.z-.2&&z>shop.z-shop.d/2+.3)return 4.7;
+  const upper=4.7,front=shop.z+shop.d/2,back=shop.z-shop.d/2;
+  const stairX=shop.x+shop.w/2-3.2,stairStart=front-3.8;
+  const stairEnd=stairStart-10*.72;
+  const onStairs=Math.abs(x-stairX)<1.25&&z<=stairStart+.4&&z>=stairEnd-.4;
+  if(onStairs)return Math.max(0,Math.min(upper,(stairStart-z)/(.72*10)*upper));
+  const onBalcony=Math.abs(x-shop.x)<shop.w/2-.4&&z<=shop.z-.2&&z>back+.35;
+  // Only stay upstairs when arriving from the stairs / already on the upper floor.
+  if(onBalcony&&current>upper-1.2)return upper;
   return 0;
  }
- function blocked(x,z){
-  const radius=.38;
-  return solid.some(b=>Math.abs(x-b.x)<b.w/2+radius&&Math.abs(z-b.z)<b.d/2+radius);
+ function blocked(x,z,y=0){
+  const radius=.38,foot=y+.15,head=y+1.75;
+  return solid.some(b=>Math.abs(x-b.x)<b.w/2+radius&&Math.abs(z-b.z)<b.d/2+radius&&head>b.y-b.h/2&&foot<b.y+b.h/2);
  }
  function cameraWalls(){return walls}
+ function cameraSolids(){return group.children.filter(o=>o.isMesh&&o.geometry?.type==='BoxGeometry')}
  function inside(x,z){return sites.find(s=>Math.abs(x-s.x)<s.w/2-.3&&Math.abs(z-s.z)<s.d/2-.3)||null}
  // Fill rooms after published data arrives; street remains playable while fetching.
  ready.then(()=>sites.forEach(populate));
- return {ready,near,blocked,inside,cameraWalls,floorHeight,get content(){return content}};
+ return {ready,near,blocked,inside,cameraWalls,cameraSolids,floorHeight,get content(){return content}};
 }
