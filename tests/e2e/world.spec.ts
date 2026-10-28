@@ -46,7 +46,9 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(engine).toContain("function resetCar()");
     expect(engine).toContain("RESET CAR");
     expect(engine).toContain("Slide along the wall");
-    expect(engine).toContain("The playable neighborhood ends at a visible perimeter");
+    expect(engine).toContain("The neighborhood has a deliberately designed, finite perimeter");
+    expect(engine).toContain("Road ends: broad paved turning pads");
+    expect(engine).toContain("if(collided&&throttle<0)");
     expect(engine).toContain("const lx=dx*Math.cos(carYaw)");
     expect(engine).toContain("EXIT CAR");
     expect(engine).toContain("addEventListener(\'blur\'");
