@@ -165,7 +165,10 @@ export function createInteriors(THREE,scene,sites){
   }
   for(const zz of [front-3.5,z,back+3]){
    const lamp=block(x,4.32,zz,8,.12,.22,white);
-   lamp.material.emissive=new THREE.Color(0x777777);
+   lamp.material=mat(0xf2f0e9);
+   lamp.material.emissive=new THREE.Color(0x888888);
+   const glow=new THREE.PointLight(0xfff4e6,9,13,2);
+   glow.position.set(x,4.08,zz);group.add(glow);
   }
   // Two freestanding racks deliberately avoid the staircase and entry.
   retailRack(x-4.1,z+2.5,-1);
