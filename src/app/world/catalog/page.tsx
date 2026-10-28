@@ -3,7 +3,7 @@ import Image from "next/image";
 import { merch } from "@/config/merch";
 export const metadata: Metadata = { title: "Mob World — Shop Gallery" };
 export default function WorldCatalogue() {
-  return <main style={{background:"#101010",color:"#f5f5f5",minHeight:"100vh",padding:"24px",fontFamily:"Arial,sans-serif"}}>
+  return <main style={{background:"#101010",color:"#f5f5f5",minHeight:"100vh",padding:"24px",fontFamily:"Arial,sans-serif"}}><a href="/world" style={{display:"inline-block",padding:"9px 13px",background:"#fff",color:"#000",fontSize:12,fontWeight:700,textDecoration:"none",marginBottom:20}}>BACK TO WORLD</a>
     <p style={{fontFamily:"monospace",letterSpacing:".2em",fontSize:11}}>THE NORTH MOB · OFFICIAL MERCHANDISE</p>
     <h1 style={{fontSize:"clamp(36px,7vw,70px)",margin:"8px 0 20px"}}>MOB SHOP</h1>
     <p style={{color:"#aaa",maxWidth:650}}>Real products and prices from the same catalogue used by the website. Purchases and cart actions continue through the official shop.</p>
