@@ -80,8 +80,8 @@ function carBlocked(px,pz){return Math.abs(px)>44||Math.abs(pz)>45||interiors.bl
 for(let i=0;i<24;i++){const z=-44+i*4;for(const x of [-8.6,8.6]){if(i%3===0){box(x,1.5,z,.15,3,.15,black);box(x,3.1,z,.65,.3,.65,white)}}}
 const interiors=createInteriors(THREE,scene,sites);
 const avatar=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(.8,1.25,.5),black),head=new THREE.Mesh(new THREE.SphereGeometry(.37,12,12),mat(0x9e7c64));body.position.y=1.05;head.position.y=1.96;avatar.add(body,head);scene.add(avatar);
-let x=0,z=36,yaw=0,mode=0,started=true,active=null;const keys=new Set();const held=new Set();
-function near(){if(driving)return {kind:'car',title:'EXIT VEHICLE'};if(Math.hypot(x-car.position.x,z-car.position.z)<3.7)return {kind:'car',title:'DRIVE H4B CAR'};return interiors.near(x,z)}
+let x=0,z=36,yaw=0,mode=0,started=true,active=null,elevation=0;const keys=new Set();const held=new Set();
+function near(){if(driving)return {kind:'car',title:'EXIT VEHICLE'};if(Math.hypot(x-car.position.x,z-car.position.z)<3.7)return {kind:'car',title:'DRIVE H4B CAR'};return interiors.near(x,z,elevation)}
 function blocked(nx,nz){return Math.abs(nx)>46||Math.abs(nz)>48||interiors.blocked(nx,nz)||carFootprint(nx,nz,.35)}
 function openSite(s){if(s?.kind==='car'){toggleCar();return}if(s?.kind==='exhibit')showExhibit(s.item)}
 function showExhibit(item){
@@ -118,8 +118,8 @@ const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);cons
  const nx=car.position.x-Math.sin(carYaw)*carSpeed*dt,nz=car.position.z-Math.cos(carYaw)*carSpeed*dt;
  if(!carBlocked(nx,nz)){car.position.set(nx,0,nz);car.rotation.y=carYaw}else carSpeed=0;
  x=car.position.x;z=car.position.z;yaw=carYaw;
- }else{if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;avatar.position.set(x,0,z);avatar.rotation.y=yaw;}const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / ENTER — '+s.title;document.getElementById('place').textContent=driving?'DRIVING · H4B CAR':interiors.inside(x,z)?.title||'THE STREET'}
-const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const eye=new THREE.Vector3(x,1.8,z);const indoor=!driving&&interiors.inside(x,z);
+ }else{if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;elevation=interiors.floorHeight(x,z);avatar.position.set(x,elevation,z);avatar.rotation.y=yaw;}const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / ENTER — '+s.title;document.getElementById('place').textContent=driving?'DRIVING · H4B CAR':interiors.inside(x,z)?.title||'THE STREET'}
+const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const eye=new THREE.Vector3(x,1.8+(driving?0:elevation),z);const indoor=!driving&&interiors.inside(x,z);
 let desired=driving?eye.clone().addScaledVector(dir,-11).add(new THREE.Vector3(0,5,0)):indoor?eye.clone():mode===0?eye.clone().addScaledVector(dir,-7).add(new THREE.Vector3(0,3,0)):eye.clone();
 if(!indoor&&mode===0&&!driving){
  const ray=new THREE.Raycaster(eye,desired.clone().sub(eye).normalize(),.05,eye.distanceTo(desired));
