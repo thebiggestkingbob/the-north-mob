@@ -34,22 +34,42 @@ scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2.3));const sun=new THREE.
 const mat=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:.85});const asphalt=mat(0x292929),concrete=mat(0xd0cec9),black=mat(0x111111),white=mat(0xf4f0e9),grey=mat(0x777777);
 function box(x,y,z,w,h,d,m,cast=true){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=cast;o.receiveShadow=true;scene.add(o);return o}
 box(0,-.13,0,100,.2,100,concrete,false);
-// The playable neighborhood ends at a visible perimeter; beyond it is raised, non-playable land.
-const land=mat(0x77786c),landDark=mat(0x53584d);
+// The neighborhood has a deliberately designed, finite perimeter.
+const land=mat(0x77786c),landDark=mat(0x53584d),curb=mat(0xb9b6ac),edgeInk=mat(0x191919);
 for(const side of [-1,1]){
+ // Raised surrounding ground, continuous retaining wall and cap.
  box(side*65,-.25,0,30,.35,130,land,false);
  box(0,-.25,side*65,130,.35,30,land,false);
- for(let i=0;i<18;i++){
-  const pos=-43+i*5.1;
-  box(side*49.2,1.7,pos,.55,3.4,4.9,i%2?black:grey,false);
-  box(pos,1.7,side*49.2,4.9,3.4,.55,i%2?black:grey,false);
+ box(side*49.3,1.2,0,.8,2.4,99,edgeInk,false);
+ box(0,1.2,side*49.3,99,2.4,.8,edgeInk,false);
+ box(side*49.3,2.48,0,1.05,.17,99,curb,false);
+ box(0,2.48,side*49.3,99,.17,1.05,curb,false);
+ // Modular concrete perimeter panels; deliberately no gaps at the corners.
+ for(let i=0;i<16;i++){
+  const pos=-45+i*6;
+  box(side*49.78,1.1,pos,.1,1.7,.12,curb,false);
+  box(pos,1.1,side*49.78,.12,1.7,.1,curb,false);
  }
+ // Low-poly hills outside the walls establish where the world ends.
  for(let i=0;i<9;i++){
-  const pos=-42+i*10;
-  box(side*(55+i%3*6),1.3,pos,7,2.6,7,landDark,false);
-  box(pos,1.3,side*(55+i%3*6),7,2.6,7,landDark,false);
+  const pos=-42+i*10,offset=56+(i%3)*6;
+  box(side*offset,1.3,pos,7,2.6,7,landDark,false);
+  box(pos,1.3,side*offset,7,2.6,7,landDark,false);
  }
-}box(0,-.02,0,12,.05,100,asphalt,false);for(let z=-45;z<48;z+=8)box(0,.02,z,.18,.02,3,white,false);
+}
+// Road ends: broad paved turning pads, stop bars and physical crash barriers.
+for(const side of [-1,1]){
+ box(0,.015,side*43.2,17,.07,10,asphalt,false);
+ box(0,.08,side*46.1,12,.04,.55,white,false);
+ box(0,.72,side*48,14,1.4,.5,edgeInk,false);
+ for(const xx of [-6.3,0,6.3])box(xx,1.5,side*47.55,.35,.55,.18,white,false);
+}
+// Outer pavement and street edge define the playable footprint.
+for(const side of [-1,1]){
+ box(side*9,.04,0,.6,.12,94,curb,false);
+ box(0,.04,side*47,95,.12,.6,curb,false);
+}
+box(0,-.02,0,12,.05,100,asphalt,false);for(let z=-45;z<48;z+=8)box(0,.02,z,.18,.02,3,white,false);
 for(const x of [-7,7])box(x,.02,0,2,.06,100,grey,false);
 const sites=[
 {id:'shop',title:'MOB SHOP',x:-22,z:3,w:23,d:24,h:10,color:0x191919},
