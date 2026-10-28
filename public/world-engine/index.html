@@ -23,6 +23,7 @@ try {
  showWorldFallback();
  throw error;
 }
+const {createInteriors}=await import('/world-engine/interiors.js');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xb4b2ae);scene.fog=new THREE.Fog(0xb4b2ae,60,125);
 const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,150);let renderer;
 try{renderer=new THREE.WebGLRenderer({antialias:true});}
@@ -44,23 +45,38 @@ const sites=[
 function signTexture(label){const c=document.createElement('canvas');c.width=1024;c.height=256;const ctx=c.getContext('2d');ctx.fillStyle='#f4f0e9';ctx.fillRect(0,0,1024,256);ctx.fillStyle='#090909';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 86px Arial';ctx.fillText(label,512,130,980);return new THREE.CanvasTexture(c)}
 const colliders=[];for(const s of sites){box(s.x,s.h/2,s.z,s.w,s.h,s.d,mat(s.color));const sign=new THREE.Mesh(new THREE.PlaneGeometry(12,3),new THREE.MeshBasicMaterial({map:signTexture(s.title),side:THREE.DoubleSide}));sign.position.set(s.x,s.h-1,s.z+s.d/2+.04);scene.add(sign);colliders.push(s);box(s.x,.06,s.z+s.d/2+2.8,5,.1,2.8,white,false)}
 for(let i=0;i<24;i++){const z=-44+i*4;for(const x of [-8.6,8.6]){if(i%3===0){box(x,1.5,z,.15,3,.15,black);box(x,3.1,z,.65,.3,.65,white)}}}
+const interiors=createInteriors(THREE,scene);
 const avatar=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(.8,1.25,.5),black),head=new THREE.Mesh(new THREE.SphereGeometry(.37,12,12),mat(0x9e7c64));body.position.y=1.05;head.position.y=1.96;avatar.add(body,head);scene.add(avatar);
 let x=0,z=36,yaw=0,mode=0,started=true,active=null;const keys=new Set();const held=new Set();
-function near(){let best=null,dist=1e9;for(const s of sites){const dx=x-s.x,dz=z-(s.z+s.d/2+3);const d=Math.hypot(dx,dz);if(d<dist){dist=d;best=s}}return dist<6?best:null}
-function blocked(nx,nz){if(Math.abs(nx)>46||Math.abs(nz)>48)return true;for(const s of colliders){if(Math.abs(nx-s.x)<s.w/2+.5&&Math.abs(nz-s.z)<s.d/2+.5)return true}return false}
-const ids=['s3Y4eAtF8jw','UzOfwM3Ea6A','XtGEewRFFC4','GAI2cugbQgI','on_eg9HLysA'];
+function near(){if(interiors.active)return interiors.near(x,z);let best=null,dist=1e9;for(const s of sites){const dx=x-s.x,dz=z-(s.z+s.d/2+3);const d=Math.hypot(dx,dz);if(d<dist){dist=d;best=s}}return dist<6?best:null}
+function blocked(nx,nz){if(interiors.active)return interiors.blocked(nx,nz);if(Math.abs(nx)>46||Math.abs(nz)>48)return true;for(const s of colliders){if(Math.abs(nx-s.x)<s.w/2+.5&&Math.abs(nz-s.z)<s.d/2+.5)return true}return false}
+
 function openSite(s){
-  // Preview protection blocks iframe embeds; navigate to the published page directly.
-  // A back-to-world link is included in every destination.
-  const destinations={shop:'/world/catalog',cinema:'/world/visualz?mode=cinema',museum:'/world/visualz?mode=museum',studio:'/world/studio',live:'/world/live'};
-  const url=destinations[s.id];
-  if(url)window.location.assign(url);
+ if(s.kind==='exit'){interiors.exit();x=0;z=36;yaw=0;return}
+ if(s.kind==='exhibit'){showExhibit(s.item);return}
+ if(!interiors.active){
+  interiors.enter(s,()=>{document.getElementById('place').textContent='THE STREET'});
+  x=0;z=10;yaw=0;
+  document.getElementById('place').textContent=s.title;
+ }
 }
-function close(){document.getElementById('panel').style.display='none';document.getElementById('panelContent').replaceChildren();active=null}
+function showExhibit(item){
+ active=item;keys.clear();held.clear();
+ const panel=document.getElementById('panel'),target=document.getElementById('panelContent');
+ panel.style.display='flex';document.getElementById('panelTitle').textContent=item.name||'EXHIBIT';target.replaceChildren();
+ const description=document.createElement('p');description.textContent=item.description||'';target.append(description);
+ if(item.image&&item.image.startsWith('/')){const img=document.createElement('img');img.src=item.image;img.alt=item.name||'Exhibit';target.append(img)}
+ if(item.videoId&&/^[a-zA-Z0-9_-]{11}$/.test(item.videoId)){const player=document.createElement('iframe');player.title=item.name||'Music video';player.src='https://www.youtube-nocookie.com/embed/'+item.videoId;player.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';player.allowFullscreen=true;target.append(player)}
+ if(item.spotify?.startsWith('spotify:album:')){const player=document.createElement('iframe');player.title='Listen to '+item.name;player.src='https://open.spotify.com/embed/album/'+encodeURIComponent(item.spotify.slice(14));player.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';target.append(player)}
+ if(item.price!=null){const price=document.createElement('p');price.textContent='R'+(item.price/100).toLocaleString('en-ZA')+' · '+(item.status||'').replaceAll('-',' ').toUpperCase();target.append(price)}
+ if(item.href&&(/^(https:\/\/|\/)/).test(item.href)){const link=document.createElement('a');link.href=item.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='OPEN OFFICIAL LINK ↗';link.style.cssText='display:inline-block;padding:12px;margin-top:14px;background:#fff;color:#000;font-weight:bold';target.append(link)}
+}
+
+function close(){keys.clear();held.clear();document.getElementById('panel').style.display='none';document.getElementById('panelContent').replaceChildren();active=null}
 document.getElementById('close').onclick=close;document.getElementById('interact').onclick=()=>{const s=near();if(s)openSite(s)};document.getElementById('view').onclick=()=>mode=(mode+1)%2;
 document.getElementById('who').textContent='EXPLORE THE WORLD';document.getElementById('intro').style.display='none';
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','e','v','escape'].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!active&&near())openSite(near());if(k==='v')mode=(mode+1)%2;if(k==='escape')close()});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;for(const event of ['pointerdown','pointerup','pointercancel','pointerleave'])b.addEventListener(event,e=>{e.preventDefault();if(event==='pointerdown')held.add(k);else held.delete(k)})});
 let dragging=false,lastX=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX});addEventListener('pointerup',()=>dragging=false);addEventListener('pointermove',e=>{if(dragging){yaw-=(e.clientX-lastX)*.006;lastX=e.clientX}});
-const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.04);if(started&&!active){const on=k=>keys.has(k)||held.has(k);if(on('a'))yaw+=dt*2;if(on('d'))yaw-=dt*2;const move=(Number(on('w'))-Number(on('s')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;avatar.position.set(x,0,z);avatar.rotation.y=yaw;const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / ENTER — '+s.title;document.getElementById('place').textContent=s?s.title:'THE STREET'}
+const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.04);if(started&&!active){const on=k=>keys.has(k)||held.has(k);if(on('a'))yaw+=dt*2;if(on('d'))yaw-=dt*2;const move=(Number(on('w'))-Number(on('s')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;avatar.position.set(x,0,z);avatar.rotation.y=yaw;const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / ENTER — '+s.title;document.getElementById('place').textContent=interiors.active?'INSIDE · '+(s?.title||'EXPLORE EXHIBITS'):(s?s.title:'THE STREET')}
 const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const eye=new THREE.Vector3(x,1.8,z);const desired=mode===0?eye.clone().addScaledVector(dir,-7).add(new THREE.Vector3(0,3,0)):eye.clone();camera.position.lerp(desired,.16);camera.lookAt(eye.clone().addScaledVector(dir,mode===0?5:10));avatar.visible=mode===0;renderer.render(scene,camera)}frame();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
