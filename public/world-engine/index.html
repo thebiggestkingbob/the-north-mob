@@ -6,8 +6,32 @@
 <div id="controls"><div id="pad"><span></span><button data-key="w">▲</button><span></span><button data-key="a">◀</button><button data-key="s">▼</button><button data-key="d">▶</button></div><div style="display:flex;gap:5px"><button id="view">VIEW</button><button id="interact">ENTER</button></div></div>
 <div id="panel"><article><header><span class="eyebrow" id="panelType">DESTINATION</span><button id="close">CLOSE ×</button></header><h2 id="panelTitle"></h2><div id="panelContent"></div></article></div>
 <div id="error">Unable to load the 3D engine. Check your internet connection and refresh. <a href="/" style="color:white">Return to website</a></div>
+<script>
+/* The entry screen must remain interactive even if the remote 3D library fails. */
+const fallbackDestinations=[['MOB SHOP','/world/catalog'],['THE STUDIO','/world/studio'],['VISUALS CINEMA','/world/visualz?mode=cinema'],['MOB MUSEUM','/world/visualz?mode=museum'],['LIVE YARD','/world/live']];
+document.querySelectorAll('[data-member]').forEach(button=>{
+ button.addEventListener('click',()=>{
+  if(window.__northMob3dReady)return;
+  const intro=document.getElementById('intro');
+  intro.querySelector('section').innerHTML='<div class="eyebrow">THE NORTH MOB WORLD · ACCESSIBLE MODE</div><h1>EXPLORE<br>THE MOB.</h1><p style="color:#bbb">The 3D engine is unavailable in this browser session. You can still visit every destination.</p><nav id="fallbackNav" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"></nav><p style="margin-top:25px"><a href="/" style="color:white">EXIT WORLD</a></p>';
+  const nav=document.getElementById('fallbackNav');
+  for(const [label,url] of fallbackDestinations){const link=document.createElement('a');link.href=url;link.textContent=label;link.style.cssText='display:block;background:#fff;color:#000;padding:22px 12px;text-decoration:none;font-weight:bold;text-align:center';nav.append(link)}
+ });
+});
+</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+let THREE;
+try{
+ THREE=await import('https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js');
+}catch(firstError){
+ try{THREE=await import('https://esm.sh/three@0.165.0');}
+ catch(secondError){
+  console.error('World 3D library unavailable',firstError,secondError);
+  document.querySelector('#intro .eyebrow').textContent='3D CONNECTION UNAVAILABLE · CHOOSE A CHARACTER TO EXPLORE';
+  throw secondError;
+ }
+}
+window.__northMob3dReady=true;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xb4b2ae);scene.fog=new THREE.Fog(0xb4b2ae,60,125);
 const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,150);const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;document.body.prepend(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2.3));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(-18,35,15);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
