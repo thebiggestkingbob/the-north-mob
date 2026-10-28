@@ -43,6 +43,10 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(engine).toContain("interiors.floorHeight(x,z)");
     expect(rooms).toContain("UPSTAIRS · MOB COLLECTION");
     expect(engine).toContain("function carBlocked(");
+    expect(engine).toContain("const lx=dx*Math.cos(carYaw)");
+    expect(engine).toContain("EXIT CAR");
+    expect(engine).toContain("addEventListener(\'blur\'");
+    expect(rooms).toContain("const balconyFront=stairStart-stairs*.72+.4");
     expect(engine).toContain("carFootprint(nx,nz,.35)");
     expect(engine).toContain("const travel=carSpeed*dt,steps=");
     expect(engine).toContain("for(const side of [1,-1])");
