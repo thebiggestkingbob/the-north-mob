@@ -64,6 +64,48 @@ export function createInteriors(THREE,scene,sites){
   }
   return piece;
  }
+ // Reusable low-poly retail fixtures. Every piece is geometry, not a billboard.
+ function retailRack(x,z,side=1,y=0){
+  const pole=mat(0xc8c8c8);
+  block(x,y+.08,z,2.65,.16,.65,dark,true);
+  for(const dx of [-1.15,1.15])block(x+dx,y+1.15,z,.11,2.2,.11,pole);
+  block(x,y+2.25,z,2.5,.11,.11,pole);
+  for(let i=0;i<5;i++){
+   const xx=x-1+i*.5;
+   const hanger=new THREE.Group();hanger.position.set(xx,y+2.05,z);group.add(hanger);
+   const shirt=new THREE.Mesh(new THREE.BoxGeometry(.36,.6,.13),i%2?white:dark);
+   shirt.position.y=-.36;hanger.add(shirt);
+  }
+ }
+ function mannequin(x,z,y=0){
+  const stand=mat(0xb9b7b1);
+  block(x,y+.055,z,.75,.11,.75,stand,true);
+  block(x,y+.9,z,.07,1.65,.07,stand);
+  const torso=new THREE.Mesh(new THREE.CylinderGeometry(.29,.39,.95,8),dark);
+  torso.position.set(x,y+1.55,z);group.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),white);
+  head.position.set(x,y+2.22,z);group.add(head);
+ }
+ function shopAtmosphere(site,upperY){
+  const {x,z,w,d}=site,front=z+d/2,back=z-d/2;
+  // Structural columns, strip lighting, and a clear central circulation spine.
+  for(const xx of [x-w/2+1,x+w/2-1]){
+   for(const zz of [front-4.5,back+3]){
+    block(xx,2.35,zz,.32,4.7,.32,steel);
+   }
+  }
+  for(const zz of [front-3.5,z,back+3]){
+   const lamp=block(x,4.32,zz,8,.12,.22,white);
+   lamp.material.emissive=new THREE.Color(0x777777);
+  }
+  // Two freestanding racks deliberately avoid the staircase and entry.
+  retailRack(x-4.1,z+2.5,-1);
+  retailRack(x-4.1,z-3,-1);
+  mannequin(x+2.3,z+2.3);
+  // Upper level has a small curated showroom, without blocking the landing.
+  mannequin(x-3.3,back+2.3,upperY);
+  retailRack(x-3.5,back+4.8,-1,upperY);
+ }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
@@ -125,6 +167,7 @@ export function createInteriors(THREE,scene,sites){
     upperExhibits.push({item,x:xx-side*1.3,z:zz,site:id});
    }
    label('UPSTAIRS · MOB COLLECTION',x,upperY+2.8,back+.38,7);
+   shopAtmosphere(site,upperY);
 
   }
   if(id==='cinema'){block(x,2.8,back+.48,w-2,4.5,.18,white);for(const xx of [x-3.5,x,x+3.5])block(xx,.5,z+1,2.2,1,1.4,steel,true)}
