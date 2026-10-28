@@ -7,14 +7,11 @@ test.describe("THE NORTH MOB WORLD", () => {
     await expect(page.getByRole("link", { name: "EXIT WORLD" })).toHaveAttribute("href", "/");
   });
 
-  test("3D engine serves character selection and all five destinations", async ({ page }) => {
+  test("3D entry no longer asks for a character", async ({ page }) => {
     await page.goto("/world-engine/index.html");
-    await expect(page.getByRole("heading", { name: /ENTER.*THE MOB/s })).toBeVisible();
-    for (const member of ["TROPHY", "ORIEBLXCKMAESTRO", "CARLOW PICASSO", "MAJORICEY"]) {
-      await expect(page.getByRole("button", { name: member, exact: true })).toBeVisible();
-    }
-    const html = await page.locator("body").innerText();
-    expect(html).toContain("THE NORTH MOB WORLD");
+    await expect(page.getByText("CHOOSE YOUR CHARACTER")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "TROPHY" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "EXIT WORLD" })).toBeVisible();
   });
 
   test("world shop displays products from the canonical merchandise catalogue", async ({ page }) => {
