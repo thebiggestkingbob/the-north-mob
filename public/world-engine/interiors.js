@@ -52,7 +52,7 @@ export function createInteriors(THREE,scene,sites){
    items.forEach((item,i)=>{
     const side=i%3,slot=Math.floor(i/3),spacing=2.9,perWall=Math.max(1,Math.floor((d-3)/spacing)),row=Math.floor(slot/perWall),position=slot%perWall;
     if(side===0&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x-w/2+.37,3.4+row*2.8,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
-    else if(side===1&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-slot*2.8;art(item,x+w/2-.37,3.4+row*2.8,zz,-Math.PI/2,2.4,2.7);exhibits.push({item,x:x+w/2-1.8,z:zz,site:id})}
+    else if(side===1&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x+w/2-.37,3.4+row*2.8,zz,-Math.PI/2,2.4,2.7);exhibits.push({item,x:x+w/2-1.8,z:zz,site:id})}
     else if(side===2&&x-w/2+2.1+position*2.9<x+w/2-1){const xx=x-w/2+2.1+position*2.9;art(item,xx,3.4+row*2.8,back+.38,0,2.4,2.7);exhibits.push({item,x:xx,z:back+1.8,site:id})}
    });
   }
@@ -75,7 +75,7 @@ export function createInteriors(THREE,scene,sites){
     block(stairX,(i+1)*stepH/2,zz,2.2,(i+1)*stepH,depth,steel,false);
    }
    // Balcony floor occupies the rear half; the front remains open to the shop below.
-   const balconyFront=z-.2,balconyBack=back+.25,balconyDepth=balconyFront-balconyBack;
+   const balconyFront=stairStart-stairs*.72+.4,balconyBack=back+.25,balconyDepth=balconyFront-balconyBack;
    block(x,upperY-.14,(balconyFront+balconyBack)/2,w-.7,.28,balconyDepth,steel);
    // Leave the stair landing clear and protect the rest of the balcony edge.
    block(x-(w-4)/4,upperY+.55,balconyFront,(w-4)/2,1.1,.12,white,true);
@@ -107,7 +107,7 @@ export function createInteriors(THREE,scene,sites){
   const stairEnd=stairStart-10*.72;
   const onStairs=Math.abs(x-stairX)<1.25&&z<=stairStart+.4&&z>=stairEnd-.4;
   if(onStairs)return Math.max(0,Math.min(upper,(stairStart-z)/(.72*10)*upper));
-  const onBalcony=Math.abs(x-shop.x)<shop.w/2-.4&&z<=shop.z-.2&&z>back+.35;
+  const onBalcony=Math.abs(x-shop.x)<shop.w/2-.4&&z<=stairEnd+.4&&z>back+.35;
   // Only stay upstairs when arriving from the stairs / already on the upper floor.
   if(onBalcony&&current>upper-1.2)return upper;
   return 0;
