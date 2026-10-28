@@ -26,6 +26,9 @@ test.describe("THE NORTH MOB WORLD", () => {
     const engine = await (await request.get("/world-engine/index.html")).text();
     const rooms = await (await request.get("/world-engine/interiors.js")).text();
     expect(engine).not.toContain("window.location.assign");
+    expect(engine).toContain("function frame()");
+    expect(engine).toContain("frame();");
+    expect(engine.trimEnd().endsWith("</html>")).toBeTruthy();
     expect(engine).toContain("arrowup");
     expect(engine).toContain("arrowleft");
     expect(rooms).toContain("function blocked");
