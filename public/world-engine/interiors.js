@@ -1,67 +1,84 @@
-// Spatial rooms and exhibits: no navigation away from the 3D engine.
-export function createInteriors(THREE,scene){
- const group=new THREE.Group();scene.add(group);group.visible=false;
- const material=(hex)=>new THREE.MeshStandardMaterial({color:hex,roughness:.8});
- const wall=material(0x171717),floor=material(0x383838),ivory=material(0xe9e5db),plinth=material(0x252525);
- const add=(w,h,d,x,y,z,m)=>{const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);group.add(mesh);return mesh};
- const sign=(text,w=6,h=1)=>{
-  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#eeeae0';ctx.fillRect(0,0,1024,256);ctx.fillStyle='#080808';ctx.font='bold 92px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,130,980);
-  return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(canvas),side:THREE.DoubleSide}));
- };
- const textureLoader=new THREE.TextureLoader();
- let current=null,exhibits=[],original=[],onLeave=null,content={};
- const roomThemes={
-  shop:{title:'MOB SHOP',caption:'THE MERCH FLOOR',accent:0xd9d6cf},
-  studio:{title:'THE STUDIO',caption:'RECORDS · H4B',accent:0xbcb2c8},
-  cinema:{title:'VISUALS CINEMA',caption:'WATCH THE VISUALS',accent:0xa1a1a1},
-  museum:{title:'MOB MUSEUM',caption:'THE ARCHIVE',accent:0xd6c4a4},
-  live:{title:'LIVE YARD',caption:'SHOWS · TICKETS',accent:0xa7a7a7}
- };
- function clear(){while(group.children.length){const o=group.children[0];group.remove(o);o.geometry?.dispose();if(o.material?.map)o.material.map.dispose();if(o.material&&!Array.isArray(o.material))o.material.dispose();}exhibits=[]}
- function loadContent(){return fetch('/api/world/exhibits',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('World exhibits '+r.status);return r.json()}).then(data=>{content=data;return data}).catch(error=>{console.warn('Exhibits unavailable',error);return null})}
- const ready=loadContent();
- function enter(site,leave){
-  onLeave=leave;current=site;original=scene.children.filter(o=>o!==group&&!o.isLight);
-  original.forEach(o=>o.visible=false);group.visible=true;clear();
-  const theme=roomThemes[site.id],items=(content[site.id]||[]).slice(0,12);
-  // An actual room with floor, ceiling, side walls and a doorway at the front.
-  add(20,.3,27,0,-.16,0,floor);add(20,.3,27,0,7.6,0,wall);
-  add(.35,7.5,27,-10,3.7,0,wall);add(.35,7.5,27,10,3.7,0,wall);
-  add(20,7.5,.35,0,3.7,-13.5,wall);
-  add(7.5,7.5,.35,-6.25,3.7,13.5,wall);add(7.5,7.5,.35,6.25,3.7,13.5,wall);
-  add(5,.35,.4,0,7.2,13.5,ivory);
-  const title=sign(theme.title,9,1.5);title.position.set(0,5.8,-13.24);group.add(title);
-  const subtitle=sign(theme.caption,6,.8);subtitle.position.set(0,4.5,-13.23);group.add(subtitle);
-  // Category-specific 3D architecture.
-  if(site.id==='cinema'){add(14,5,.3,0,3,-13.15,ivory);for(let i=0;i<3;i++)for(let j=0;j<5;j++)add(1.2,.7,1.4,-6+j*3,.5,-1+i*3,plinth)}
-  if(site.id==='studio'){for(let i=0;i<3;i++){add(2,.2,1.2,-6+i*6,1.1,-10,ivory);add(1.8,1,.6,-6+i*6,1.7,-10,plinth)}}
-  if(site.id==='live'){add(14,1.2,5,0,.6,-10,plinth);for(const x of [-6,6])add(.4,5,.4,x,3.3,-11,ivory)}
-  if(site.id==='shop'){for(const x of [-8.6,8.6])for(const z of [-9,-3,3]){add(1.5,2,.8,x,1,z,plinth);add(1.7,.12,1.1,x,2.1,z,ivory)}}
-  if(site.id==='museum'){for(const x of [-9.6,9.6])for(const z of [-9,-3,3])add(.12,3,4,x,3,z,ivory)}
-  const positions=[[-6,-8],[0,-8],[6,-8],[-6,-2],[0,-2],[6,-2],[-6,4],[0,4],[6,4],[-6,9],[0,9],[6,9]];
-  const available=items.length?items:[{name:site.id==='live'?'NO UPCOMING EVENTS':'CONTENT COMING SOON',description:'Check back for published updates.'}];
-  available.forEach((item,i)=>{
-   const [x,z]=positions[i];if(x===undefined)return;
-   const stand=add(3.6,.9,1.6,x,.45,z,plinth);
-   const label=sign((item.name||'EXHIBIT').slice(0,25),3.5,.65);label.position.set(x,1.25,z+.85);group.add(label);
-   const art=add(2.7,2.1,.1,x,2.65,z,ivory);
-   if(item.image&&typeof item.image==='string'&&item.image.startsWith('/')){
-    textureLoader.load(item.image,texture=>{if(current!==site){texture.dispose();return;}art.material.dispose();art.material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide});},undefined,()=>{});
-   }
-   exhibits.push({item,x,z});
-  });
-  const exitSign=sign('EXIT TO STREET',4.6,.7);exitSign.position.set(0,3.8,13.1);exitSign.rotation.y=Math.PI;group.add(exitSign);
-  return {x:0,z:10,yaw:0};
+// Walk-through buildings share world coordinates with the street: no teleporting or redirects.
+export function createInteriors(THREE,scene,sites){
+ const group=new THREE.Group();scene.add(group);
+ const solid=[],exhibits=[],loaded=new Set();
+ const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.82});
+ const dark=mat(0x181818),floor=mat(0x333333),white=mat(0xe9e5df),steel=mat(0x555555);
+ const loader=new THREE.TextureLoader();
+ let content={};
+ const ready=fetch('/api/world/exhibits',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Exhibits '+r.status);return r.json()}).then(d=>{content=d;return d}).catch(e=>{console.warn('World exhibits',e);return null});
+ function block(x,y,z,w,h,d,m,collide=false){
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);mesh.receiveShadow=true;mesh.castShadow=true;group.add(mesh);
+  if(collide)solid.push({x,z,w,d});return mesh;
  }
- function exit(){current=null;group.visible=false;clear();original.forEach(o=>o.visible=true);original=[];onLeave?.();onLeave=null}
+ function textMesh(label,width=3,height=.6){
+  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#e9e5df';ctx.fillRect(0,0,1024,256);ctx.fillStyle='#111';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 85px Arial';ctx.fillText(label,512,130,975);
+  return new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(canvas),side:THREE.DoubleSide}));
+ }
+ function label(t,x,y,z,w=3){const mesh=textMesh(t,w);mesh.position.set(x,y,z);group.add(mesh);return mesh}
+ function art(item,x,y,z,rotation=0,w=2.6,h=2.3){
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:0xdedbd4,side:THREE.DoubleSide}));mesh.position.set(x,y,z);mesh.rotation.y=rotation;group.add(mesh);
+  if(item.image&&item.image.startsWith('/'))loader.load(item.image,texture=>{mesh.material.dispose();mesh.material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide});},undefined,()=>{});
+  return mesh;
+ }
+ function populate(site){
+  if(loaded.has(site.id))return;loaded.add(site.id);
+  const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
+  const items=(content[id]||[]).slice(0,id==='shop'?18:12);
+  // Full-size interiors: walls and displays occupy the same physical building as its facade.
+  block(x,0,z,w,.15,d,floor);
+  block(x,h-.15,z,w,.3,d,dark);
+  block(x-w/2+.16,h/2,z,.32,h,d,dark,true);
+  block(x+w/2-.16,h/2,z,.32,h,d,dark,true);
+  block(x,h/2,back+.16,w,h,.32,dark,true);
+  // Street-facing doorway stays open: two facade segments, no invisible wall.
+  const segment=(w-3.4)/2;
+  block(x-(w+3.4)/4,h/2,front-.15,segment,h,.3,dark,true);
+  block(x+(w+3.4)/4,h/2,front-.15,segment,h,.3,dark,true);
+  block(x,h-.6,front-.15,3.4,1.2,.3,white);
+  const title=label(site.title,x,h-1,back+.38,Math.min(w-2,9));
+  // Wall gallery: artwork on the side and rear walls, never in the middle of the room.
+  if(id==='museum'||id==='cinema'||id==='studio'){
+   items.slice(0,9).forEach((item,i)=>{
+    const side=i%3,slot=Math.floor(i/3);
+    if(side===0){const zz=front-2.3-slot*2.8;art(item,x-w/2+.37,3.4,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
+    else if(side===1){const zz=front-2.3-slot*2.8;art(item,x+w/2-.37,3.4,zz,-Math.PI/2,2.4,2.7);exhibits.push({item,x:x+w/2-1.8,z:zz,site:id})}
+    else{const xx=x-3+slot*3;art(item,xx,3.4,back+.38,0,2.4,2.7);exhibits.push({item,x:xx,z:back+1.8,site:id})}
+   });
+  }
+  if(id==='shop'){
+   // Perimeter fixtures leave a central aisle. Product photographs hang above real display plinths.
+   items.forEach((item,i)=>{
+    const left=i%2===0,slot=Math.floor(i/2),zz=front-2-slot*1.22;
+    if(zz<back+1.1)return;
+    const xx=x+(left?-w/2+1.25:w/2-1.25);
+    block(xx,.7,zz,1.65,1.4,.9,steel,true);
+    const wallX=x+(left?-w/2+.38:w/2-.38);
+    art(item,wallX,2.9,zz,left?Math.PI/2:-Math.PI/2,1.05,1.5);
+    exhibits.push({item,x:xx+(left?1.5:-1.5),z:zz,site:id});
+   });
+   // Upper-floor balcony / architectural mezzanine, kept visually separate from ground-floor path.
+   block(x,5.4,back+2.6,w-1,.25,4.5,steel);
+   for(const xx of [x-w/2+1,x+w/2-1])block(xx,6.4,back+4.7,.15,1.8,.15,white);
+   label('MOB SHOP · UPPER GALLERY',x,7,back+.38,6);
+  }
+  if(id==='cinema'){block(x,2.8,back+.48,w-2,4.5,.18,white);for(const xx of [x-3.5,x,x+3.5])block(xx,.5,z+1,2.2,1,1.4,steel,true)}
+  if(id==='studio'){block(x,.8,z,4,1.6,2,steel,true);label('LISTEN · H4B',x,2,z-1.2,3.6)}
+  if(id==='live'){block(x,.7,back+2,w-2,1.4,3.2,steel,true);label('LIVE · THE MOB',x,3.5,back+.42,6)}
+  if(!items.length)label('MORE COMING SOON',x,2.5,back+.4,5);
+ }
  function near(x,z){
-  if(!current)return null;
-  if(z>11&&Math.abs(x)<4)return {kind:'exit',title:'EXIT TO STREET'};
-  let best=null,dist=2.8;
-  for(const exhibit of exhibits){const d=Math.hypot(x-exhibit.x,z-(exhibit.z+2));if(d<dist){dist=d;best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item}}}
+  let best=null,dist=2.1;
+  for(const exhibit of exhibits){const d=Math.hypot(x-exhibit.x,z-exhibit.z);if(d<dist){best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item};dist=d}}
   return best;
  }
- function blocked(x,z){return Math.abs(x)>9.2||z< -12.5||z>12.7}
- return {enter,exit,near,blocked,get active(){return !!current},ready};
+ function blocked(x,z){
+  const radius=.38;
+  return solid.some(b=>Math.abs(x-b.x)<b.w/2+radius&&Math.abs(z-b.z)<b.d/2+radius);
+ }
+ function inside(x,z){return sites.find(s=>Math.abs(x-s.x)<s.w/2-.3&&Math.abs(z-s.z)<s.d/2-.3)||null}
+ // Fill rooms after published data arrives; street remains playable while fetching.
+ ready.then(()=>sites.forEach(populate));
+ return {ready,near,blocked,inside};
 }
