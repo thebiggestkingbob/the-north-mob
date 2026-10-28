@@ -51,10 +51,13 @@ let x=0,z=36,yaw=0,mode=0,started=true,active=null;const keys=new Set();const he
 function near(){if(interiors.active)return interiors.near(x,z);let best=null,dist=1e9;for(const s of sites){const dx=x-s.x,dz=z-(s.z+s.d/2+3);const d=Math.hypot(dx,dz);if(d<dist){dist=d;best=s}}return dist<6?best:null}
 function blocked(nx,nz){if(interiors.active)return interiors.blocked(nx,nz);if(Math.abs(nx)>46||Math.abs(nz)>48)return true;for(const s of colliders){if(Math.abs(nx-s.x)<s.w/2+.5&&Math.abs(nz-s.z)<s.d/2+.5)return true}return false}
 
-function openSite(s){
+async function openSite(s){
  if(s.kind==='exit'){interiors.exit();x=0;z=36;yaw=0;return}
  if(s.kind==='exhibit'){showExhibit(s.item);return}
  if(!interiors.active){
+  document.getElementById('prompt').textContent='LOADING '+s.title+'…';
+  await interiors.ready;
+  if(interiors.active)return;
   interiors.enter(s,()=>{document.getElementById('place').textContent='THE STREET'});
   x=0;z=10;yaw=0;
   document.getElementById('place').textContent=s.title;
