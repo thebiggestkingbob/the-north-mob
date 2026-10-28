@@ -31,6 +31,39 @@ export function createInteriors(THREE,scene,sites){
   }
   return mesh;
  }
+ // Lightweight sculptural product forms make merchandise occupy real 3D space.
+ // The authentic product image remains alongside each form until dedicated GLB assets exist.
+ function merchSculpture(item,x,z,y=1.45){
+  const name=(item.name||'').toLowerCase();
+  const blackMat=mat(0x111111),lightMat=mat(0xdad7d0);
+  const piece=new THREE.Group();piece.position.set(x,y,z);group.add(piece);
+  const part=(w,h,d,px,py,pz,m=blackMat)=>{
+   const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
+   mesh.position.set(px,py,pz);mesh.castShadow=true;piece.add(mesh);return mesh;
+  };
+  if(/cap|bucket|beanie|hat/.test(name)){
+   const crown=new THREE.Mesh(new THREE.CylinderGeometry(.39,.44,.45,16),blackMat);crown.position.y=.35;piece.add(crown);
+   const brim=new THREE.Mesh(new THREE.CylinderGeometry(.68,.68,.065,20),lightMat);brim.position.y=.12;piece.add(brim);
+  }else if(/mug|cup/.test(name)){
+   const mug=new THREE.Mesh(new THREE.CylinderGeometry(.28,.25,.65,16),lightMat);mug.position.y=.35;piece.add(mug);
+   const handle=new THREE.Mesh(new THREE.TorusGeometry(.2,.055,8,16,Math.PI*1.5),blackMat);handle.position.set(.31,.36,0);piece.add(handle);
+  }else if(/chain|necklace|keyring/.test(name)){
+   const ring=new THREE.Mesh(new THREE.TorusGeometry(.3,.06,8,20),lightMat);ring.position.y=.52;piece.add(ring);
+   part(.32,.42,.09,0,.1,0,blackMat);
+  }else if(/tote|bag/.test(name)){
+   part(.9,.85,.22,0,.43,0,lightMat);
+   const strap=new THREE.Mesh(new THREE.TorusGeometry(.28,.045,8,20,Math.PI),blackMat);strap.position.y=1;piece.add(strap);
+  }else if(/skirt|pants|trouser/.test(name)){
+   part(.9,.85,.3,0,.5,0,blackMat);
+   part(.36,.55,.3,-.24,-.12,0,blackMat);part(.36,.55,.3,.24,-.12,0,blackMat);
+  }else{
+   // Garment silhouette: body and sleeves (not a substitute for a true product model).
+   part(.85,.95,.22,0,.45,0,blackMat);
+   part(.35,.42,.22,-.58,.72,0,blackMat);
+   part(.35,.42,.22,.58,.72,0,blackMat);
+  }
+  return piece;
+ }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
@@ -63,6 +96,7 @@ export function createInteriors(THREE,scene,sites){
     if(zz<back+1.5)return;
     const xx=x+(left?-w/2+1.25:w/2-1.25);
     block(xx,.7,zz,1.65,1.4,.9,steel,true);
+    merchSculpture(item,xx,zz);
     const wallX=x+(left?-w/2+.38:w/2-.38);
     art(item,wallX,3.1,zz,left?Math.PI/2:-Math.PI/2,2.05,2.6);
     exhibits.push({item,x:xx+(left?1.5:-1.5),z:zz,site:id});
@@ -85,6 +119,9 @@ export function createInteriors(THREE,scene,sites){
     if(zz<balconyBack+1.2)continue;
     const xx=x+side*(w/2-1.45);
     art(item,x+side*(w/2-.4),upperY+2.1,zz,side<0?Math.PI/2:-Math.PI/2,2,2.4);
+    const plinthX=x+side*(w/2-1.8);
+    block(plinthX,upperY+.45,zz,1.5,.9,.85,steel,true);
+    merchSculpture(item,plinthX,zz,upperY+.9);
     upperExhibits.push({item,x:xx-side*1.3,z:zz,site:id});
    }
    label('UPSTAIRS · MOB COLLECTION',x,upperY+2.8,back+.38,7);
