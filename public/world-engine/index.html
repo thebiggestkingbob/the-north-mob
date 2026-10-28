@@ -50,4 +50,25 @@ const interiors=createInteriors(THREE,scene,sites);
 const avatar=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(.8,1.25,.5),black),head=new THREE.Mesh(new THREE.SphereGeometry(.37,12,12),mat(0x9e7c64));body.position.y=1.05;head.position.y=1.96;avatar.add(body,head);scene.add(avatar);
 let x=0,z=36,yaw=0,mode=0,started=true,active=null;const keys=new Set();const held=new Set();
 function near(){return interiors.near(x,z)}
-function blocked(nx,nz){return Math.abs(nx)>46||Math.abs(nz)>48||interiors.blocked(nx,nz)}function openSite(s){if(s?.kind==='exhibit')showExhibit(s.item)}>
+function blocked(nx,nz){return Math.abs(nx)>46||Math.abs(nz)>48||interiors.blocked(nx,nz)}
+function openSite(s){if(s?.kind==='exhibit')showExhibit(s.item)}
+function showExhibit(item){
+ active=item;keys.clear();held.clear();
+ const panel=document.getElementById('panel'),target=document.getElementById('panelContent');
+ panel.style.display='flex';document.getElementById('panelTitle').textContent=item.name||'EXHIBIT';target.replaceChildren();
+ const description=document.createElement('p');description.textContent=item.description||'';target.append(description);
+ if(item.image&&item.image.startsWith('/')){const img=document.createElement('img');img.src=item.image;img.alt=item.name||'Exhibit';target.append(img)}
+ if(item.videoId&&/^[a-zA-Z0-9_-]{11}$/.test(item.videoId)){const player=document.createElement('iframe');player.title=item.name||'Music video';player.src='https://www.youtube-nocookie.com/embed/'+item.videoId;player.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';player.allowFullscreen=true;target.append(player)}
+ if(item.spotify?.startsWith('spotify:album:')){const player=document.createElement('iframe');player.title='Listen to '+item.name;player.src='https://open.spotify.com/embed/album/'+encodeURIComponent(item.spotify.slice(14));player.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';target.append(player)}
+ if(item.price!=null){const price=document.createElement('p');price.textContent='R'+(item.price/100).toLocaleString('en-ZA')+' · '+(item.status||'').replaceAll('-',' ').toUpperCase();target.append(price)}
+ if(item.href&&(/^(https:\/\/|\/)/).test(item.href)){const link=document.createElement('a');link.href=item.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='OPEN OFFICIAL LINK ↗';link.style.cssText='display:inline-block;padding:12px;margin-top:14px;background:#fff;color:#000;font-weight:bold';target.append(link)}
+}
+
+function close(){keys.clear();held.clear();document.getElementById('panel').style.display='none';document.getElementById('panelContent').replaceChildren();active=null}
+document.getElementById('close').onclick=close;document.getElementById('interact').onclick=()=>{const s=near();if(s)openSite(s)};document.getElementById('view').onclick=()=>mode=(mode+1)%2;
+document.getElementById('who').textContent='EXPLORE THE WORLD';document.getElementById('intro').style.display='none';
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','v','escape'].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!active&&near())openSite(near());if(k==='v')mode=(mode+1)%2;if(k==='escape')close()});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;for(const event of ['pointerdown','pointerup','pointercancel','pointerleave'])b.addEventListener(event,e=>{e.preventDefault();if(event==='pointerdown')held.add(k);else held.delete(k)})});
+let dragging=false,lastX=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX});addEventListener('pointerup',()=>dragging=false);addEventListener('pointermove',e=>{if(dragging){yaw-=(e.clientX-lastX)*.006;lastX=e.clientX}});
+const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.04);if(started&&!active){const on=k=>keys.has(k)||held.has(k);if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;avatar.position.set(x,0,z);avatar.rotation.y=yaw;const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / ENTER — '+s.title;document.getElementById('place').textContent=interiors.inside(x,z)?.title||'THE STREET'}
+const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const eye=new THREE.Vector3(x,1.8,z);const desired=mode===0?eye.clone().addScaledVector(dir,-7).add(new THREE.Vector3(0,3,0)):eye.clone();camera.position.lerp(desired,.16);camera.lookAt(eye.clone().addScaledVector(dir,mode===0?5:10));avatar.visible=mode===0;renderer.render(scene,camera)}frame();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script></body></html>
