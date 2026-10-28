@@ -1,0 +1,18 @@
+import { NextResponse } from "next/server";
+import { merch } from "@/config/merch";
+import { publishedMusic } from "@/lib/studio/public-music";
+import { publishedEvents } from "@/lib/studio/public-events";
+import { publishedVisualz } from "@/lib/studio/public-visualz";
+export const dynamic = "force-dynamic";
+export async function GET(){
+ const [music,live,visualz]=await Promise.all([publishedMusic(),publishedEvents(),publishedVisualz()]);
+ const now=new Date().toLocaleDateString("en-CA",{timeZone:"Africa/Johannesburg"});
+ return NextResponse.json({
+  shop:merch.map(p=>({name:p.name,description:p.description,price:p.price,status:p.status,image:p.images[0]?.src,href:"/shop"})),
+  studio:music.releases.map(r=>({name:r.title,description:r.artist, image:r.cover,href:r.source,spotify:r.spotify_uri})),
+  cinema:visualz.videos.map(v=>({name:v.title,description:"Official music video",image:v.thumbnail,href:v.url,embed:v.embedUrl})),
+  museum:visualz.photos.map(p=>({name:p.title,description:p.caption??"THE NORTH MOB archive",image:p.src})),
+  live:live.events.filter(e=>e.date>=now).map(e=>({name:e.name,description:e.date+" · "+e.venue,href:e.ticketUrl})),
+  unavailable:{studio:music.unavailable,cinema:visualz.unavailable,museum:visualz.unavailable,live:live.unavailable}
+ },{headers:{"Cache-Control":"no-store"}});
+}
