@@ -18,6 +18,10 @@ try {
   if (!module.length) throw new Error("Three.js module was empty");
   mkdirSync(resolve("public/world-engine"), { recursive: true });
   writeFileSync(destination, module);
+  const gltf = execFileSync("tar", ["-xOzf", join(directory, packed), "package/examples/jsm/loaders/GLTFLoader.js"], { maxBuffer: 4 * 1024 * 1024 }).toString("utf8");
+  const localGltf = gltf.replace(/from ['"]three['"]/g, "from '/world-engine/three.module.js'");
+  if (localGltf === gltf || !localGltf.includes("class GLTFLoader")) throw new Error("Unexpected GLTFLoader format");
+  writeFileSync(resolve("public/world-engine/GLTFLoader.js"), localGltf);
   console.log("Prepared same-origin Three.js module:", module.length, "bytes");
 } finally {
   rmSync(directory, { recursive: true, force: true });
