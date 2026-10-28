@@ -169,6 +169,8 @@ document.getElementById('musicToggle').onclick=()=>{
 document.getElementById('who').textContent='EXPLORE THE WORLD';document.getElementById('intro').style.display='none';
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','v','r','escape'].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!active&&near()&&!e.repeat)openSite(near());if(k==='v'&&!e.repeat)mode=(mode+1)%2;if(k==='r'&&driving&&!e.repeat)resetCar();if(k==='escape')close()});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{keys.clear();held.clear()});document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;for(const event of ['pointerdown','pointerup','pointercancel','pointerleave'])b.addEventListener(event,e=>{e.preventDefault();if(event==='pointerdown')held.add(k);else held.delete(k)})});
 let dragging=false,lastX=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX});addEventListener('pointerup',()=>dragging=false);addEventListener('pointermove',e=>{if(dragging){if(driving){carYaw-=(e.clientX-lastX)*.002}else{yaw-=(e.clientX-lastX)*.006}lastX=e.clientX}});
+// Read-only telemetry for automated browser smoke tests and collision diagnosis.
+window.__northMobWorldState=()=>({x,z,elevation,driving,carX:car.position.x,carZ:car.position.z,carSpeed,carYaw,inside:interiors.inside(x,z)?.id||null,ready:!!window.__northMob3dReady});
 const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.04);if(started&&!active){const on=k=>keys.has(k)||held.has(k);if(driving){
  const throttle=Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown'));
  carSpeed=THREE.MathUtils.clamp(carSpeed+throttle*dt*27,-18,45);carSpeed*=Math.pow(.975,dt*30);
@@ -188,7 +190,7 @@ const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);cons
  }
  if(collided){carSpeed=0;carStuckFrames++}else if(moved)carStuckFrames=0;
  // At a wall, reverse is always available; steer before applying the next throttle.
- if(collided&&throttle<0)carSpeed=-Math.min(2,Math.abs(carSpeed)+2);
+ // Reverse input already accelerates away from the obstacle on the next frame.
  car.rotation.y=carYaw;
  x=car.position.x;z=car.position.z;yaw=carYaw;
  }else{if(on('a')||on('arrowleft'))yaw+=dt*2;if(on('d')||on('arrowright'))yaw-=dt*2;const move=(Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;elevation=interiors.floorHeight(x,z,elevation);avatar.position.set(x,elevation,z);avatar.rotation.y=yaw;}const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / INTERACT — '+s.title;document.getElementById('resetCar').style.display=driving?'block':'none';document.getElementById('interact').textContent=s?.kind==='car'?(driving?'EXIT CAR':'DRIVE'):s?'VIEW':'INTERACT';document.getElementById('place').textContent=driving?'DRIVING · H4B CAR · R TO RESET':interiors.inside(x,z)?.title||'THE STREET'}
