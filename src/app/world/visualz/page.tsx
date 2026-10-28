@@ -1,3 +1,4 @@
+import '../../visuals/visuals.css';
 import { publishedVisualz } from '@/lib/studio/public-visualz';
 import { PhotoArchive } from '@/components/photo-archive';
 import { VideoGallery } from '@/components/video-gallery';
