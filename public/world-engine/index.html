@@ -52,24 +52,23 @@ for(const s of sites){
  const pathStart=s.x<0?-6:6;
  box((s.x+pathStart)/2,.035,front+2,Math.abs(s.x-pathStart)+3,.07,3.2,white,false);
 }
-const murals=[
- ['shop','/assets/h4b-album-cover.jpg'],
- ['studio','/assets/h4b-album-cover.jpg'],
- ['cinema','/assets/h4b-album-cover.jpg'],
- ['museum','/assets/h4b-album-cover.jpg'],
- ['live','/assets/h4b-album-cover.jpg']
-];
-for(const site of sites){
- const src=murals.find(([id])=>id===site.id)?.[1];
- if(src)photoLoader.load(src,texture=>{
-  const ratio=texture.image.width/texture.image.height;
-  const height=Math.min(site.h-2,6.5),width=Math.min(site.d-2,height*ratio);
-  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}));
-  mesh.rotation.y=site.x<0?Math.PI/2:-Math.PI/2;
-  mesh.position.set(site.x+(site.x<0?-site.w/2-.03:site.w/2+.03),site.h/2,site.z);
-  scene.add(mesh);
- },undefined,()=>{});
-}
+// Large category-specific exterior murals use the site's published images.
+fetch('/api/world/exhibits').then(r=>r.ok?r.json():null).then(data=>{
+ if(!data)return;
+ for(const site of sites){
+  const items=site.id==='studio'?(data.album||[]):(data[site.id]||[]);
+  const src=items.find(item=>item.image)?.image;
+  if(!src)return;
+  photoLoader.load(src,texture=>{
+   const ratio=texture.image.width/texture.image.height;
+   const height=Math.min(site.h-2,7),width=Math.min(site.d-1,height*ratio);
+   const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}));
+   mesh.rotation.y=site.x<0?Math.PI/2:-Math.PI/2;
+   mesh.position.set(site.x+(site.x<0?-site.w/2-.035:site.w/2+.035),site.h/2,site.z);
+   scene.add(mesh);
+  },undefined,()=>{});
+ }
+}).catch(error=>console.warn('Exterior murals unavailable',error));
 // A stationary branded H4B car on the street, clear of the pedestrian route.
 const car=new THREE.Group();const carBody=new THREE.Mesh(new THREE.BoxGeometry(2.3,.75,4.4),black);carBody.position.y=.85;car.add(carBody);
 const roof=new THREE.Mesh(new THREE.BoxGeometry(1.9,.7,2.3),grey);roof.position.set(0,1.52,-.25);car.add(roof);
