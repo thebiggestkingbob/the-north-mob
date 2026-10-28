@@ -41,26 +41,57 @@ export function createInteriors(THREE,scene,sites){
    const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
    mesh.position.set(px,py,pz);mesh.castShadow=true;piece.add(mesh);return mesh;
   };
-  if(/cap|bucket|beanie|hat/.test(name)){
-   const crown=new THREE.Mesh(new THREE.CylinderGeometry(.39,.44,.45,16),blackMat);crown.position.y=.35;piece.add(crown);
-   const brim=new THREE.Mesh(new THREE.CylinderGeometry(.68,.68,.065,20),lightMat);brim.position.y=.12;piece.add(brim);
+  const cylinder=(top,bottom,height,px,py,pz,m=blackMat,segments=16)=>{
+   const mesh=new THREE.Mesh(new THREE.CylinderGeometry(top,bottom,height,segments),m);
+   mesh.position.set(px,py,pz);mesh.castShadow=true;piece.add(mesh);return mesh;
+  };
+  if(/bucket/.test(name)){
+   cylinder(.34,.53,.52,0,.38,0);
+   cylinder(.67,.67,.07,0,.12,0,blackMat,24);
+  }else if(/cap/.test(name)){
+   const crown=new THREE.Mesh(new THREE.SphereGeometry(.44,16,10,0,Math.PI*2,0,Math.PI/2),blackMat);
+   crown.position.y=.28;piece.add(crown);
+   const brim=new THREE.Mesh(new THREE.BoxGeometry(.77,.07,.43),blackMat);
+   brim.position.set(0,.17,.39);piece.add(brim);
+  }else if(/beanie|hat/.test(name)){
+   cylinder(.34,.44,.55,0,.4,0);
+   cylinder(.45,.45,.16,0,.17,0,lightMat);
   }else if(/mug|cup/.test(name)){
-   const mug=new THREE.Mesh(new THREE.CylinderGeometry(.28,.25,.65,16),lightMat);mug.position.y=.35;piece.add(mug);
-   const handle=new THREE.Mesh(new THREE.TorusGeometry(.2,.055,8,16,Math.PI*1.5),blackMat);handle.position.set(.31,.36,0);piece.add(handle);
-  }else if(/chain|necklace|keyring/.test(name)){
-   const ring=new THREE.Mesh(new THREE.TorusGeometry(.3,.06,8,20),lightMat);ring.position.y=.52;piece.add(ring);
-   part(.32,.42,.09,0,.1,0,blackMat);
+   cylinder(.29,.26,.65,0,.38,0,lightMat);
+   const handle=new THREE.Mesh(new THREE.TorusGeometry(.2,.055,8,16,Math.PI*1.5),blackMat);
+   handle.position.set(.32,.38,0);piece.add(handle);
+  }else if(/chain|necklace/.test(name)){
+   const chain=new THREE.Mesh(new THREE.TorusGeometry(.37,.035,8,32,Math.PI*1.7),lightMat);
+   chain.rotation.z=Math.PI;chain.position.y=.65;piece.add(chain);
+   part(.38,.43,.08,0,.12,0,lightMat);
+  }else if(/keyring/.test(name)){
+   const ring=new THREE.Mesh(new THREE.TorusGeometry(.28,.045,8,20),lightMat);
+   ring.position.y=.55;piece.add(ring);
+   part(.32,.35,.08,0,.12,0,lightMat);
   }else if(/tote|bag/.test(name)){
-   part(.9,.85,.22,0,.43,0,lightMat);
-   const strap=new THREE.Mesh(new THREE.TorusGeometry(.28,.045,8,20,Math.PI),blackMat);strap.position.y=1;piece.add(strap);
+   part(.95,.85,.24,0,.4,0,lightMat);
+   const strap=new THREE.Mesh(new THREE.TorusGeometry(.29,.045,8,20,Math.PI),blackMat);
+   strap.position.y=1;piece.add(strap);
   }else if(/skirt|pants|trouser/.test(name)){
-   part(.9,.85,.3,0,.5,0,blackMat);
-   part(.36,.55,.3,-.24,-.12,0,blackMat);part(.36,.55,.3,.24,-.12,0,blackMat);
+   part(.9,.85,.3,0,.5,0);
+   part(.36,.55,.3,-.24,-.12,0);part(.36,.55,.3,.24,-.12,0);
+  }else if(/hoodie|hood/.test(name)){
+   part(.95,1.05,.34,0,.45,0);
+   part(.32,.86,.32,-.66,.42,0);
+   part(.32,.86,.32,.66,.42,0);
+   const hood=new THREE.Mesh(new THREE.TorusGeometry(.28,.13,8,16,Math.PI),blackMat);
+   hood.rotation.z=Math.PI;hood.position.set(0,1.03,-.13);piece.add(hood);
+   part(.42,.18,.04,0,.18,.19,lightMat);
+  }else if(/shirt|tee|crop|long sleeve|sleeveless/.test(name)){
+   const crop=/crop/.test(name),long=/long sleeve/.test(name),sleeveless=/sleeveless/.test(name);
+   part(.86,crop?.55:.9,.2,0,crop?.64:.45,0);
+   if(!sleeveless){
+    part(.3,long?.85:.32,.2,-.57,long?.5:.77,0);
+    part(.3,long?.85:.32,.2,.57,long?.5:.77,0);
+   }
   }else{
-   // Garment silhouette: body and sleeves (not a substitute for a true product model).
-   part(.85,.95,.22,0,.45,0,blackMat);
-   part(.35,.42,.22,-.58,.72,0,blackMat);
-   part(.35,.42,.22,.58,.72,0,blackMat);
+   part(.85,.9,.22,0,.45,0);
+   part(.3,.38,.22,-.57,.72,0);part(.3,.38,.22,.57,.72,0);
   }
   return piece;
  }
