@@ -43,6 +43,10 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(engine).toContain("interiors.floorHeight(x,z)");
     expect(rooms).toContain("UPSTAIRS · MOB COLLECTION");
     expect(engine).toContain("function carBlocked(");
+    expect(engine).toContain("function resetCar()");
+    expect(engine).toContain("RESET CAR");
+    expect(engine).toContain("Slide along the wall");
+    expect(engine).toContain("The playable neighborhood ends at a visible perimeter");
     expect(engine).toContain("const lx=dx*Math.cos(carYaw)");
     expect(engine).toContain("EXIT CAR");
     expect(engine).toContain("addEventListener(\'blur\'");
