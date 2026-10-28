@@ -39,6 +39,9 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(engine).toContain("HERE 4 BUSINESS");
     expect(engine).toContain("musicToggle");
     expect(engine).toContain("function toggleCar()");
+    expect(engine).toContain("carSpeed+throttle*dt*27,-18,45");
+    expect(engine).toContain("interiors.floorHeight(x,z)");
+    expect(rooms).toContain("UPSTAIRS · MOB COLLECTION");
     expect(engine).toContain("function carBlocked(");
     expect(engine).toContain("carFootprint(nx,nz,.35)");
     expect(engine).not.toContain("const pathStart=");
