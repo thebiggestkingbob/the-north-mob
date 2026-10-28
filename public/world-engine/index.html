@@ -67,8 +67,8 @@ fetch('/api/world/exhibits').then(r=>r.ok?r.json():null).then(data=>{
  }
 }).catch(error=>console.warn('Exterior murals unavailable',error));
 // Drivable H4B car with a solid footprint.
-const car=new THREE.Group();const carBody=new THREE.Mesh(new THREE.BoxGeometry(2.3,.75,4.4),black);carBody.position.y=.85;car.add(carBody);
-const roof=new THREE.Mesh(new THREE.BoxGeometry(1.9,.7,2.3),grey);roof.position.set(0,1.52,-.25);car.add(roof);
+const car=new THREE.Group();const carBody=new THREE.Mesh(new THREE.BoxGeometry(2.3,.75,4.4),white);carBody.position.y=.85;car.add(carBody);
+const roof=new THREE.Mesh(new THREE.BoxGeometry(1.9,.7,2.3),white);roof.position.set(0,1.52,-.25);car.add(roof);
 for(const sx of [-1.2,1.2])for(const zz of [-1.35,1.35]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.24,16),black);wheel.rotation.z=Math.PI/2;wheel.position.set(sx,.45,zz);car.add(wheel)}
 const carMark=new THREE.Mesh(new THREE.PlaneGeometry(2.1,.54),new THREE.MeshBasicMaterial({map:signTexture('HERE 4 BUSINESS'),side:THREE.DoubleSide}));
 carMark.rotation.y=Math.PI/2;carMark.position.set(1.17,1,-.2);car.add(carMark);car.position.set(3,0,27);scene.add(car);
@@ -112,7 +112,7 @@ addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','
 let dragging=false,lastX=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX});addEventListener('pointerup',()=>dragging=false);addEventListener('pointermove',e=>{if(dragging){yaw-=(e.clientX-lastX)*.006;lastX=e.clientX}});
 const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.04);if(started&&!active){const on=k=>keys.has(k)||held.has(k);if(driving){
  const throttle=Number(on('w')||on('arrowup'))-Number(on('s')||on('arrowdown'));
- carSpeed=THREE.MathUtils.clamp(carSpeed+throttle*dt*9,-6,15);carSpeed*=Math.pow(.92,dt*30);
+ carSpeed=THREE.MathUtils.clamp(carSpeed+throttle*dt*27,-18,45);carSpeed*=Math.pow(.92,dt*30);
  const steer=Number(on('a')||on('arrowleft'))-Number(on('d')||on('arrowright'));
  carYaw+=steer*dt*1.3*Math.sign(carSpeed||1);
  const nx=car.position.x-Math.sin(carYaw)*carSpeed*dt,nz=car.position.z-Math.cos(carYaw)*carSpeed*dt;
