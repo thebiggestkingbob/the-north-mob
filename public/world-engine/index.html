@@ -1,23 +1,18 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>ENTER THE MOB</title><style>
 *{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#080808;color:#fff;font-family:Arial,sans-serif}canvas{display:block}button,a{cursor:pointer}button{background:#fff;color:#000;border:0;padding:12px 16px;font-weight:800;letter-spacing:.06em}#intro{position:fixed;inset:0;background:#090909;z-index:20;display:flex;align-items:center;justify-content:center;padding:24px}#intro section{width:min(780px,100%)}h1{font-size:clamp(48px,9vw,104px);line-height:.87;margin:15px 0 24px;letter-spacing:-.06em}.eyebrow{font:12px monospace;letter-spacing:.18em;color:#bbb}.choices{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:25px 0}.choices button{background:#171717;border:1px solid #444;color:#fff;min-height:90px;overflow-wrap:anywhere}.choices button:hover,.choices button:focus{background:#fff;color:#000}#hud{position:fixed;top:16px;left:16px;pointer-events:none;font:12px monospace;line-height:1.6;text-shadow:0 1px 6px black}#hud strong{font-size:19px}#prompt{position:fixed;bottom:95px;left:50%;transform:translateX(-50%);background:#101010e8;border:1px solid #aaa;padding:12px;display:none;text-align:center;min-width:210px;font:12px monospace}#controls{position:fixed;bottom:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:end;gap:12px}#controls button{padding:12px;min-width:44px;background:#111c;color:#fff;border:1px solid #777;touch-action:none}#pad{display:grid;grid-template-columns:repeat(3,46px);gap:4px}#panel{position:fixed;inset:0;background:#000d;z-index:30;display:none;align-items:center;justify-content:center;padding:16px}#panel article{width:min(850px,100%);max-height:92vh;overflow:auto;background:#101010;border:1px solid #666;padding:20px}#panel iframe{width:100%;height:min(53vh,460px);border:0;background:#000}#panel img{max-width:100%;max-height:60vh;object-fit:contain}#panel a{color:white}#panel header{display:flex;justify-content:space-between;align-items:center}#panel h2{font-size:clamp(24px,5vw,48px);margin:10px 0}.videoButtons{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.videoButtons button{background:#222;color:white;border:1px solid #555}#error{position:fixed;inset:0;display:none;place-items:center;padding:20px;background:#090909;z-index:50}@media(max-width:620px){.choices{grid-template-columns:repeat(2,1fr)}.choices button{min-height:65px}#hud{font-size:10px}#hud strong{font-size:14px}#prompt{bottom:160px}#controls button{padding:10px}}
 </style></head><body>
-<div id="intro"><section><div class="eyebrow">PRETORIA · HERE 4 BUSINESS · THE NORTH MOB</div><h1>ENTER<br>THE MOB.</h1><div class="eyebrow">CHOOSE YOUR CHARACTER</div><div class="choices"><button data-member="Trophy">TROPHY</button><button data-member="Orieblxckmaestro">ORIEBLXCKMAESTRO</button><button data-member="Carlow Picasso">CARLOW PICASSO</button><button data-member="MajorIcey">MAJORICEY</button></div><p style="color:#aaa;font:12px monospace">W/S MOVE · A/D TURN · DRAG TO LOOK · E INTERACT · V CAMERA</p><p style="color:#777;font:11px monospace">Early access world. Stylized placeholder avatars; official media is linked where available.</p></section></div>
+<div id="intro"><section><div class="eyebrow">PRETORIA · HERE 4 BUSINESS · THE NORTH MOB</div><h1>ENTER<br>THE MOB.</h1><p class="eyebrow" role="status">LOADING THE WORLD…</p></section></div>
 <a href="/" style="position:fixed;right:16px;top:16px;z-index:22;background:#111;color:#fff;border:1px solid #777;padding:10px 14px;font:12px monospace;text-decoration:none">EXIT WORLD</a><div id="hud"><strong>THE NORTH MOB WORLD</strong><div id="who"></div><div>W/S WALK · A/D TURN · V VIEW · E ENTER</div><div id="place">THE STREET</div></div><div id="prompt"></div>
 <div id="controls"><div id="pad"><span></span><button data-key="w">▲</button><span></span><button data-key="a">◀</button><button data-key="s">▼</button><button data-key="d">▶</button></div><div style="display:flex;gap:5px"><button id="view">VIEW</button><button id="interact">ENTER</button></div></div>
 <div id="panel"><article><header><span class="eyebrow" id="panelType">DESTINATION</span><button id="close">CLOSE ×</button></header><h2 id="panelTitle"></h2><div id="panelContent"></div></article></div>
 <div id="error">Unable to load the 3D engine. Check your internet connection and refresh. <a href="/" style="color:white">Return to website</a></div>
 <script>
-/* The entry screen must remain interactive even if the remote 3D library fails. */
-const fallbackDestinations=[['MOB SHOP','/world/catalog'],['THE STUDIO','/world/studio'],['VISUALS CINEMA','/world/visualz?mode=cinema'],['MOB MUSEUM','/world/visualz?mode=museum'],['LIVE YARD','/world/live']];
-document.querySelectorAll('[data-member]').forEach(button=>{
- button.addEventListener('click',()=>{
-  if(window.__northMob3dReady)return;
-  const intro=document.getElementById('intro');
-  intro.querySelector('section').innerHTML='<div class="eyebrow">THE NORTH MOB WORLD · ACCESSIBLE MODE</div><h1>EXPLORE<br>THE MOB.</h1><p style="color:#bbb">The 3D engine is unavailable in this browser session. You can still visit every destination.</p><nav id="fallbackNav" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"></nav><p style="margin-top:25px"><a href="/" style="color:white">EXIT WORLD</a></p>';
-  const nav=document.getElementById('fallbackNav');
-  for(const [label,url] of fallbackDestinations){const link=document.createElement('a');link.href=url;link.textContent=label;link.style.cssText='display:block;background:#fff;color:#000;padding:22px 12px;text-decoration:none;font-weight:bold;text-align:center';nav.append(link)}
- });
-});
+function showWorldFallback(){
+ const intro=document.getElementById('intro');intro.style.display='flex';
+ intro.querySelector('section').innerHTML='<div class="eyebrow">THE NORTH MOB WORLD</div><h1>EXPLORE<br>THE MOB.</h1><p style="color:#bbb">Choose a destination to explore while the 3D environment is unavailable.</p><nav id="fallbackNav" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"></nav>';
+ const links=[['MOB SHOP','/world/catalog'],['THE STUDIO','/world/studio'],['VISUALS CINEMA','/world/visualz?mode=cinema'],['MOB MUSEUM','/world/visualz?mode=museum'],['LIVE YARD','/world/live']];
+ for(const [label,url] of links){const link=document.createElement('a');link.href=url;link.textContent=label;link.style.cssText='display:block;background:#fff;color:#000;padding:22px 12px;text-decoration:none;font-weight:bold;text-align:center';document.getElementById('fallbackNav').append(link)}
+}
 </script>
 <script type="module">
 let THREE;
@@ -27,14 +22,14 @@ try{
  try{THREE=await import('https://esm.sh/three@0.165.0');}
  catch(secondError){
   console.error('World 3D library unavailable',firstError,secondError);
-  document.querySelector('#intro .eyebrow').textContent='3D CONNECTION UNAVAILABLE · CHOOSE A CHARACTER TO EXPLORE';
+  showWorldFallback();
   throw secondError;
  }
 }
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xb4b2ae);scene.fog=new THREE.Fog(0xb4b2ae,60,125);
 const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,150);let renderer;
 try{renderer=new THREE.WebGLRenderer({antialias:true});}
-catch(error){console.error('WebGL unavailable',error);document.querySelector('#intro .eyebrow').textContent='3D GRAPHICS UNAVAILABLE · CHOOSE A CHARACTER TO EXPLORE';throw error;}
+catch(error){console.error('WebGL unavailable',error);showWorldFallback();throw error;}
 window.__northMob3dReady=true;
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;document.body.prepend(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2.3));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(-18,35,15);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
@@ -53,7 +48,7 @@ function signTexture(label){const c=document.createElement('canvas');c.width=102
 const colliders=[];for(const s of sites){box(s.x,s.h/2,s.z,s.w,s.h,s.d,mat(s.color));const sign=new THREE.Mesh(new THREE.PlaneGeometry(12,3),new THREE.MeshBasicMaterial({map:signTexture(s.title),side:THREE.DoubleSide}));sign.position.set(s.x,s.h-1,s.z+s.d/2+.04);scene.add(sign);colliders.push(s);box(s.x,.06,s.z+s.d/2+2.8,5,.1,2.8,white,false)}
 for(let i=0;i<24;i++){const z=-44+i*4;for(const x of [-8.6,8.6]){if(i%3===0){box(x,1.5,z,.15,3,.15,black);box(x,3.1,z,.65,.3,.65,white)}}}
 const avatar=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(.8,1.25,.5),black),head=new THREE.Mesh(new THREE.SphereGeometry(.37,12,12),mat(0x9e7c64));body.position.y=1.05;head.position.y=1.96;avatar.add(body,head);scene.add(avatar);
-let x=0,z=36,yaw=0,mode=0,started=false,active=null;const keys=new Set();const held=new Set();
+let x=0,z=36,yaw=0,mode=0,started=true,active=null;const keys=new Set();const held=new Set();
 function near(){let best=null,dist=1e9;for(const s of sites){const dx=x-s.x,dz=z-(s.z+s.d/2+3);const d=Math.hypot(dx,dz);if(d<dist){dist=d;best=s}}return dist<6?best:null}
 function blocked(nx,nz){if(Math.abs(nx)>46||Math.abs(nz)>48)return true;for(const s of colliders){if(Math.abs(nx-s.x)<s.w/2+.5&&Math.abs(nz-s.z)<s.d/2+.5)return true}return false}
 const ids=['s3Y4eAtF8jw','UzOfwM3Ea6A','XtGEewRFFC4','GAI2cugbQgI','on_eg9HLysA'];
@@ -66,7 +61,7 @@ function openSite(s){
 }
 function close(){document.getElementById('panel').style.display='none';document.getElementById('panelContent').replaceChildren();active=null}
 document.getElementById('close').onclick=close;document.getElementById('interact').onclick=()=>{const s=near();if(s)openSite(s)};document.getElementById('view').onclick=()=>mode=(mode+1)%2;
-document.querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>{started=true;document.getElementById('intro').style.display='none';document.getElementById('who').textContent='PLAYING AS '+b.dataset.member.toUpperCase()});
+document.getElementById('who').textContent='EXPLORE THE WORLD';document.getElementById('intro').style.display='none';
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','e','v','escape'].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!active&&near())openSite(near());if(k==='v')mode=(mode+1)%2;if(k==='escape')close()});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;for(const event of ['pointerdown','pointerup','pointercancel','pointerleave'])b.addEventListener(event,e=>{e.preventDefault();if(event==='pointerdown')held.add(k);else held.delete(k)})});
 let dragging=false,lastX=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX});addEventListener('pointerup',()=>dragging=false);addEventListener('pointermove',e=>{if(dragging){yaw-=(e.clientX-lastX)*.006;lastX=e.clientX}});
 const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.04);if(started&&!active){const on=k=>keys.has(k)||held.has(k);if(on('a'))yaw+=dt*2;if(on('d'))yaw-=dt*2;const move=(Number(on('w'))-Number(on('s')))*dt*5.5;const nx=x-Math.sin(yaw)*move,nz=z-Math.cos(yaw)*move;if(!blocked(nx,z))x=nx;if(!blocked(x,nz))z=nz;avatar.position.set(x,0,z);avatar.rotation.y=yaw;const s=near();document.getElementById('prompt').style.display=s?'block':'none';if(s)document.getElementById('prompt').textContent='PRESS E / ENTER — '+s.title;document.getElementById('place').textContent=s?s.title:'THE STREET'}
