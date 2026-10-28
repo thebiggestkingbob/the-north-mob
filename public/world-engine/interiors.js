@@ -101,7 +101,8 @@ export function createInteriors(THREE,scene,sites){
    loader.load(item.image,texture=>{
     const image=texture.image;if(!image)return;
     const aspect=image.width/image.height;
-    badge.geometry.dispose();badge.geometry=new THREE.PlaneGeometry(Math.min(.6,.6*aspect),Math.min(.6,.6/aspect));
+    badge.geometry.dispose();const bw=aspect>=1?.6:.6*aspect,bh=aspect>=1?.6/aspect:.6;
+    badge.geometry=new THREE.PlaneGeometry(bw,bh);
     badge.material.map=texture;badge.material.needsUpdate=true;
    },undefined,()=>{piece.remove(badge)});
   }
