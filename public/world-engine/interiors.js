@@ -178,6 +178,46 @@ export function createInteriors(THREE,scene,sites){
   mannequin(x-3.3,back+2.3,upperY);
   retailRack(x-3.5,back+4.8,-1,upperY);
  }
+ // THE STUDIO: a walkable recording room, built from geometry rather than flat murals.
+ function studioAtmosphere(site){
+  const {x,z,w,d}=site,back=z-d/2;
+  const consoleZ=z-1.5;
+  // Mixing desk with individual faders, monitor displays and studio speakers.
+  block(x,.86,consoleZ,4.5,.3,1.45,steel,true);
+  block(x,1.28,consoleZ-.46,4.2,.12,.4,dark);
+  for(let i=0;i<12;i++){
+   const xx=x-1.9+i*.34;
+   block(xx,1.05,consoleZ+.18,.045,.035,.5,i%3===0?white:dark);
+  }
+  for(const xx of [x-1.15,x+1.15]){
+   block(xx,1.7,consoleZ-.56,1.55,.92,.13,dark);
+   const screen=block(xx,1.72,consoleZ-.475,1.34,.66,.025,mat(0x292929));
+   screen.material.emissive=new THREE.Color(0x161616);
+  }
+  for(const xx of [x-3.35,x+3.35]){
+   block(xx,1.35,consoleZ-.3,.78,1.65,.68,dark,true);
+   for(const yy of [.96,1.65]){
+    const cone=new THREE.Mesh(new THREE.CylinderGeometry(.23,.23,.035,24),white);
+    cone.rotation.x=Math.PI/2;cone.position.set(xx,yy,consoleZ+.055);group.add(cone);
+   }
+  }
+  // Vocal booth is set against the rear wall; keep the entrance and side aisles free.
+  const boothX=x+3.3,boothZ=back+2.3;
+  block(boothX,1.25,boothZ,2.6,.12,2.8,steel);
+  for(const dx of [-1.3,1.3])block(boothX+dx,2.2,boothZ,.11,4.4,2.8,steel);
+  block(boothX,2.2,boothZ-1.35,2.6,4.4,.11,steel);
+  const mic=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.23,5,10),white);
+  mic.position.set(boothX,1.65,boothZ);group.add(mic);
+  block(boothX,1.04,boothZ,.06,1.85,.06,white);
+  label('VOCAL BOOTH',boothX,3.5,boothZ-1.25,2.2);
+  // The album is real published data, not a fabricated release.
+  const album=(content.album||[])[0];
+  if(album){
+   art(album,x-3.15,2.55,back+.42,0,3.1,3.1);
+   exhibits.push({item:album,x:x-3.15,z:back+1.85,site:'studio'});
+  }
+  label('HERE 4 BUSINESS · THE STUDIO',x,4.3,back+.38,6.6);
+ }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
@@ -243,7 +283,7 @@ export function createInteriors(THREE,scene,sites){
 
   }
   if(id==='cinema'){block(x,2.8,back+.48,w-2,4.5,.18,white);for(const xx of [x-3.5,x,x+3.5])block(xx,.5,z+1,2.2,1,1.4,steel,true)}
-  if(id==='studio'){block(x,.8,z,4,1.6,2,steel,true);label('LISTEN · H4B',x,2,z-1.2,3.6)}
+  if(id==='studio')studioAtmosphere(site);
   if(id==='live'){block(x,.7,back+2,w-2,1.4,3.2,steel,true);label('LIVE · THE MOB',x,3.5,back+.42,6)}
   if(!items.length)label('MORE COMING SOON',x,2.5,back+.4,5);
  }
