@@ -140,7 +140,7 @@ test("studio offers real album and individual track interaction points", async (
   expect(source).toContain("E · LISTEN TO THE ALBUM");
   expect(source).toContain("const tracks=(content.studio||[]).filter");
   expect(source).toContain("exhibits.push({item:track");
-  expect(source).toContain("if(id==='museum'||id==='cinema')");
+  expect(source).toContain("if(id==='cinema')cinemaAtmosphere(site)");
 });
 
 test("VISUALS CINEMA has a physical screen, seats and published video selectors", async ({ request }) => {
