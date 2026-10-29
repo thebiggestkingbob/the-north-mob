@@ -1,0 +1,53 @@
+name: World mobile browser QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/world-engine/**'
+      - 'src/app/api/world/**'
+      - 'tests/e2e/world-mobile.spec.ts'
+      - 'playwright.config.ts'
+      - '.github/workflows/world-mobile-qa.yml'
+  pull_request:
+    paths:
+      - 'public/world-engine/**'
+      - 'src/app/api/world/**'
+      - 'tests/e2e/world-mobile.spec.ts'
+      - 'playwright.config.ts'
+      - '.github/workflows/world-mobile-qa.yml'
+  workflow_dispatch:
+
+jobs:
+  mobile-chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run prebuild
+      - name: Start Next.js dev server
+        run: |
+          nohup npm run dev -- --hostname 127.0.0.1 > /tmp/north-mob-next.log 2>&1 &
+          for i in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:3000/world-engine/index.html > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/north-mob-next.log
+          exit 1
+      - name: Run mobile browser smoke tests
+        run: npx playwright test tests/e2e/world-mobile.spec.ts --reporter=line
+      - name: Upload browser test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: north-mob-world-mobile-playwright
+          path: |
+            test-results/
+            /tmp/north-mob-next.log
+          if-no-files-found: ignore
