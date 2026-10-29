@@ -234,6 +234,36 @@ export function createInteriors(THREE,scene,sites){
   }
   label('HERE 4 BUSINESS · THE STUDIO',x,4.3,back+.38,6.6);
  }
+ // VISUALS CINEMA: screening room with physical screen, seats and selectable official videos.
+ function cinemaAtmosphere(site){
+  const {x,z,w,d}=site,front=z+d/2,back=z-d/2;
+  const videos=(content.cinema||[]).filter(v=>v.videoId);
+  // Screen is a physical frame at the rear wall. The selected video's actual thumbnail is projected on it.
+  block(x,3.35,back+.52,w-2.3,5.35,.22,dark);
+  block(x,3.35,back+.68,w-2.75,4.85,.08,white);
+  if(videos[0])art(videos[0],x,3.35,back+.745,0,w-3.1,4.45);
+  label('VISUALS · OFFICIAL MUSIC VIDEOS',x,6.45,back+.8,Math.min(w-2.5,9));
+  // Raised cinema seating: leave the centre aisle and the street-facing doorway open.
+  for(let row=0;row<3;row++){
+   const zz=back+4.2+row*2.15;
+   for(const xx of [x-4.1,x-2.6,x+2.6,x+4.1]){
+    block(xx,.34,zz,1.18,.68,1.04,dark,true);
+    block(xx,.9,zz+.36,1.18,1.08,.22,steel,true);
+   }
+  }
+  // Select any official video from the side-wall posters; interaction opens the existing YouTube player.
+  videos.forEach((video,i)=>{
+   const side=i%2===0?-1:1,slot=Math.floor(i/2);
+   const zz=back+2.3+slot*2.3;
+   if(zz>front-1.8)return;
+   const wallX=x+side*(w/2-.4);
+   art(video,wallX,3.3,zz,side<0?Math.PI/2:-Math.PI/2,2.1,1.55);
+   exhibits.push({item:video,x:x+side*(w/2-1.7),z:zz,site:'cinema'});
+  });
+  const primary=videos[0];
+  if(primary)exhibits.push({item:primary,x,z:back+2.2,site:'cinema'});
+  if(!videos.length)label('SCREENINGS COMING SOON',x,3.3,back+.85,6);
+ }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
@@ -251,7 +281,7 @@ export function createInteriors(THREE,scene,sites){
   block(x,h-.6,front-.15,3.4,1.2,.3,white);
   const title=label(site.title,x,h-1,back+.38,Math.min(w-2,9));
   // Wall gallery: artwork on the side and rear walls, never in the middle of the room.
-  if(id==='museum'||id==='cinema'){
+  if(id==='museum'){
    items.forEach((item,i)=>{
     const side=i%3,slot=Math.floor(i/3),spacing=2.9,perWall=Math.max(1,Math.floor((d-3)/spacing)),row=Math.floor(slot/perWall),position=slot%perWall;
     if(side===0&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x-w/2+.37,3.4+row*2.8,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
@@ -298,7 +328,7 @@ export function createInteriors(THREE,scene,sites){
    shopAtmosphere(site,upperY);
 
   }
-  if(id==='cinema'){block(x,2.8,back+.48,w-2,4.5,.18,white);for(const xx of [x-3.5,x,x+3.5])block(xx,.5,z+1,2.2,1,1.4,steel,true)}
+  if(id==='cinema')cinemaAtmosphere(site);
   if(id==='studio')studioAtmosphere(site);
   if(id==='live'){block(x,.7,back+2,w-2,1.4,3.2,steel,true);label('LIVE · THE MOB',x,3.5,back+.42,6)}
   if(!items.length)label('MORE COMING SOON',x,2.5,back+.4,5);
