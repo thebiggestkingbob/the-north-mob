@@ -29,8 +29,8 @@ const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,150);let r
 try{renderer=new THREE.WebGLRenderer({antialias:true});}
 catch(error){console.error('WebGL unavailable',error);showWorldFallback();throw error;}
 window.__northMob3dReady=true;
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;document.body.prepend(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2.3));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(-18,35,15);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const mobileWorld=matchMedia('(max-width: 700px), (pointer: coarse)').matches;renderer.setPixelRatio(Math.min(devicePixelRatio,mobileWorld?1:1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=!mobileWorld;document.body.prepend(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2.3));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(-18,35,15);sun.castShadow=true;sun.shadow.mapSize.set(mobileWorld?512:1024,mobileWorld?512:1024);scene.add(sun);
 const mat=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:.85});const asphalt=mat(0x292929),concrete=mat(0xd0cec9),black=mat(0x111111),white=mat(0xf4f0e9),grey=mat(0x777777);
 function box(x,y,z,w,h,d,m,cast=true){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=cast;o.receiveShadow=true;scene.add(o);return o}
 box(0,-.13,0,100,.2,100,concrete,false);
