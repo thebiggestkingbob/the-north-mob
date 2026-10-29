@@ -264,6 +264,35 @@ export function createInteriors(THREE,scene,sites){
   if(primary)exhibits.push({item:primary,x,z:back+2.2,site:'cinema'});
   if(!videos.length)label('SCREENINGS COMING SOON',x,3.3,back+.85,6);
  }
+ // MOB MUSEUM: framed archive photography on real walls, with low plinths and gallery lights.
+ function museumAtmosphere(site){
+  const {x,z,w,d}=site,front=z+d/2,back=z-d/2;
+  const photos=(content.museum||[]).filter(p=>p.image);
+  const positions=[];
+  for(const side of [-1,1]){
+   for(let i=0;i<Math.floor((d-3)/3.3);i++){
+    const zz=front-2.1-i*3.3;
+    if(zz<back+1.8)break;
+    positions.push({x:x+side*(w/2-.42),z:zz,rotation:side<0?Math.PI/2:-Math.PI/2,interactX:x+side*(w/2-1.65),interactZ:zz});
+   }
+  }
+  for(let i=0;i<Math.floor((w-3)/3.3);i++){
+   const xx=x-w/2+2.2+i*3.3;
+   positions.push({x:xx,z:back+.42,rotation:0,interactX:xx,interactZ:back+1.75});
+  }
+  photos.slice(0,positions.length).forEach((photo,i)=>{
+   const p=positions[i];
+   const frame=block(p.x,3.2,p.z,p.rotation? .13:2.65,2.95,p.rotation?2.65:.13,dark);
+   frame.castShadow=true;
+   art(photo,p.x+(p.rotation?(p.rotation>0?.09:-.09):0),3.2,p.z+(p.rotation?0:.09),p.rotation,2.4,2.55);
+   exhibits.push({item:photo,x:p.interactX,z:p.interactZ,site:'museum'});
+   const spot=new THREE.SpotLight(0xfff3df,11,6,Math.PI/5,.6,1.4);
+   spot.position.set(p.interactX,5.3,p.interactZ);spot.target.position.set(p.x,3.2,p.z);
+   group.add(spot,spot.target);
+  });
+  label('THE MOB ARCHIVE',x,5.4,back+.38,6);
+  if(!photos.length)label('ARCHIVE COMING SOON',x,3,back+.45,5);
+ }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
@@ -281,7 +310,7 @@ export function createInteriors(THREE,scene,sites){
   block(x,h-.6,front-.15,3.4,1.2,.3,white);
   const title=label(site.title,x,h-1,back+.38,Math.min(w-2,9));
   // Wall gallery: artwork on the side and rear walls, never in the middle of the room.
-  if(id==='museum'){
+  if(false){ // Museum is laid out separately by museumAtmosphere.
    items.forEach((item,i)=>{
     const side=i%3,slot=Math.floor(i/3),spacing=2.9,perWall=Math.max(1,Math.floor((d-3)/spacing)),row=Math.floor(slot/perWall),position=slot%perWall;
     if(side===0&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x-w/2+.37,3.4+row*2.8,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
@@ -329,6 +358,7 @@ export function createInteriors(THREE,scene,sites){
 
   }
   if(id==='cinema')cinemaAtmosphere(site);
+  if(id==='museum')museumAtmosphere(site);
   if(id==='studio')studioAtmosphere(site);
   if(id==='live'){block(x,.7,back+2,w-2,1.4,3.2,steel,true);label('LIVE · THE MOB',x,3.5,back+.42,6)}
   if(!items.length)label('MORE COMING SOON',x,2.5,back+.4,5);
