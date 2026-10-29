@@ -329,6 +329,29 @@ export function createInteriors(THREE,scene,sites){
   if(!events.length)label('NEW LIVE DATES COMING SOON',x,2.15,back+4.25,6.2);
   label('LIVE YARD',x,4.2,back+.8,4.2);
  }
+ // Architectural detail uses simple shared materials and stays clear of doorways and aisles.
+ function interiorFinish(site){
+  const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
+  const trim=mat(0x66625c),accent=mat(0x262626),light=mat(0xe4dfd4);
+  // Slim ceiling beams and wall-base trim create depth without extra colliders.
+  for(const zz of [back+1.2,z,front-1.2]){
+   block(x,h-.52,zz,w-1.1,.18,.18,trim);
+  }
+  for(const xx of [x-w/2+.55,x+w/2-.55]){
+   block(xx,.18,z,.12,.26,d-.7,trim);
+   for(const zz of [back+2.2,z,front-2.2]){
+    block(xx,2.65,zz,.12,3.2,.18,accent);
+   }
+  }
+  // Recessed luminous panels provide soft directional cues in each room.
+  for(const zz of [back+3.1,front-3.1]){
+   block(x,h-.39,zz,Math.min(w-5,4.2),.07,.46,light);
+   const lamp=new THREE.PointLight(0xf4eee2,id==='live'?1.5:2.2,7,2);
+   lamp.position.set(x,h-1.15,zz);group.add(lamp);
+  }
+  // A recognizable floor threshold makes the walk-in entrance legible.
+  block(x,.055,front-.72,3.1,.055,.8,trim);
+ }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
@@ -345,6 +368,7 @@ export function createInteriors(THREE,scene,sites){
   block(x+(w+3.4)/4,h/2,front-.15,segment,h,.3,dark,true);
   block(x,h-.6,front-.15,3.4,1.2,.3,white);
   const title=label(site.title,x,h-1,back+.38,Math.min(w-2,9));
+  interiorFinish(site);
   if(id==='shop'){
    // Perimeter fixtures leave a central aisle. Product photographs hang above real display plinths.
    items.forEach((item,i)=>{
