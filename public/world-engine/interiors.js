@@ -11,7 +11,7 @@ export function createInteriors(THREE,scene,sites){
  const modelCache=new Map();
  function loadModel(item,piece){
   const url=item.model;
-  if(typeof url!=='string'||!/^\\/world-engine\\/models\\/[a-z0-9/_-]+\\.glb$/i.test(url))return;
+  if(typeof url!=='string'||!url.startsWith('/world-engine/models/')||!url.endsWith('.glb')||url.includes('..')||!/^[-a-z0-9_/\.]+$/i.test(url))return;
   if(!modelLoaderPromise)modelLoaderPromise=import('/world-engine/GLTFLoader.js').then(m=>new m.GLTFLoader());
   modelLoaderPromise.then(gltfLoader=>{
    if(!modelCache.has(url))modelCache.set(url,new Promise((resolve,reject)=>gltfLoader.load(url,resolve,undefined,reject)));
