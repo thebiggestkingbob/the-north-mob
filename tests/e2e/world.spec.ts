@@ -132,3 +132,13 @@ test("studio uses physical equipment and published album artwork", async ({ requ
   expect(source).toContain("const album=(content.album||[])[0]");
   expect(source).toContain("if(id==='studio')studioAtmosphere(site)");
 });
+
+test("studio offers real album and individual track interaction points", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("E · LISTEN TO THE ALBUM");
+  expect(source).toContain("const tracks=(content.studio||[]).filter");
+  expect(source).toContain("exhibits.push({item:track");
+  expect(source).toContain("if(id==='museum'||id==='cinema')");
+});
