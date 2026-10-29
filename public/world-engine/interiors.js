@@ -210,11 +210,27 @@ export function createInteriors(THREE,scene,sites){
   mic.position.set(boothX,1.65,boothZ);group.add(mic);
   block(boothX,1.04,boothZ,.06,1.85,.06,white);
   label('VOCAL BOOTH',boothX,3.5,boothZ-1.25,2.2);
-  // The album is real published data, not a fabricated release.
-  const album=(content.album||[])[0];
+  // Published album is the listening centerpiece; the console offers track selection.
+  const album=(content.album||[]).find(a=>a.spotify)||null;
   if(album){
    art(album,x-3.15,2.55,back+.42,0,3.1,3.1);
    exhibits.push({item:album,x:x-3.15,z:back+1.85,site:'studio'});
+   label('E · LISTEN TO THE ALBUM',x-3.15,4.2,back+.4,3.8);
+  }
+  const tracks=(content.studio||[]).filter(t=>t.spotify||t.href);
+  // Keep listening stations accessible at the console front, never inside solid furniture.
+  tracks.slice(0,6).forEach((track,i)=>{
+   const xx=x-2.35+i*.94;
+   const zz=consoleZ+1.7;
+   const pedestal=block(xx,.5,zz,.7,1,.55,i%2?steel:dark,true);
+   pedestal.castShadow=true;
+   const card=label(String(i+1).padStart(2,'0'),xx,1.32,zz,.58);
+   card.rotation.x=-Math.PI/7;
+   exhibits.push({item:track,x:xx,z:zz+1.1,site:'studio'});
+  });
+  if(tracks.length>6){
+   const remaining={name:'MORE H4B TRACKS',description:'Open the official album to explore the full tracklist.',spotify:album?.spotify,href:album?.href};
+   exhibits.push({item:remaining,x:x,z:consoleZ+3,site:'studio'});
   }
   label('HERE 4 BUSINESS · THE STUDIO',x,4.3,back+.38,6.6);
  }
@@ -235,7 +251,7 @@ export function createInteriors(THREE,scene,sites){
   block(x,h-.6,front-.15,3.4,1.2,.3,white);
   const title=label(site.title,x,h-1,back+.38,Math.min(w-2,9));
   // Wall gallery: artwork on the side and rear walls, never in the middle of the room.
-  if(id==='museum'||id==='cinema'||id==='studio'){
+  if(id==='museum'||id==='cinema'){
    items.forEach((item,i)=>{
     const side=i%3,slot=Math.floor(i/3),spacing=2.9,perWall=Math.max(1,Math.floor((d-3)/spacing)),row=Math.floor(slot/perWall),position=slot%perWall;
     if(side===0&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x-w/2+.37,3.4+row*2.8,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
