@@ -122,3 +122,13 @@ test.describe("THE NORTH MOB WORLD", () => {
     await expect(page.getByRole("heading", { name: "LIVE YARD" })).toBeVisible();
   });
 });
+
+test("studio uses physical equipment and published album artwork", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("function studioAtmosphere(site)");
+  expect(source).toContain("VOCAL BOOTH");
+  expect(source).toContain("const album=(content.album||[])[0]");
+  expect(source).toContain("if(id==='studio')studioAtmosphere(site)");
+});
