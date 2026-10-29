@@ -152,3 +152,13 @@ test("VISUALS CINEMA has a physical screen, seats and published video selectors"
   expect(source).toContain("exhibits.push({item:video");
   expect(source).toContain("if(id==='cinema')cinemaAtmosphere(site)");
 });
+
+test("MOB MUSEUM mounts published archive photos on walls", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("function museumAtmosphere(site)");
+  expect(source).toContain("const photos=(content.museum||[]).filter(p=>p.image)");
+  expect(source).toContain("new THREE.SpotLight(");
+  expect(source).toContain("if(id==='museum')museumAtmosphere(site)");
+});
