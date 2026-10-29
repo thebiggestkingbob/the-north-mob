@@ -293,6 +293,42 @@ export function createInteriors(THREE,scene,sites){
   label('THE MOB ARCHIVE',x,5.4,back+.38,6);
   if(!photos.length)label('ARCHIVE COMING SOON',x,3,back+.45,5);
  }
+ // LIVE YARD: physical performance stage and ticket boards fed only by published events.
+ function liveAtmosphere(site){
+  const {x,z,w,d}=site,front=z+d/2,back=z-d/2;
+  // Low stage and backdrop occupy the rear; the central audience floor remains open.
+  block(x,.72,back+2.25,w-2.2,1.44,3.45,dark,true);
+  block(x,2.65,back+.58,w-2.4,3.2,.22,steel);
+  label('THE NORTH MOB · LIVE',x,3.05,back+.75,Math.min(w-2.8,8));
+  // Stage monitors, overhead lighting and speaker stacks.
+  for(const side of [-1,1]){
+   const sx=x+side*(w/2-1.4);
+   block(sx,1.35,back+2.5,.95,1.3,.8,steel);
+   block(sx,2.6,back+1.2,1.05,3.8,.95,dark,true);
+   for(const yy of [1.5,2.55,3.55]){
+    const driver=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.05,20),white);
+    driver.rotation.x=Math.PI/2;driver.position.set(sx,yy,back+1.72);group.add(driver);
+   }
+   const beam=new THREE.SpotLight(0xf4f0e7,12,11,Math.PI/7,.55,1.3);
+   beam.position.set(sx,4.25,back+4.1);
+   beam.target.position.set(x,1.2,back+2.3);
+   group.add(beam,beam.target);
+  }
+  // Published upcoming events are selectable on perimeter ticket boards.
+  const events=(content.live||[]);
+  events.slice(0,6).forEach((event,i)=>{
+   const side=i%2===0?-1:1,slot=Math.floor(i/2);
+   const zz=front-2.4-slot*2.05;
+   if(zz<=back+4.3)return;
+   const xx=x+side*(w/2-1.05);
+   block(xx,1.65,zz,.2,2.35,1.5,steel);
+   const sign=label(event.name||'UPCOMING EVENT',xx+side*.15,2.2,zz,1.45);
+   sign.rotation.y=side*Math.PI/2;
+   exhibits.push({item:event,x:xx-side*1.3,z:zz,site:'live'});
+  });
+  if(!events.length)label('NEW LIVE DATES COMING SOON',x,2.15,back+4.25,6.2);
+  label('LIVE YARD',x,4.2,back+.8,4.2);
+ }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
@@ -351,7 +387,7 @@ export function createInteriors(THREE,scene,sites){
   if(id==='cinema')cinemaAtmosphere(site);
   if(id==='museum')museumAtmosphere(site);
   if(id==='studio')studioAtmosphere(site);
-  if(id==='live'){block(x,.7,back+2,w-2,1.4,3.2,steel,true);label('LIVE · THE MOB',x,3.5,back+.42,6)}
+  if(id==='live')liveAtmosphere(site);
   if(!items.length)label('MORE COMING SOON',x,2.5,back+.4,5);
  }
  function near(x,z,y=0){
