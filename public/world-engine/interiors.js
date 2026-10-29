@@ -392,7 +392,13 @@ export function createInteriors(THREE,scene,sites){
  }
  function near(x,z,y=0){
   let best=null,dist=2.1;
-  for(const exhibit of (y>2?upperExhibits:exhibits)){const d=Math.hypot(x-exhibit.x,z-exhibit.z);if(d<dist){best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item};dist=d}}
+  const current=inside(x,z);
+  if(!current)return null;
+  for(const exhibit of (y>2?upperExhibits:exhibits)){
+   if(exhibit.site!==current.id)continue;
+   const d=Math.hypot(x-exhibit.x,z-exhibit.z);
+   if(d<dist){best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item};dist=d}
+  }
   return best;
  }
  function floorHeight(x,z,current=0){
