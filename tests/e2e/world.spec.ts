@@ -197,3 +197,13 @@ test("world interactions prioritize exhibits and overlays close without navigati
  expect(source).toContain("if(e.target===e.currentTarget)close()");
  expect(source).toContain("if(s?.kind==='exhibit')showExhibit(s.item)");
 });
+
+test("all venues share detailed architectural finishes and interior lighting", async ({ request }) => {
+ const response=await request.get("/world-engine/interiors.js");
+ expect(response.ok()).toBeTruthy();
+ const source=await response.text();
+ expect(source).toContain("function interiorFinish(site)");
+ expect(source).toContain("interiorFinish(site)");
+ expect(source).toContain("new THREE.PointLight(");
+ expect(source).toContain("floor threshold");
+});
