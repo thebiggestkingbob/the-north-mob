@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test",
-    "test:studio-db": "bash scripts/test-studio-db.sh"
+    "test:studio-db": "bash scripts/test-studio-db.sh",
+    "prebuild": "node scripts/prepare-world-engine.mjs"
   },
   "engines": {
     "node": ">=22.0.0"
