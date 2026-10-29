@@ -178,3 +178,13 @@ test("interaction selection stays inside the player's current building", async (
   expect(source).toContain("const current=inside(x,z)");
   expect(source).toContain("if(exhibit.site!==current.id)continue");
 });
+
+test("world car is 30 percent slower and exhibits remain in-world", async ({ request }) => {
+  const response = await request.get("/world-engine/index.html");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("carSpeed+throttle*dt*18.9,-12.6,31.5");
+  expect(source).toContain("if(s?.kind==='exhibit')showExhibit(s.item)");
+  expect(source).not.toContain("OPEN OFFICIAL LINK");
+  expect(source).not.toContain("window.location.assign");
+});
