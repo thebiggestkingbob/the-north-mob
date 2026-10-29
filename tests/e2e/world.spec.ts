@@ -162,3 +162,13 @@ test("MOB MUSEUM mounts published archive photos on walls", async ({ request }) 
   expect(source).toContain("new THREE.SpotLight(");
   expect(source).toContain("if(id==='museum')museumAtmosphere(site)");
 });
+
+test("LIVE YARD has stage geometry and only published event ticket boards", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("function liveAtmosphere(site)");
+  expect(source).toContain("const events=(content.live||[])");
+  expect(source).toContain("exhibits.push({item:event");
+  expect(source).toContain("if(id==='live')liveAtmosphere(site)");
+});
