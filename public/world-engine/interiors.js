@@ -309,15 +309,6 @@ export function createInteriors(THREE,scene,sites){
   block(x+(w+3.4)/4,h/2,front-.15,segment,h,.3,dark,true);
   block(x,h-.6,front-.15,3.4,1.2,.3,white);
   const title=label(site.title,x,h-1,back+.38,Math.min(w-2,9));
-  // Wall gallery: artwork on the side and rear walls, never in the middle of the room.
-  if(false){ // Museum is laid out separately by museumAtmosphere.
-   items.forEach((item,i)=>{
-    const side=i%3,slot=Math.floor(i/3),spacing=2.9,perWall=Math.max(1,Math.floor((d-3)/spacing)),row=Math.floor(slot/perWall),position=slot%perWall;
-    if(side===0&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x-w/2+.37,3.4+row*2.8,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
-    else if(side===1&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x+w/2-.37,3.4+row*2.8,zz,-Math.PI/2,2.4,2.7);exhibits.push({item,x:x+w/2-1.8,z:zz,site:id})}
-    else if(side===2&&x-w/2+2.1+position*2.9<x+w/2-1){const xx=x-w/2+2.1+position*2.9;art(item,xx,3.4+row*2.8,back+.38,0,2.4,2.7);exhibits.push({item,x:xx,z:back+1.8,site:id})}
-   });
-  }
   if(id==='shop'){
    // Perimeter fixtures leave a central aisle. Product photographs hang above real display plinths.
    items.forEach((item,i)=>{
