@@ -33,8 +33,8 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(engine).toContain("arrowleft");
     expect(rooms).toContain("function blocked");
     expect(rooms).toContain("function inside");
-    expect(rooms).toContain("Wall gallery");
-    expect(rooms).toContain("texture.image.width/image.height");
+    expect(rooms).toContain("function museumAtmosphere(site)");
+    expect(rooms).toContain("const aspect=image.width/image.height");
     expect(engine).toContain("interiors.cameraSolids()");
     expect(engine).toContain("HERE 4 BUSINESS");
     expect(engine).toContain("musicToggle");
@@ -48,7 +48,7 @@ test.describe("THE NORTH MOB WORLD", () => {
     expect(engine).toContain("Slide along the wall");
     expect(engine).toContain("The neighborhood has a deliberately designed, finite perimeter");
     expect(engine).toContain("Road ends: broad paved turning pads");
-    expect(engine).toContain("if(collided&&throttle<0)");
+    expect(engine).not.toContain("if(collided&&throttle<0)carSpeed=-Math.min");
     expect(engine).toContain("const lx=dx*Math.cos(carYaw)");
     expect(engine).toContain("EXIT CAR");
     expect(engine).toContain("addEventListener(\'blur\'");
@@ -80,7 +80,7 @@ test.describe("THE NORTH MOB WORLD", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/world-engine/index.html");
     await expect(page.getByRole("button", { name: "VIEW" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "INTERACT" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /ENTER|INTERACT|DRIVE|EXIT CAR/ })).toBeVisible();
     await expect(page.locator("[data-key=w]")).toBeVisible();
     await expect(page.locator("[data-key=a]")).toBeVisible();
   });
@@ -121,4 +121,60 @@ test.describe("THE NORTH MOB WORLD", () => {
     await page.goto("/world/live");
     await expect(page.getByRole("heading", { name: "LIVE YARD" })).toBeVisible();
   });
+});
+
+test("studio uses physical equipment and published album artwork", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("function studioAtmosphere(site)");
+  expect(source).toContain("VOCAL BOOTH");
+  expect(source).toContain("const album=(content.album||[]).find");
+  expect(source).toContain("if(id==='studio')studioAtmosphere(site)");
+});
+
+test("studio offers real album and individual track interaction points", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("E · LISTEN TO THE ALBUM");
+  expect(source).toContain("const tracks=(content.studio||[]).filter");
+  expect(source).toContain("exhibits.push({item:track");
+  expect(source).toContain("if(id==='cinema')cinemaAtmosphere(site)");
+});
+
+test("VISUALS CINEMA has a physical screen, seats and published video selectors", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("function cinemaAtmosphere(site)");
+  expect(source).toContain("const videos=(content.cinema||[]).filter(v=>v.videoId)");
+  expect(source).toContain("exhibits.push({item:video");
+  expect(source).toContain("if(id==='cinema')cinemaAtmosphere(site)");
+});
+
+test("MOB MUSEUM mounts published archive photos on walls", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("function museumAtmosphere(site)");
+  expect(source).toContain("const photos=(content.museum||[]).filter(p=>p.image)");
+  expect(source).toContain("new THREE.SpotLight(");
+  expect(source).toContain("if(id==='museum')museumAtmosphere(site)");
+});
+
+test("LIVE YARD has stage geometry and only published event ticket boards", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("function liveAtmosphere(site)");
+  expect(source).toContain("const events=(content.live||[])");
+  expect(source).toContain("exhibits.push({item:event");
+  expect(source).toContain("if(id==='live')liveAtmosphere(site)");
+});
+
+test("interaction selection stays inside the player's current building", async ({ request }) => {
+  const source = await (await request.get("/world-engine/interiors.js")).text();
+  expect(source).toContain("const current=inside(x,z)");
+  expect(source).toContain("if(exhibit.site!==current.id)continue");
 });

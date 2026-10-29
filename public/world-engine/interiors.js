@@ -178,6 +178,157 @@ export function createInteriors(THREE,scene,sites){
   mannequin(x-3.3,back+2.3,upperY);
   retailRack(x-3.5,back+4.8,-1,upperY);
  }
+ // THE STUDIO: a walkable recording room, built from geometry rather than flat murals.
+ function studioAtmosphere(site){
+  const {x,z,w,d}=site,back=z-d/2;
+  const consoleZ=z-1.5;
+  // Mixing desk with individual faders, monitor displays and studio speakers.
+  block(x,.86,consoleZ,4.5,.3,1.45,steel,true);
+  block(x,1.28,consoleZ-.46,4.2,.12,.4,dark);
+  for(let i=0;i<12;i++){
+   const xx=x-1.9+i*.34;
+   block(xx,1.05,consoleZ+.18,.045,.035,.5,i%3===0?white:dark);
+  }
+  for(const xx of [x-1.15,x+1.15]){
+   block(xx,1.7,consoleZ-.56,1.55,.92,.13,dark);
+   const screen=block(xx,1.72,consoleZ-.475,1.34,.66,.025,mat(0x292929));
+   screen.material.emissive=new THREE.Color(0x161616);
+  }
+  for(const xx of [x-3.35,x+3.35]){
+   block(xx,1.35,consoleZ-.3,.78,1.65,.68,dark,true);
+   for(const yy of [.96,1.65]){
+    const cone=new THREE.Mesh(new THREE.CylinderGeometry(.23,.23,.035,24),white);
+    cone.rotation.x=Math.PI/2;cone.position.set(xx,yy,consoleZ+.055);group.add(cone);
+   }
+  }
+  // Vocal booth is set against the rear wall; keep the entrance and side aisles free.
+  const boothX=x+3.3,boothZ=back+2.3;
+  block(boothX,1.25,boothZ,2.6,.12,2.8,steel);
+  for(const dx of [-1.3,1.3])block(boothX+dx,2.2,boothZ,.11,4.4,2.8,steel);
+  block(boothX,2.2,boothZ-1.35,2.6,4.4,.11,steel);
+  const mic=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.23,5,10),white);
+  mic.position.set(boothX,1.65,boothZ);group.add(mic);
+  block(boothX,1.04,boothZ,.06,1.85,.06,white);
+  label('VOCAL BOOTH',boothX,3.5,boothZ-1.25,2.2);
+  // Published album is the listening centerpiece; the console offers track selection.
+  const album=(content.album||[]).find(a=>a.spotify)||null;
+  if(album){
+   art(album,x-3.15,2.55,back+.42,0,3.1,3.1);
+   exhibits.push({item:album,x:x-3.15,z:back+1.85,site:'studio'});
+   label('E · LISTEN TO THE ALBUM',x-3.15,4.2,back+.4,3.8);
+  }
+  const tracks=(content.studio||[]).filter(t=>t.spotify||t.href);
+  // Keep listening stations accessible at the console front, never inside solid furniture.
+  tracks.slice(0,6).forEach((track,i)=>{
+   const xx=x-2.35+i*.94;
+   const zz=consoleZ+1.7;
+   const pedestal=block(xx,.5,zz,.7,1,.55,i%2?steel:dark,true);
+   pedestal.castShadow=true;
+   const card=label(String(i+1).padStart(2,'0'),xx,1.32,zz,.58);
+   card.rotation.x=-Math.PI/7;
+   exhibits.push({item:track,x:xx,z:zz+1.1,site:'studio'});
+  });
+  if(tracks.length>6){
+   const remaining={name:'MORE H4B TRACKS',description:'Open the official album to explore the full tracklist.',spotify:album?.spotify,href:album?.href};
+   exhibits.push({item:remaining,x:x,z:consoleZ+3,site:'studio'});
+  }
+  label('HERE 4 BUSINESS · THE STUDIO',x,4.3,back+.38,6.6);
+ }
+ // VISUALS CINEMA: screening room with physical screen, seats and selectable official videos.
+ function cinemaAtmosphere(site){
+  const {x,z,w,d}=site,front=z+d/2,back=z-d/2;
+  const videos=(content.cinema||[]).filter(v=>v.videoId);
+  // Screen is a physical frame at the rear wall. The selected video's actual thumbnail is projected on it.
+  block(x,3.35,back+.52,w-2.3,5.35,.22,dark);
+  block(x,3.35,back+.68,w-2.75,4.85,.08,white);
+  if(videos[0])art(videos[0],x,3.35,back+.745,0,w-3.1,4.45);
+  label('VISUALS · OFFICIAL MUSIC VIDEOS',x,6.45,back+.8,Math.min(w-2.5,9));
+  // Raised cinema seating: leave the centre aisle and the street-facing doorway open.
+  for(let row=0;row<3;row++){
+   const zz=back+4.2+row*2.15;
+   for(const xx of [x-4.1,x-2.6,x+2.6,x+4.1]){
+    block(xx,.34,zz,1.18,.68,1.04,dark,true);
+    block(xx,.9,zz+.36,1.18,1.08,.22,steel,true);
+   }
+  }
+  // Select any official video from the side-wall posters; interaction opens the existing YouTube player.
+  videos.forEach((video,i)=>{
+   const side=i%2===0?-1:1,slot=Math.floor(i/2);
+   const zz=back+2.3+slot*2.3;
+   if(zz>front-1.8)return;
+   const wallX=x+side*(w/2-.4);
+   art(video,wallX,3.3,zz,side<0?Math.PI/2:-Math.PI/2,2.1,1.55);
+   exhibits.push({item:video,x:x+side*(w/2-1.7),z:zz,site:'cinema'});
+  });
+  const primary=videos[0];
+  if(primary)exhibits.push({item:primary,x,z:back+2.2,site:'cinema'});
+  if(!videos.length)label('SCREENINGS COMING SOON',x,3.3,back+.85,6);
+ }
+ // MOB MUSEUM: framed archive photography on real walls, with low plinths and gallery lights.
+ function museumAtmosphere(site){
+  const {x,z,w,d}=site,front=z+d/2,back=z-d/2;
+  const photos=(content.museum||[]).filter(p=>p.image);
+  const positions=[];
+  for(const side of [-1,1]){
+   for(let i=0;i<Math.floor((d-3)/3.3);i++){
+    const zz=front-2.1-i*3.3;
+    if(zz<back+1.8)break;
+    positions.push({x:x+side*(w/2-.42),z:zz,rotation:side<0?Math.PI/2:-Math.PI/2,interactX:x+side*(w/2-1.65),interactZ:zz});
+   }
+  }
+  for(let i=0;i<Math.floor((w-3)/3.3);i++){
+   const xx=x-w/2+2.2+i*3.3;
+   positions.push({x:xx,z:back+.42,rotation:0,interactX:xx,interactZ:back+1.75});
+  }
+  photos.slice(0,positions.length).forEach((photo,i)=>{
+   const p=positions[i];
+   const frame=block(p.x,3.2,p.z,p.rotation? .13:2.65,2.95,p.rotation?2.65:.13,dark);
+   frame.castShadow=true;
+   art(photo,p.x+(p.rotation?(p.rotation>0?.09:-.09):0),3.2,p.z+(p.rotation?0:.09),p.rotation,2.4,2.55);
+   exhibits.push({item:photo,x:p.interactX,z:p.interactZ,site:'museum'});
+   const spot=new THREE.SpotLight(0xfff3df,11,6,Math.PI/5,.6,1.4);
+   spot.position.set(p.interactX,5.3,p.interactZ);spot.target.position.set(p.x,3.2,p.z);
+   group.add(spot,spot.target);
+  });
+  label('THE MOB ARCHIVE',x,5.4,back+.38,6);
+  if(!photos.length)label('ARCHIVE COMING SOON',x,3,back+.45,5);
+ }
+ // LIVE YARD: physical performance stage and ticket boards fed only by published events.
+ function liveAtmosphere(site){
+  const {x,z,w,d}=site,front=z+d/2,back=z-d/2;
+  // Low stage and backdrop occupy the rear; the central audience floor remains open.
+  block(x,.72,back+2.25,w-2.2,1.44,3.45,dark,true);
+  block(x,2.65,back+.58,w-2.4,3.2,.22,steel);
+  label('THE NORTH MOB · LIVE',x,3.05,back+.75,Math.min(w-2.8,8));
+  // Stage monitors, overhead lighting and speaker stacks.
+  for(const side of [-1,1]){
+   const sx=x+side*(w/2-1.4);
+   block(sx,1.35,back+2.5,.95,1.3,.8,steel);
+   block(sx,2.6,back+1.2,1.05,3.8,.95,dark,true);
+   for(const yy of [1.5,2.55,3.55]){
+    const driver=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.05,20),white);
+    driver.rotation.x=Math.PI/2;driver.position.set(sx,yy,back+1.72);group.add(driver);
+   }
+   const beam=new THREE.SpotLight(0xf4f0e7,12,11,Math.PI/7,.55,1.3);
+   beam.position.set(sx,4.25,back+4.1);
+   beam.target.position.set(x,1.2,back+2.3);
+   group.add(beam,beam.target);
+  }
+  // Published upcoming events are selectable on perimeter ticket boards.
+  const events=(content.live||[]);
+  events.slice(0,6).forEach((event,i)=>{
+   const side=i%2===0?-1:1,slot=Math.floor(i/2);
+   const zz=front-2.4-slot*2.05;
+   if(zz<=back+4.3)return;
+   const xx=x+side*(w/2-1.05);
+   block(xx,1.65,zz,.2,2.35,1.5,steel);
+   const sign=label(event.name||'UPCOMING EVENT',xx+side*.15,2.2,zz,1.45);
+   sign.rotation.y=side*Math.PI/2;
+   exhibits.push({item:event,x:xx-side*1.3,z:zz,site:'live'});
+  });
+  if(!events.length)label('NEW LIVE DATES COMING SOON',x,2.15,back+4.25,6.2);
+  label('LIVE YARD',x,4.2,back+.8,4.2);
+ }
  function populate(site){
   if(loaded.has(site.id))return;loaded.add(site.id);
   const {x,z,w,d,h,id}=site,front=z+d/2,back=z-d/2;
@@ -194,15 +345,6 @@ export function createInteriors(THREE,scene,sites){
   block(x+(w+3.4)/4,h/2,front-.15,segment,h,.3,dark,true);
   block(x,h-.6,front-.15,3.4,1.2,.3,white);
   const title=label(site.title,x,h-1,back+.38,Math.min(w-2,9));
-  // Wall gallery: artwork on the side and rear walls, never in the middle of the room.
-  if(id==='museum'||id==='cinema'||id==='studio'){
-   items.forEach((item,i)=>{
-    const side=i%3,slot=Math.floor(i/3),spacing=2.9,perWall=Math.max(1,Math.floor((d-3)/spacing)),row=Math.floor(slot/perWall),position=slot%perWall;
-    if(side===0&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x-w/2+.37,3.4+row*2.8,zz,Math.PI/2,2.4,2.7);exhibits.push({item,x:x-w/2+1.8,z:zz,site:id})}
-    else if(side===1&&front-2.3-position*spacing>back+1.3){const zz=front-2.3-position*spacing;art(item,x+w/2-.37,3.4+row*2.8,zz,-Math.PI/2,2.4,2.7);exhibits.push({item,x:x+w/2-1.8,z:zz,site:id})}
-    else if(side===2&&x-w/2+2.1+position*2.9<x+w/2-1){const xx=x-w/2+2.1+position*2.9;art(item,xx,3.4+row*2.8,back+.38,0,2.4,2.7);exhibits.push({item,x:xx,z:back+1.8,site:id})}
-   });
-  }
   if(id==='shop'){
    // Perimeter fixtures leave a central aisle. Product photographs hang above real display plinths.
    items.forEach((item,i)=>{
@@ -242,14 +384,21 @@ export function createInteriors(THREE,scene,sites){
    shopAtmosphere(site,upperY);
 
   }
-  if(id==='cinema'){block(x,2.8,back+.48,w-2,4.5,.18,white);for(const xx of [x-3.5,x,x+3.5])block(xx,.5,z+1,2.2,1,1.4,steel,true)}
-  if(id==='studio'){block(x,.8,z,4,1.6,2,steel,true);label('LISTEN · H4B',x,2,z-1.2,3.6)}
-  if(id==='live'){block(x,.7,back+2,w-2,1.4,3.2,steel,true);label('LIVE · THE MOB',x,3.5,back+.42,6)}
+  if(id==='cinema')cinemaAtmosphere(site);
+  if(id==='museum')museumAtmosphere(site);
+  if(id==='studio')studioAtmosphere(site);
+  if(id==='live')liveAtmosphere(site);
   if(!items.length)label('MORE COMING SOON',x,2.5,back+.4,5);
  }
  function near(x,z,y=0){
   let best=null,dist=2.1;
-  for(const exhibit of (y>2?upperExhibits:exhibits)){const d=Math.hypot(x-exhibit.x,z-exhibit.z);if(d<dist){best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item};dist=d}}
+  const current=inside(x,z);
+  if(!current)return null;
+  for(const exhibit of (y>2?upperExhibits:exhibits)){
+   if(exhibit.site!==current.id)continue;
+   const d=Math.hypot(x-exhibit.x,z-exhibit.z);
+   if(d<dist){best={kind:'exhibit',title:exhibit.item.name,item:exhibit.item};dist=d}
+  }
   return best;
  }
  function floorHeight(x,z,current=0){
