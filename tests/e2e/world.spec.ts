@@ -188,3 +188,12 @@ test("world car is 30 percent slower and exhibits remain in-world", async ({ req
   expect(source).not.toContain("OPEN OFFICIAL LINK");
   expect(source).not.toContain("window.location.assign");
 });
+
+test("world interactions prioritize exhibits and overlays close without navigation", async ({ request }) => {
+ const response=await request.get("/world-engine/index.html");
+ expect(response.ok()).toBeTruthy();
+ const source=await response.text();
+ expect(source).toContain("const exhibit=interiors.near(x,z,elevation);if(exhibit)return exhibit");
+ expect(source).toContain("if(e.target===e.currentTarget)close()");
+ expect(source).toContain("if(s?.kind==='exhibit')showExhibit(s.item)");
+});
