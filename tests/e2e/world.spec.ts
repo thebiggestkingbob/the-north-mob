@@ -207,3 +207,27 @@ test("all venues share detailed architectural finishes and interior lighting", a
  expect(source).toContain("new THREE.PointLight(");
  expect(source).toContain("floor threshold");
 });
+
+test("mobile touch movement advances the player without leaving the world", async ({ page }) => {
+ await page.setViewportSize({ width: 390, height: 844 });
+ await page.goto("/world-engine/index.html");
+ await page.waitForFunction(() => typeof (window as any).__northMobWorldState === "function");
+ const before=await page.evaluate(() => (window as any).__northMobWorldState());
+ await page.locator("[data-key=w]").dispatchEvent("pointerdown", { pointerId: 1, pointerType: "touch", isPrimary: true });
+ await page.waitForTimeout(700);
+ await page.locator("[data-key=w]").dispatchEvent("pointerup", { pointerId: 1, pointerType: "touch", isPrimary: true });
+ const after=await page.evaluate(() => (window as any).__northMobWorldState());
+ expect(after.z).toBeLessThan(before.z);
+ expect(after.ready).toBe(true);
+ expect(page.url()).toContain("/world-engine/index.html");
+});
+
+test("mobile GPU settings and in-world exhibit handling are present", async ({ request }) => {
+ const response=await request.get("/world-engine/index.html");
+ expect(response.ok()).toBeTruthy();
+ const source=await response.text();
+ expect(source).toContain("mobileWorld?1:1.5");
+ expect(source).toContain("renderer.shadowMap.enabled=!mobileWorld");
+ expect(source).toContain("const exhibit=interiors.near(x,z,elevation);if(exhibit)return exhibit");
+ expect(source).not.toContain("OPEN OFFICIAL LINK");
+});
