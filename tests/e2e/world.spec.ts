@@ -142,3 +142,13 @@ test("studio offers real album and individual track interaction points", async (
   expect(source).toContain("exhibits.push({item:track");
   expect(source).toContain("if(id==='museum'||id==='cinema')");
 });
+
+test("VISUALS CINEMA has a physical screen, seats and published video selectors", async ({ request }) => {
+  const response = await request.get("/world-engine/interiors.js");
+  expect(response.ok()).toBeTruthy();
+  const source = await response.text();
+  expect(source).toContain("function cinemaAtmosphere(site)");
+  expect(source).toContain("const videos=(content.cinema||[]).filter(v=>v.videoId)");
+  expect(source).toContain("exhibits.push({item:video");
+  expect(source).toContain("if(id==='cinema')cinemaAtmosphere(site)");
+});
